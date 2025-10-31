@@ -2,48 +2,91 @@
 type: "manual"
 ---
 
-# status-update (Manual)
+# status-update (Manual Command)
 
-When I say "status update", analyze these files and provide a brief summary (3-5 bullet points) of where we are and what's next:
+## Trigger
 
-## Files to Analyze
+When the user says **"@status update"** or **"status update"**, execute this command.
 
-- **PRD:** `docs/prd.md` (in BMAD context - comprehensive product requirements)
-- **CHANGELOG:** `docs/planning/CHANGELOG.md` (technical changes and version history)
-- **DEVLOG:** `docs/planning/DEVLOG.md` (development narrative and current context)
-- **ADRs:** `docs/adr/README.md` (architectural decisions index)
+---
 
-## Focus Areas
+## What to Do
 
+Provide a concise 3-5 bullet point summary of the project's current state and next steps.
+
+### Step 1: Read These Files (in parallel)
+- `docs/planning/DEVLOG.md` → "Current Context (Source of Truth)" section
+- `docs/planning/DEVLOG.md` → "Current Objectives" section
+- `docs/planning/CHANGELOG.md` → "Unreleased" section
+- `docs/adr/README.md` → Recent ADRs (if any)
+
+### Step 2: Extract Key Information
 - **Current version** (from DEVLOG Current Context)
+- **Active branch** (from DEVLOG Current Context)
 - **Active phase** (from DEVLOG Current Context)
-- **Recent changes** (from CHANGELOG Unreleased section)
-- **Next priorities** (from DEVLOG Current Objectives)
+- **Recent changes** (from CHANGELOG Unreleased - last 3-5 entries)
+- **Current objectives** (from DEVLOG Current Objectives - unchecked items)
 - **Known risks/blockers** (from DEVLOG Current Context)
 
-## Output Format
+### Step 3: Format the Output
 
-Provide a concise summary like:
+Use this exact format:
 
+```markdown
+📍 **Status Update - [Project Name]**
+
+**Current State:**
+- **Version:** [version]
+- **Phase:** [phase] - [brief description]
+- **Branch:** [branch name]
+
+**Recent Progress:**
+- ✅ [Recent accomplishment 1]
+- ✅ [Recent accomplishment 2]
+- ✅ [Recent accomplishment 3]
+
+**Next Up:**
+- [Next objective 1]
+- [Next objective 2]
+- [Next objective 3]
+
+**Risks/Blockers:**
+- [Risk/blocker 1, or "None currently"]
 ```
+
+---
+
+## Example Output
+
+```markdown
 📍 **Status Update - Log File Genius**
 
 **Current State:**
-- Version: v0.1.0-dev
-- Phase: Foundation - Method installed, rebranded, ready for README
+- **Version:** v0.1.0-dev (pre-release)
+- **Phase:** Foundation - Repository structure complete, ready for launch
+- **Branch:** main
 
 **Recent Progress:**
-- ✅ Completed PRD with 6 epics, 30 stories
-- ✅ Installed log file method v3 (templates, docs, working logs)
-- ✅ Created Augment rules for log file maintenance
-- ✅ Rebranded to "Log File Genius"
+- ✅ Created README.md with quick start and migration guide
+- ✅ Added CONTRIBUTING.md for community engagement
+- ✅ Moved Augment rules into starter pack for better distribution
 
 **Next Up:**
-- Create README.md with quick start guide
-- Set up GitHub repository structure
-- Create example log files
+- Set up GitHub repository features (About, Topics, Template button)
+- Create issue templates for bug reports and feature requests
+- Consider GitHub Pages for documentation hosting
 
 **Risks/Blockers:**
 - None currently
 ```
+
+---
+
+## Tips
+
+- Keep it concise (3-5 bullets per section)
+- Focus on actionable information
+- Highlight what's changed recently
+- Be specific about next steps
+- Update if planning files are out of sync
 

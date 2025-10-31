@@ -4,30 +4,36 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 
 ## Quick Setup
 
-1. **Copy the `.claude/` directory to your project root:**
+1. **Copy the `.claude/` directory from this starter pack to your project root:**
    ```bash
-   cp -r .claude/ /path/to/your/project/
+   # From the log-file-genius repository
+   cp -r starter-packs/claude-code/.claude/ /path/to/your/project/
    ```
 
-2. **Open your project in Claude Code:**
+2. **Copy the templates to your project:**
+   ```bash
+   cp -r templates/ /path/to/your/project/
+   ```
+
+3. **Open your project in Claude Code:**
    - Claude Code will automatically detect and load `project_instructions.md`
 
-3. **Start using the system:**
+4. **Start using the system:**
    - Make a code change
    - Commit it
    - Claude will automatically update your CHANGELOG (if the rule is active)
 
-## What's Included
+## What's Included in This Starter Pack
 
-### Core Files
+### Claude Code Configuration
 - **`.claude/project_instructions.md`** - Main project instructions
 - **`.claude/README.md`** - Documentation for the Claude setup
-- **`.claude/rules/log-file-maintenance.md`** - Always-active maintenance rules
-- **`.claude/rules/status-update.md`** - Status update command
-- **`.claude/rules/update-planning-docs.md`** - Documentation update command
+- **`.claude/rules/log-file-maintenance.md`** - Always-active maintenance rules (improved v2.0)
+- **`.claude/rules/status-update.md`** - Status update command (improved v2.0)
+- **`.claude/rules/update-planning-docs.md`** - Documentation update command (improved v2.0)
 
-### Templates
-All the standard Log File Genius templates are available in the `templates/` directory:
+### Templates (Copy from main repository)
+You'll need to copy the templates from the main `templates/` directory:
 - `CHANGELOG_template.md`
 - `DEVLOG_template.md`
 - `STATE_template.md`
