@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - v0.1.0-dev
 
+### Changed
+- Augment rules location - Moved from `.augment/rules/` to `starter-packs/augment/.augment/rules/` for better distribution. Files: `starter-packs/augment/.augment/rules/log-file-maintenance.md`, `starter-packs/augment/.augment/rules/status-update.md`, `starter-packs/augment/.augment/rules/update-planning-docs.md`. Commit: `a93e543`
+- .gitignore - Simplified to exclude entire `.augment/` and `.claude/` directories instead of individual files. Files: `.gitignore`. Commit: `a93e543`
+- Augment starter pack README - Updated setup instructions to reflect new `.augment/` directory location. Files: `starter-packs/augment/README.md`. Commit: `a93e543`
+
 ### Added
 - README.md - Main repository landing page with quick start, migration guide links, badges, and community section. Files: `README.md`. Commits: `461652a`, `34d6ac8`
 - PRD document - Complete product requirements with 6 epics, 30 stories, success metrics (copied from BMAD context, later removed from repo). Files: `docs/prd.md` (local only)
@@ -37,10 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Claude Code starter pack - Quick setup guide for Claude Code users. Files: `starter-packs/claude-code/README.md`
 - Migration Guide - Comprehensive brownfield integration guide with 4 scenarios (fresh start, expand from CHANGELOG, condense verbose docs, complete partial implementation). Files: `docs/MIGRATION_GUIDE.md`. See: PRD Epic 2. Commit: `50cc72b`
 - Migration Checklist - Progress tracking checklist for migration with safety reminders and validation criteria. Files: `docs/MIGRATION_CHECKLIST.md`. Commit: `50cc72b`
-- CONTRIBUTING.md - Community contribution guidelines with platform support checklist, commit standards, and review process. Files: `CONTRIBUTING.md`
-- Augment starter pack - Quick setup guide for Augment users with rules, customization tips, and troubleshooting. Files: `starter-packs/augment/README.md`
+- CONTRIBUTING.md - Community contribution guidelines with platform support checklist, commit standards, and review process. Files: `CONTRIBUTING.md`. Commit: `39b7194`
+- Augment starter pack - Quick setup guide for Augment users with rules, customization tips, and troubleshooting. Files: `starter-packs/augment/README.md`. Commit: `39b7194`
 
-### Changed
+### Modified
 - PRD - Updated to reflect 5-document system (added STATE.md), updated token metrics (93% reduction from ~90-110k to ~7-10k tokens), added FR11 for migration guide. Files: `docs/prd.md`
 - Documentation - Updated log_file_how_to.md to document five-document system (added STATE.md). Files: `docs/log_file_how_to.md`
 - Documentation - Added Context Layers section with 4-layer progressive disclosure strategy (Layer 1: <500 tokens, Layer 2: <2k, Layer 3: <10k, Layer 4: on-demand). Files: `docs/log_file_how_to.md`

@@ -71,6 +71,8 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - [x] Create README.md with quick start guide
 - [x] Create CONTRIBUTING.md for community engagement
 - [x] Create Augment starter pack
+- [x] Move Augment rules into starter pack for better distribution
+- [x] Simplify .gitignore to exclude entire .augment/ and .claude/ directories
 - [x] Update planning files to reflect all completed work
 - [ ] Set up GitHub repository features (About, Topics, Template button)
 
@@ -95,6 +97,51 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ---
 
 ## Daily Log - Newest First
+
+### 2025-10-31: Reorganizing Augment Rules - Cleaner Separation of Concerns
+
+**The Situation:** The `.augment/rules/` directory in the repository root contained three rules (log-file-maintenance.md, status-update.md, update-planning-docs.md) that were meant for distribution via the Augment starter pack. However, they were also being tracked in the repository root, creating confusion about what was internal configuration vs. what was meant for users.
+
+**The Problem:**
+1. **Unclear ownership:** Were these rules part of the repo's internal configuration or part of the starter pack?
+2. **Incomplete .gitignore:** Only specific files were excluded, not the entire `.augment/` directory
+3. **Inconsistent structure:** Claude Code had its rules in the starter pack, but Augment rules were in the root
+4. **User confusion:** Users might think they need to copy from the root instead of the starter pack
+
+**The Decision:** Move all distributable Augment rules into the starter pack and exclude the entire `.augment/` directory from version control:
+
+1. **Moved rules to starter pack:**
+   - `.augment/rules/` → `starter-packs/augment/.augment/rules/`
+   - Git recognized this as a rename/move operation
+   - All three rules (log-file-maintenance, status-update, update-planning-docs) now in starter pack
+
+2. **Simplified .gitignore:**
+   - Changed from excluding specific files to excluding entire directories
+   - `.augment/` - Excludes all internal Augment configuration
+   - `.claude/` - Excludes all internal Claude Code configuration
+   - Cleaner, more maintainable approach
+
+3. **Updated Augment starter pack README:**
+   - New setup instructions: Copy `.augment/` from `starter-packs/augment/`
+   - Clarified that templates need to be copied separately from main `templates/` directory
+   - Updated "What's Included" section to reflect new structure
+
+**Why This Matters:** Clear separation between internal configuration (private) and distributable starter packs (public) is essential for:
+- **User clarity:** Users know exactly what to copy and from where
+- **Maintainability:** Simpler .gitignore rules, less chance of accidentally committing internal config
+- **Consistency:** Both Augment and Claude Code now follow the same pattern
+- **Privacy:** Internal AI assistant configurations stay private while distributable rules are public
+
+**The Result:**
+- ✅ Clean separation: Internal `.augment/` is private, starter pack `.augment/` is public
+- ✅ Consistent structure: Matches Claude Code pattern
+- ✅ Simpler .gitignore: Directory-level exclusions instead of file-level
+- ✅ Better user experience: Complete, ready-to-use `.augment/` directory in starter pack
+
+**Files Changed:** `.gitignore`, `starter-packs/augment/.augment/rules/*`, `starter-packs/augment/README.md`
+**Commit:** `a93e543`
+
+---
 
 ### 2025-10-31: Completing the Foundation - CONTRIBUTING.md and Augment Starter Pack
 
