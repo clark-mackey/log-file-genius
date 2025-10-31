@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - v0.1.0-dev
 
 ### Added
-- PRD document - Complete product requirements with 6 epics, 30 stories, success metrics (copied from BMAD context). Files: `docs/prd.md`
+- README.md - Main repository landing page with quick start, migration guide links, badges, and community section. Files: `README.md`. Commits: `461652a`, `34d6ac8`
+- PRD document - Complete product requirements with 6 epics, 30 stories, success metrics (copied from BMAD context, later removed from repo). Files: `docs/prd.md` (local only)
 - Template files - CHANGELOG, DEVLOG, ADR templates for distribution. Files: `templates/CHANGELOG_template.md`, `templates/DEVLOG_template.md`, `templates/ADR_template.md`
 - STATE.md template - Fifth document for multi-agent coordination with active work, blockers, priorities. Files: `templates/STATE_template.md`
 - Templates README - Guide explaining all templates with usage instructions and customization tips. Files: `templates/README.md`
@@ -34,8 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .gitignore - Excluded internal Augment/Claude rules and context directory. Files: `.gitignore`
 - Claude Code integration - Created complete Claude Code setup with project instructions and rules. Files: `.claude/project_instructions.md`, `.claude/README.md`, `.claude/SETUP_SUMMARY.md`, `.claude/rules/log-file-maintenance.md`, `.claude/rules/status-update.md`, `.claude/rules/update-planning-docs.md`
 - Claude Code starter pack - Quick setup guide for Claude Code users. Files: `starter-packs/claude-code/README.md`
-- Migration Guide - Comprehensive brownfield integration guide with 4 scenarios (fresh start, expand from CHANGELOG, condense verbose docs, complete partial implementation). Files: `docs/MIGRATION_GUIDE.md`. See: PRD Epic 2
-- Migration Checklist - Progress tracking checklist for migration with safety reminders and validation criteria. Files: `docs/MIGRATION_CHECKLIST.md`
+- Migration Guide - Comprehensive brownfield integration guide with 4 scenarios (fresh start, expand from CHANGELOG, condense verbose docs, complete partial implementation). Files: `docs/MIGRATION_GUIDE.md`. See: PRD Epic 2. Commit: `50cc72b`
+- Migration Checklist - Progress tracking checklist for migration with safety reminders and validation criteria. Files: `docs/MIGRATION_CHECKLIST.md`. Commit: `50cc72b`
+- CONTRIBUTING.md - Community contribution guidelines with platform support checklist, commit standards, and review process. Files: `CONTRIBUTING.md`
+- Augment starter pack - Quick setup guide for Augment users with rules, customization tips, and troubleshooting. Files: `starter-packs/augment/README.md`
 
 ### Changed
 - PRD - Updated to reflect 5-document system (added STATE.md), updated token metrics (93% reduction from ~90-110k to ~7-10k tokens), added FR11 for migration guide. Files: `docs/prd.md`

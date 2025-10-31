@@ -1,3 +1,7 @@
+---
+type: "manual"
+---
+
 # update-planning-docs (Manual)
 
 When updating planning documentation (CHANGELOG, DEVLOG, or PRD), follow the process defined in `docs/log_file_how_to.md`.

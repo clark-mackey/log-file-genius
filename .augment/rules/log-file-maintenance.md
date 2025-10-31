@@ -1,3 +1,7 @@
+---
+type: "always_apply"
+---
+
 # log-file-maintenance (Always)
 
 ## Log File Maintenance Rules

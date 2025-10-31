@@ -1,3 +1,7 @@
+---
+type: "manual"
+---
+
 # status-update (Manual)
 
 When I say "status update", analyze these files and provide a brief summary (3-5 bullet points) of where we are and what's next:
