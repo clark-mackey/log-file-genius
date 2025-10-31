@@ -77,7 +77,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Opportunity:** Early adoption by AI coding community could drive viral growth
 
 ### Entry Points (For Code Navigation)
-- **PRD:** `docs/prd.md` - Complete product requirements (in BMAD context)
+- **PRD:** `docs/prd.md` - Complete product requirements
 - **Templates:** `templates/` - Distribution templates for users
 - **Working Logs:** `docs/planning/` - This project's own logs (dogfooding)
 - **Documentation:** `docs/` - User-facing guides and how-tos
@@ -326,7 +326,7 @@ This provides constant protection against the meta-problem while saving ~415 tok
 
 **The Result:** Complete PRD with 10 functional requirements, 7 non-functional requirements, 6 epics, 30 stories, comprehensive success metrics, and deployment strategy. Ready for architecture phase.
 
-**Files Changed:** `docs/prd.md` (in BMAD context)
+**Files Changed:** `docs/prd.md`
 
 ---
 

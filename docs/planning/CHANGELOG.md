@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - v0.1.0-dev
 
 ### Added
-- PRD document - Complete product requirements with 6 epics, 30 stories, success metrics. Files: `docs/prd.md`
+- PRD document - Complete product requirements with 6 epics, 30 stories, success metrics (copied from BMAD context). Files: `docs/prd.md`
 - Template files - CHANGELOG, DEVLOG, ADR templates for distribution. Files: `templates/CHANGELOG_template.md`, `templates/DEVLOG_template.md`, `templates/ADR_template.md`
 - STATE.md template - Fifth document for multi-agent coordination with active work, blockers, priorities. Files: `templates/STATE_template.md`
 - Templates README - Guide explaining all templates with usage instructions and customization tips. Files: `templates/README.md`
