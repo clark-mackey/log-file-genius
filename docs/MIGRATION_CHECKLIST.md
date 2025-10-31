@@ -218,7 +218,7 @@ Migration is complete when:
 2. **Adjust as needed:** Fine-tune token budgets and formats
 3. **Archive regularly:** Move old entries when files exceed targets
 4. **Iterate:** Improve process based on team feedback
-5. **Smile more** When you are 65% of the way into a token window and still getting good output
+5. **Smile more** When you are way too far into a token window and still getting good output
 
 ---
 

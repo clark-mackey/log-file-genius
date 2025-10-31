@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ADR directory structure - Created ADR index and directory. Files: `docs/adr/README.md`
 - Augment rules - Installed 3 rules for log file maintenance. Files: `.augment/rules/update-planning-docs.md`, `.augment/rules/status-update.md`, `.augment/rules/log-file-maintenance.md`
 - GitHub repository - Initial commit pushed to clark-mackey/log-file-genius. Commit: `663ab19`
+- MIT License - Added permissive open-source license. Files: `LICENSE`
+- .gitignore - Excluded internal Augment/Claude rules and context directory. Files: `.gitignore`
+- Claude Code integration - Created complete Claude Code setup with project instructions and rules. Files: `.claude/project_instructions.md`, `.claude/README.md`, `.claude/SETUP_SUMMARY.md`, `.claude/rules/log-file-maintenance.md`, `.claude/rules/status-update.md`, `.claude/rules/update-planning-docs.md`
+- Claude Code starter pack - Quick setup guide for Claude Code users. Files: `starter-packs/claude-code/README.md`
+- Migration Guide - Comprehensive brownfield integration guide with 4 scenarios (fresh start, expand from CHANGELOG, condense verbose docs, complete partial implementation). Files: `docs/MIGRATION_GUIDE.md`. See: PRD Epic 2
+- Migration Checklist - Progress tracking checklist for migration with safety reminders and validation criteria. Files: `docs/MIGRATION_CHECKLIST.md`
 
 ### Changed
 - Documentation - Updated log_file_how_to.md to document five-document system (added STATE.md). Files: `docs/log_file_how_to.md`
@@ -39,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Augment rule - Changed avoid-log-file-confusion from always-on to manual trigger to save tokens. Files: `.augment/rules/avoid-log-file-confusion.md`
 - Augment rule - Created condensed always-on guard rule (425 tokens) that references detailed manual rule. Files: `.augment/rules/log-file-confusion-guard.md`
 - Project rebrand - Renamed from "log-file-setup" to "log-file-genius" for better branding, memorability, and growth potential. Files: `.augment/rules/correct-project-identity.md`, `.augment/rules/log-file-confusion-guard.md`, `.augment/rules/status-update.md`, `docs/planning/DEVLOG.md`, `docs/adr/README.md`
+- README - Added "For Existing Projects" section with migration guide link and scenario overview. Files: `README.md`
+- README - Added migration guide to main navigation. Files: `README.md`
+- README - Updated Claude Code status from "Coming Soon" to "Available". Files: `README.md`
 
 ---
 
