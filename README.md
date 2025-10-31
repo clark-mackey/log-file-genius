@@ -8,7 +8,7 @@
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
 [![License: MIT](https://img.shields.io/github/license/clark-mackey/log-file-genius)](LICENSE)
 
-[Quick Start](#-quick-start) • [The Methodology](docs/log_file_how_to.md) • [Examples](examples/) • [Why It's Genius](#-why-its-genius)
+[Quick Start](#-quick-start) • [Migration Guide](docs/MIGRATION_GUIDE.md) • [The Methodology](docs/log_file_how_to.md) • [Examples](examples/) • [Why It's Genius](#-why-its-genius)
 
 ---
 
@@ -69,7 +69,9 @@ This isn't just another documentation template. It's a complete system designed 
 
 ---
 
-## 🚀 Quick Start (30 Seconds)
+## 🚀 Quick Start
+
+### For New Projects (30 Seconds)
 
 1.  **Click the Button:**
 
@@ -80,6 +82,24 @@ This isn't just another documentation template. It's a complete system designed 
 
 3.  **Read the Guide:**
     Follow the [**`log_file_how_to.md`**](docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
+
+### For Existing Projects (1-6 Hours)
+
+Already have a project with some documentation? No problem!
+
+1.  **Quick Assessment:**
+    - Do you have a CHANGELOG? DEVLOG? PRD?
+    - How many tokens are your docs consuming?
+    - Want full adoption or gradual migration?
+
+2.  **Follow the Migration Guide:**
+    Read the [**Migration Guide**](docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
+
+3.  **Choose Your Path:**
+    - **Scenario A:** No docs → Start fresh (1-2 hours)
+    - **Scenario B:** Have CHANGELOG → Expand (3-6 hours)
+    - **Scenario C:** Verbose docs → Condense (1-2 days)
+    - **Scenario D:** Partial implementation → Complete (2-4 hours)
 
 ## 📦 Starter Packs
 
