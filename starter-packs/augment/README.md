@@ -4,28 +4,34 @@ Get up and running with Log File Genius in Augment in under 2 minutes.
 
 ## Quick Setup
 
-1. **Copy the `.augment/` directory to your project root:**
+1. **Copy the `.augment/` directory from this starter pack to your project root:**
    ```bash
-   cp -r .augment/ /path/to/your/project/
+   # From the log-file-genius repository
+   cp -r starter-packs/augment/.augment/ /path/to/your/project/
    ```
 
-2. **Open your project in Augment:**
+2. **Copy the templates to your project:**
+   ```bash
+   cp -r templates/ /path/to/your/project/
+   ```
+
+3. **Open your project in Augment:**
    - Augment will automatically detect and load the rules from `.augment/rules/`
 
-3. **Start using the system:**
+4. **Start using the system:**
    - Make a code change
    - Commit it
    - Augment will automatically update your CHANGELOG (if the rule is active)
 
-## What's Included
+## What's Included in This Starter Pack
 
-### Core Files
+### Augment Configuration
 - **`.augment/rules/log-file-maintenance.md`** - Always-active maintenance rules
 - **`.augment/rules/status-update.md`** - Status update command
 - **`.augment/rules/update-planning-docs.md`** - Documentation update command
 
-### Templates
-All the standard Log File Genius templates are available in the `templates/` directory:
+### Templates (Copy from main repository)
+You'll need to copy the templates from the main `templates/` directory:
 - `CHANGELOG_template.md`
 - `DEVLOG_template.md`
 - `STATE_template.md`
