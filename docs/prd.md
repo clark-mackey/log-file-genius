@@ -1,18 +1,18 @@
-# Log File Setup System - Product Requirements Document (PRD)
+# Log File Genius - Product Requirements Document (PRD)
 
 ## Goals and Background Context
 
 ### Goals
 
 - Enable developers to maintain comprehensive project context for AI coding assistants without exhausting token budgets
-- Provide a turnkey installation method for the 4-document log file system (PRD, CHANGELOG, DEVLOG, ADRs)
+- Provide a turnkey installation method for the 5-document log file system (PRD, CHANGELOG, DEVLOG, STATE, ADRs)
 - Reduce AI agent confusion and hallucination by providing structured, token-efficient context
 - Automate log file maintenance so developers don't need to manually update documentation
 - Create a public GitHub repository that anyone can install and use immediately
 
 ### Background Context
 
-AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasingly used in software development, but they struggle when project context grows large. Traditional documentation approaches consume too much of the AI's context window, leaving less room for actual coding work. Clark Mackey developed a 4-document system (PRD, CHANGELOG, DEVLOG, ADRs) that provides complete project context while consuming less than 5% of an AI's context window. The system has proven effective in his own projects, reducing token usage by 93% (from ~45k to ~3.3k tokens) while maintaining full project history and decision rationale. This PRD defines a project to package this method into an installable GitHub repository with clear documentation and Augment rules, making it accessible to the broader developer community.
+AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasingly used in software development, but they struggle when project context grows large. Traditional documentation approaches consume too much of the AI's context window, leaving less room for actual coding work. Clark Mackey developed a 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) that provides complete project context while consuming less than 5% of an AI's context window. The system has proven effective in his own projects, reducing token usage by 93% (from ~90-110k to ~7-10k tokens) while maintaining full project history, current state, and decision rationale. This PRD defines a project to package this method into an installable GitHub repository with clear documentation and AI assistant rules, making it accessible to the broader developer community.
 
 ### Change Log
 
@@ -26,9 +26,9 @@ AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasin
 
 ### Functional Requirements
 
-- **FR1:** The repository shall include all four core template files (CHANGELOG template, DEVLOG template, ADR template, PRD template) with proper cross-linking structure
-- **FR2:** The repository shall include the log_file_how_to.md documentation explaining the complete system and usage patterns
-- **FR3:** The repository shall include example Augment rules (update-planning-docs, status-update, log-file-maintenance-rule) that users can customize for their projects
+- **FR1:** The repository shall include all five core template files (CHANGELOG template, DEVLOG template, STATE template, ADR template, PRD template) with proper cross-linking structure
+- **FR2:** The repository shall include the log_file_how_to.md documentation explaining the complete 5-document system and usage patterns
+- **FR3:** The repository shall include example AI assistant rules (update-planning-docs, status-update, log-file-maintenance-rule) for Augment and Claude Code that users can customize for their projects
 - **FR4:** The repository shall provide a clear installation guide explaining how to copy files and configure them for a new project
 - **FR5:** The repository shall include the ADR_how_to.md file explaining how to create and maintain Architectural Decision Records
 - **FR6:** The repository shall provide example/starter content in each template showing proper formatting and structure
@@ -36,6 +36,7 @@ AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasin
 - **FR8:** The repository shall provide guidance on customizing relative paths for different project structures
 - **FR9:** The repository shall include examples of archived log files demonstrating the archival process
 - **FR10:** The repository shall provide a checklist or quick-start guide for first-time setup
+- **FR11:** The repository shall include a comprehensive migration guide for integrating the system into existing projects (brownfield integration)
 
 ### Non-Functional Requirements
 
@@ -121,18 +122,19 @@ Not applicable - this is a static documentation/template repository with no runt
 
 ### Story 1.2: Create Core Template Files
 
-**As a** developer adopting the log file system,  
-**I want** all four core template files (CHANGELOG, DEVLOG, ADR, PRD) with proper formatting,  
+**As a** developer adopting the log file system,
+**I want** all five core template files (CHANGELOG, DEVLOG, STATE, ADR, PRD) with proper formatting,
 **so that** I can copy them into my project and start using them immediately.
 
 #### Acceptance Criteria
 1. `CHANGELOG_template.md` created with proper Keep a Changelog format and cross-links
 2. `DEVLOG_template.md` created with Current Context section and decision tracking structure
-3. `ADR_template.md` created with standard ADR format (Context, Decision, Consequences)
-4. `PRD_template.md` created (or reference to external PRD template if using BMad)
-5. All templates include placeholder cross-reference links using relative paths
-6. Each template includes inline comments explaining how to customize it
-7. Templates stored in `/templates` folder
+3. `STATE_template.md` created with active work, blockers, and priorities sections (<500 tokens)
+4. `ADR_template.md` created with standard ADR format (Context, Decision, Consequences)
+5. `PRD_template.md` created (or reference to external PRD template if using BMad)
+6. All templates include placeholder cross-reference links using relative paths
+7. Each template includes inline comments explaining how to customize it
+8. Templates stored in `/templates` folder
 
 ### Story 1.3: Create ADR How-To Documentation
 
@@ -218,18 +220,19 @@ Not applicable - this is a static documentation/template repository with no runt
 
 **As a** developer converting existing documentation,
 **I want** guidance on extracting and reformatting content from various sources,
-**so that** I can populate the 4-document system with my existing knowledge.
+**so that** I can populate the 5-document system with my existing knowledge.
 
 #### Acceptance Criteria
-1. Content conversion guide created in `/docs/content-conversion.md`
+1. Content conversion guide created in `/docs/content-conversion.md` (or integrated into Migration Guide)
 2. Guide explains how to extract CHANGELOG content from: git history, release notes, existing CHANGELOG files
 3. Guide explains how to extract DEVLOG content from: meeting notes, decision logs, project wikis, commit messages
-4. Guide explains how to identify and extract ADR content from: design docs, architecture docs, email threads
-5. Guide explains how to create PRD from: existing requirements docs, user stories, product specs
-6. Guide includes examples of before/after conversions for each document type
-7. Guide includes tips for handling incomplete or missing historical information
-8. Guide addresses how to handle conflicting information from multiple sources
-9. Guide includes safety protocol: preserve original files in archive folder, never overwrite existing documentation, validate converted content before removing originals
+4. Guide explains how to create STATE content from: current sprint boards, active task lists, blocker tracking
+5. Guide explains how to identify and extract ADR content from: design docs, architecture docs, email threads
+6. Guide explains how to create PRD from: existing requirements docs, user stories, product specs
+7. Guide includes examples of before/after conversions for each document type
+8. Guide includes tips for handling incomplete or missing historical information
+9. Guide addresses how to handle conflicting information from multiple sources
+10. Guide includes safety protocol: preserve original files in archive folder, never overwrite existing documentation, validate converted content before removing originals
 
 ### Story 2.4: Create Incremental Adoption Guide
 
@@ -238,15 +241,16 @@ Not applicable - this is a static documentation/template repository with no runt
 **so that** I can validate the approach before migrating everything.
 
 #### Acceptance Criteria
-1. Incremental adoption guide created in `/docs/incremental-adoption.md`
-2. Guide recommends starting order (e.g., start with CHANGELOG, then DEVLOG, then ADRs, then PRD)
-3. Guide explains how to use partial system (e.g., CHANGELOG + DEVLOG only)
+1. Incremental adoption guide created in `/docs/incremental-adoption.md` (or integrated into Migration Guide)
+2. Guide recommends starting order (e.g., start with CHANGELOG, then DEVLOG, then STATE, then ADRs, then PRD)
+3. Guide explains how to use partial system (e.g., CHANGELOG + DEVLOG only, or add STATE for multi-agent coordination)
 4. Guide shows how to integrate new documents with existing documentation
 5. Guide includes success criteria for each phase (when to proceed to next document type)
 6. Guide addresses how to handle cross-references when not all documents exist yet
 7. Guide includes timeline estimates for each adoption phase
 8. Guide explains how to get team buy-in incrementally
 9. Guide emphasizes non-destructive approach: add new files alongside existing docs, validate each phase before proceeding, maintain existing documentation until team confirms new system works
+10. Guide addresses common questions: "Can I skip ADRs?", "Do I need a PRD for small projects?", "Is STATE optional?"
 
 ### Story 2.5: Create Team Migration Guide
 
@@ -350,19 +354,20 @@ Not applicable - this is a static documentation/template repository with no runt
 ### Story 4.1: Create Comprehensive log_file_how_to.md
 
 **As a** developer learning the log file system,
-**I want** complete documentation explaining the philosophy, structure, and usage of the 4-document system,
-**so that** I understand why and how to use CHANGELOG, DEVLOG, ADRs, and PRD effectively.
+**I want** complete documentation explaining the philosophy, structure, and usage of the 5-document system,
+**so that** I understand why and how to use CHANGELOG, DEVLOG, STATE, ADRs, and PRD effectively.
 
 #### Acceptance Criteria
 1. `log_file_how_to.md` created in `/docs` folder based on existing content from `/context`
 2. Document explains the business problem (AI context window exhaustion, token waste)
-3. Document describes all four document types (CHANGELOG, DEVLOG, ADR, PRD) and their purposes
+3. Document describes all five document types (CHANGELOG, DEVLOG, STATE, ADR, PRD) and their purposes
 4. Document includes token efficiency benefits with concrete metrics (93% reduction example)
 5. Document explains cross-linking strategy and relative path usage
-6. Document includes update frequency guidelines for each document type
+6. Document includes update frequency guidelines for each document type (STATE: every 30-60 min, CHANGELOG: after commits, DEVLOG: after decisions)
 7. Document explains archival process for keeping files token-efficient
-8. Document includes multi-agent coordination guidance
-9. Root README.md links to log_file_how_to.md as primary documentation
+8. Document includes Context Layers progressive disclosure strategy (Layer 1: <500 tokens, Layer 2: <2k, Layer 3: <10k, Layer 4: on-demand)
+9. Document includes multi-agent coordination guidance
+10. Root README.md links to log_file_how_to.md as primary documentation
 
 ### Story 4.2: Create Installation Guide for Each Platform
 
@@ -532,16 +537,16 @@ Not applicable - this is a static documentation/template repository with no runt
 ### Story 6.2: Create Before/After Comparison Example
 
 **As a** developer evaluating the log file system,
-**I want** a before/after comparison showing traditional documentation vs. the 4-document system,
+**I want** a before/after comparison showing traditional documentation vs. the 5-document system,
 **so that** I can understand the concrete benefits and token savings.
 
 #### Acceptance Criteria
 1. Before/after example created in `/examples/before-after` folder
 2. "Before" folder shows traditional documentation approach (verbose, scattered context)
-3. "After" folder shows same project using the 4-document system
+3. "After" folder shows same project using the 5-document system (CHANGELOG, DEVLOG, STATE, ADR, PRD)
 4. Comparison document includes token count for each approach
 5. Comparison document highlights key improvements (findability, token efficiency, AI comprehension)
-6. Comparison includes metrics from real usage (e.g., "93% token reduction")
+6. Comparison includes metrics from real usage (e.g., "93% token reduction from ~90-110k to ~7-10k tokens")
 7. Comparison explains what changed and why it's better
 8. Root README.md links to before/after comparison prominently
 
