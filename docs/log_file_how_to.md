@@ -348,13 +348,14 @@ The five-document system supports a **progressive disclosure strategy** where AI
 
 From any document, agents can navigate to any other document using these exact relative paths:
 
-| From Document | To PRD | To CHANGELOG | To DEVLOG | To ADRs | To Templates |
-|---------------|--------|--------------|-----------|---------|--------------|
-| **PRD** (`docs/specs/PRD.md`) | - | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../adr/README.md` | `../planning/templates/` |
-| **CHANGELOG** (`docs/planning/CHANGELOG.md`) | `../specs/PRD.md` | - | `./DEVLOG.md` | `../adr/README.md` | `./templates/` |
-| **DEVLOG** (`docs/planning/DEVLOG.md`) | `../specs/PRD.md` | `./CHANGELOG.md` | - | `../adr/README.md` | `./templates/` |
-| **ADR README** (`docs/adr/README.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | - | `../planning/templates/` |
-| **Individual ADR** (`docs/adr/001-title.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `./README.md` | `../planning/templates/` |
+| From Document | To PRD | To CHANGELOG | To DEVLOG | To STATE | To ADRs | To Templates |
+|---------------|--------|--------------|-----------|----------|---------|--------------|
+| **PRD** (`docs/specs/PRD.md`) | - | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | `../adr/README.md` | `../planning/templates/` |
+| **CHANGELOG** (`docs/planning/CHANGELOG.md`) | `../specs/PRD.md` | - | `./DEVLOG.md` | `./STATE.md` | `../adr/README.md` | `./templates/` |
+| **DEVLOG** (`docs/planning/DEVLOG.md`) | `../specs/PRD.md` | `./CHANGELOG.md` | - | `./STATE.md` | `../adr/README.md` | `./templates/` |
+| **STATE** (`docs/planning/STATE.md`) | `../specs/PRD.md` | `./CHANGELOG.md` | `./DEVLOG.md` | - | `../adr/README.md` | `./templates/` |
+| **ADR README** (`docs/adr/README.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | - | `../planning/templates/` |
+| **Individual ADR** (`docs/adr/001-title.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | `./README.md` | `../planning/templates/` |
 
 ### Standard Frontmatter Template
 
@@ -451,9 +452,11 @@ project-root/
 │   ├── planning/
 │   │   ├── CHANGELOG.md          # What changed (facts)
 │   │   ├── DEVLOG.md             # Why it changed (story)
+│   │   ├── STATE.md              # What's happening now (current work)
 │   │   ├── templates/
 │   │   │   ├── Changelog_template.md
 │   │   │   ├── Devlog_template.md
+│   │   │   ├── STATE_template.md
 │   │   │   └── ADR_template.md
 │   │   └── archive/              # Old entries (if needed)
 │   │       ├── CHANGELOG-2024-Q4.md
@@ -474,7 +477,7 @@ project-root/
 
 ### Document Relationships
 
-**The Four Documents Work Together:**
+**The Five Documents Work Together:**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -498,6 +501,15 @@ project-root/
 │              "How we decided (detailed)"                    │
 │     Architectural decisions with context & consequences     │
 └─────────────────────────────────────────────────────────────┘
+         ▲
+         │
+         │ (referenced from all documents)
+         │
+┌─────────────────────────────────────────────────────────────┐
+│                    STATE.md (Current)                       │
+│              "What's happening right now"                   │
+│    Active work, blockers, priorities (last 2-4 hours)       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 **Navigation Flow:**
@@ -505,6 +517,8 @@ project-root/
 - CHANGELOG → ADRs (get details on specific changes)
 - DEVLOG → ADRs (understand decision context)
 - ADRs → PRD/CHANGELOG/DEVLOG (see impact of decisions)
+- STATE → All documents (get context for current work)
+- All documents → STATE (check current status before making changes)
 
 ---
 
@@ -552,14 +566,60 @@ project-root/
 - No excessive code examples
 - Link to ADRs for detailed decisions
 
+### STATE.md Entry Format
+
+**Template:**
+```markdown
+# Current State
+
+**Last Updated:** YYYY-MM-DD HH:MM UTC
+**Updated By:** Agent-1 (main branch)
+
+## Active Work
+
+- **Agent-1** (feature/auth): Adding OAuth2 PKCE flow with token rotation
+- **Developer-1** (main): Fixing critical bug in payment processing
+
+## Blockers
+
+- Database migration script needs DBA review before deployment (blocks Agent-1)
+- Waiting for design mockups for dashboard UI (blocks Developer-2)
+
+## Recently Completed (Last 2-4 Hours)
+
+- ✅ OAuth2 PKCE flow implemented and tested (Agent-1, 14:30)
+- ✅ Payment bug fixed, deployed to staging (Developer-1, 15:00)
+
+## Next Priorities
+
+1. Merge feature/auth-flow after OAuth2 tests pass
+2. Review and approve database migration script
+3. Complete API v2 endpoint refactoring
+
+## Branch Status
+
+- **main**: Clean, all tests passing (last updated: 15:30)
+- **feature/auth**: 5 commits ahead, tests passing, ready for review
+- **hotfix/payment-bug**: Merged to main at 15:00
+```
+
+**Rules:**
+- Update at start and end of work sessions
+- Keep under 500 tokens (ultra-lightweight)
+- Show only last 2-4 hours of activity
+- Archive "Recently Completed" items older than 24 hours to CHANGELOG
+- Be specific about who's working on what
+- Include timestamps for completed items
+- List blockers immediately when they occur
+
 ### ADR Entry Format
 
 **Template:**
 ```markdown
 # ADR-XXX: Decision Title
 
-**Status:** Accepted | Rejected | Superseded by ADR-YYY  
-**Date:** YYYY-MM-DD  
+**Status:** Accepted | Rejected | Superseded by ADR-YYY
+**Date:** YYYY-MM-DD
 **Deciders:** Names or roles
 
 ## Context
@@ -835,6 +895,39 @@ When multiple agents or developers work on the same codebase:
 
 ---
 
+### STATE.md - Update Continuously During Active Work
+
+**Update Trigger:** Start/end of work sessions, progress updates, blockers
+
+**Update Frequency:** Every 30-60 minutes during active development
+
+**Update When:**
+- ✅ **Start of work session** - Add yourself to "Active Work" section
+- ✅ **Every 30-60 minutes** - Update progress during active work
+- ✅ **When blocked** - Immediately add to "Blockers" section
+- ✅ **When unblocked** - Remove from "Blockers" section
+- ✅ **End of work session** - Move task to "Recently Completed" with timestamp
+- ✅ **After 24 hours** - Archive "Recently Completed" items to CHANGELOG
+- ✅ **Branch status changes** - Update when pushing commits or merging
+
+**Update Format:** Bullet points with agent/developer name, branch, and specific task
+```markdown
+- **Agent-1** (feature/auth): Adding OAuth2 PKCE flow with token rotation
+```
+
+**Best Practice:**
+- Read STATE.md FIRST before starting any work
+- Update immediately, don't batch updates
+- Be specific about what you're working on
+- Include timestamps for completed items
+- Keep under 500 tokens (archive old items to CHANGELOG)
+
+**Why Continuous Updates:** STATE.md prevents duplicate work and merge conflicts in multi-agent environments. It's the "what's happening right now" snapshot that keeps everyone coordinated.
+
+**Note:** STATE.md is optional for single-developer projects. Use DEVLOG Current Context instead.
+
+---
+
 ### ADRs - Create When Needed, Rarely Update
 
 **Update Trigger:** Significant architectural decisions
@@ -874,32 +967,38 @@ When multiple agents or developers work on the same codebase:
 |----------|-----------|---------|---------------------|
 | **CHANGELOG** | Multiple/day | Any code change | ✅ Yes - after each commit |
 | **DEVLOG** | 1-5/week | Epic/milestone/decision | ⚠️ When story is complete |
+| **STATE** | Every 30-60 min | Work session start/end/progress | ✅ Yes - during active work |
 | **PRD** | Daily minimum | Requirements change | ✅ Yes - or end of day |
 | **ADR** | 1-10/project | Architectural decision | ✅ Yes - when decision made |
 
 ### Daily Workflow Example
 
 **Morning:**
-1. Review PRD - What are we building today?
-2. Check CHANGELOG - What changed recently?
-3. Read DEVLOG - Why did we make recent decisions?
+1. **Read STATE.md** - Check current work, blockers, and priorities
+2. Review PRD - What are we building today?
+3. Check CHANGELOG - What changed recently?
+4. Read DEVLOG - Why did we make recent decisions?
+5. **Update STATE.md** - Add yourself to "Active Work" section
 
 **During Development:**
 1. Make code changes
 2. Commit code
 3. **Update CHANGELOG** - Add entry for what changed
-4. Continue working
+4. **Update STATE.md** - Update progress every 30-60 minutes
+5. Continue working
 
 **End of Day:**
-1. **Update PRD** - Capture any requirement changes or clarifications
-2. **Update DEVLOG** (if applicable) - If you completed an Epic, fixed a key bug, or made an architectural decision
-3. **Create ADR** (if applicable) - If you made a significant architectural decision
-4. Commit all documentation updates
+1. **Update STATE.md** - Move your work to "Recently Completed" with timestamp
+2. **Update PRD** - Capture any requirement changes or clarifications
+3. **Update DEVLOG** (if applicable) - If you completed an Epic, fixed a key bug, or made an architectural decision
+4. **Create ADR** (if applicable) - If you made a significant architectural decision
+5. Commit all documentation updates
 
 **End of Week:**
-1. Review all four documents for consistency
+1. Review all five documents for consistency
 2. Verify cross-links are working
 3. Check token counts (if approaching limits)
+4. Archive old STATE.md "Recently Completed" items to CHANGELOG
 
 ---
 
@@ -960,7 +1059,8 @@ git commit -m "Log transformation: Reduced from X to Y tokens"
 |----------|-------------|------------|-------------------|
 | CHANGELOG.md | 1,500-2,000 | 3,000 | 1-1.5% |
 | DEVLOG.md | 3,000-4,000 | 6,000 | 1.5-2% |
-| Combined | 5,000-6,000 | 10,000 | 2.5-3% |
+| STATE.md | <500 | 500 | <0.25% |
+| Combined (CHANGELOG + DEVLOG + STATE) | 5,000-6,500 | 10,000 | 2.5-3.25% |
 | ADRs (on-demand) | Variable | N/A | Loaded as needed |
 
 ### Token Estimation
@@ -1288,6 +1388,68 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 - **CHANGELOG:** `./CHANGELOG.md`
 - **ADRs:** `../adr/README.md`
 - **Template:** `./templates/Devlog_template.md`
+```
+
+### Minimal STATE.md
+
+```markdown
+# Current State
+
+**Last Updated:** YYYY-MM-DD HH:MM UTC
+**Updated By:** [Your name/agent name] (main branch)
+
+---
+
+## Related Documents
+
+📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications
+📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
+📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
+⚖️ **[ADRs](../adr/README.md)** - Architectural decision records
+
+> **For AI Agents:** This file provides at-a-glance status for multi-agent coordination. Read this FIRST before starting work to avoid conflicts and duplicate effort. Update at the START and END of each work session.
+
+---
+
+## Active Work
+
+- **[Your name]** (main): [What you're currently working on]
+
+---
+
+## Blockers
+
+- [List any blockers here, or write "None currently"]
+
+---
+
+## Recently Completed (Last 2-4 Hours)
+
+- ✅ [Completed task] ([Your name], HH:MM)
+
+---
+
+## Next Priorities
+
+1. [Next priority task]
+2. [Second priority task]
+3. [Third priority task]
+
+---
+
+## Branch Status
+
+- **main**: Clean, all tests passing
+- **[feature-branch]**: [X commits ahead, status]
+
+---
+
+## Notes
+
+- Keep this file under 500 tokens
+- Update every 30-60 minutes during active work
+- Archive "Recently Completed" items older than 24 hours to CHANGELOG
+- Optional for single-developer projects (use DEVLOG Current Context instead)
 ```
 
 ### Minimal ADR README.md
