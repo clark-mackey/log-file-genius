@@ -11,6 +11,9 @@
 # Context directory - internal reference only
 context/
 
+# PRD - internal product strategy
+docs/prd.md
+
 # Python
 __pycache__/
 *.py[cod]
