@@ -36,7 +36,7 @@ Log File Genius is a five-document system that gives your AI a perfect, long-ter
 
 **After Log File Genius:**
 - 📊 **~7,000-10,000 tokens** for complete project history.
-- 🤖 **93% reduction** in context bloat.
+- 🤖 **93% reduction** in context bloat. 
 - ✅ **Result:** The AI has near-instant access to all decisions, changes, and narratives, leading to smarter, faster, and more accurate coding.
 
 | Document | The Vibe | Purpose | Token Budget |
@@ -55,7 +55,7 @@ Log File Genius is a five-document system that gives your AI a perfect, long-ter
 
 This isn't just another documentation template. It's a complete system designed for AI-first development.
 
-- **93% Token Reduction:** Keep your context window free for what matters: the code you're writing *right now*.
+- **93% Token Reduction:** Keep your context window free for what matters: the code you're writing *right now*. Sheds old context like a snake sheds its skin.
 
 - **Perfect Project Memory:** The four-document system separates facts from narrative, giving your AI a complete, holistic understanding of the project's history and goals.
 
