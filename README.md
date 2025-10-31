@@ -2,7 +2,7 @@
 
 **Stop the context rot. Give your AI a genius-level memory.**
 
-> A token-efficient documentation system that reduces AI context bloat by 93% while maintaining perfect project memory.
+> A token-efficient documentation system that reduces AI context bloat by 93% while maintaining near perfect project memory.
 
 [![GitHub stars](https://img.shields.io/github/stars/clark-mackey/log-file-genius?style=social)](https://github.com/clark-mackey/log-file-genius/stargazers)
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
@@ -32,7 +32,7 @@ Or maybe you are new here and vibe coding your first projects.
 
 ## 💡 The Solution: A Genius-Level Memory
 
-Log File Genius is a five-document system that gives your AI a perfect, long-term memory while consuming less than **5%** of its context window.
+Log File Genius is a five-document system that gives your AI a an improved long-term memory while consuming less than **5%** of its context window.
 
 **After Log File Genius:**
 - 📊 **~7,000-10,000 tokens** for complete project history.
@@ -57,7 +57,7 @@ This isn't just another documentation template. It's a complete system designed 
 
 - **93% Token Reduction:** Keep your context window free for what matters: the code you're writing *right now*. Sheds old context like a snake sheds its skin.
 
-- **Perfect Project Memory:** The five-document system separates facts from narrative, giving your AI a complete, holistic understanding of the project's history and goals.
+- **Near Perfect Project Memory:** The five-document system separates facts from narrative, giving your AI a complete, holistic understanding of the project's history and goals.
 
 - **⚡ Zero-Search Navigation:** With bidirectional frontmatter linking, your AI never wastes tokens searching for files. It instantly knows where to find related documents.
 
