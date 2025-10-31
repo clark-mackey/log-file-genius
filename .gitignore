@@ -3,6 +3,11 @@
 .augment/rules/correct-project-identity.md
 .augment/rules/log-file-confusion-guard.md
 
+# Claude Code rules - internal guidance only (if created)
+.claude/rules/avoid-log-file-confusion.md
+.claude/rules/correct-project-identity.md
+.claude/rules/log-file-confusion-guard.md
+
 # Context directory - internal reference only
 context/
 

@@ -65,7 +65,7 @@ This isn't just another documentation template. It's a complete system designed 
 
 - **Scalable by Design:** The built-in archiving strategy keeps your active logs lean and fast, even on multi-year projects.
 
-- **Tool Agnostic:** Works seamlessly with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant.
+- **Tool Agnostic:** Works seamlessly with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant. Your toaster will probably be running it soon.
 
 ---
 
@@ -87,7 +87,7 @@ Get running even faster with pre-configured starter packs for your favorite tool
 
 | Tool | Link | Status |
 |---|---|---|
-| **Claude Code** | `starter-packs/claude-code/` | 🚧 Coming Soon |
+| **Claude Code** | `starter-packs/claude-code/` | ✅ Available |
 | **Cursor** | `starter-packs/cursor/` | 🚧 Coming Soon |
 | **GitHub Copilot** | `starter-packs/github-copilot/` | 🚧 Coming Soon |
 | **Augment** | `starter-packs/augment/` | ✅ Available |
