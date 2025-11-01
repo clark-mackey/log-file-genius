@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Augment starter pack README - Updated setup instructions to reflect new `.augment/` directory location. Files: `starter-packs/augment/README.md`. Commit: `a93e543`
 
 ### Added
+- Validation system (Epic 7) - Created validation architecture design and PowerShell validation script that checks CHANGELOG/DEVLOG format and token counts. Files: `docs/validation-architecture.md`, `scripts/validate-log-files.ps1`. Commit: `pending`
+- Agent OS-inspired enhancements - Added 5 new epics (Verification, Profiles, Skills, Workflows, Layered Context) with ADR and task lists. Files: `docs/adr/007-agent-os-inspired-enhancements.md`, `docs/planning/EPIC-07-verification-system.md`, `docs/planning/EPIC-08-11-other-enhancements.md`. Commit: `49e106a`
 - README.md - Main repository landing page with quick start, migration guide links, badges, and community section. Files: `README.md`. Commits: `461652a`, `34d6ac8`
 - PRD document - Complete product requirements with 6 epics, 30 stories, success metrics (copied from BMAD context, later removed from repo). Files: `docs/prd.md` (local only)
 - Template files - CHANGELOG, DEVLOG, ADR templates for distribution. Files: `templates/CHANGELOG_template.md`, `templates/DEVLOG_template.md`, `templates/ADR_template.md`
