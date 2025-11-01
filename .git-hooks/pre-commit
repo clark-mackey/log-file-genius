@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Log File Genius - Pre-Commit Hook
+#
+# This hook runs validation on CHANGELOG.md and DEVLOG.md before allowing commits.
+# It ensures log files follow the proper format and stay within token limits.
+#
+# Installation:
+#   cp .git-hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# To bypass validation (use sparingly):
+#   git commit --no-verify
+#
+
+echo ""
+echo "Running Log File Genius validation..."
+echo ""
+
+# Determine which validation script to run based on platform
+if command -v pwsh &> /dev/null; then
+    # PowerShell is available (Windows, or pwsh on Unix)
+    pwsh -File ./scripts/validate-log-files.ps1
+    EXIT_CODE=$?
+elif [ -f "./scripts/validate-log-files.sh" ]; then
+    # Bash script is available (Unix/Mac)
+    ./scripts/validate-log-files.sh
+    EXIT_CODE=$?
+else
+    echo "[!] Warning: No validation script found"
+    echo "    Expected: ./scripts/validate-log-files.ps1 or ./scripts/validate-log-files.sh"
+    echo "    Skipping validation..."
+    exit 0
+fi
+
+# Handle validation results
+if [ $EXIT_CODE -eq 2 ]; then
+    echo ""
+    echo "[X] Validation failed. Please fix errors before committing."
+    echo "    To bypass validation, use: git commit --no-verify"
+    echo ""
+    exit 1
+elif [ $EXIT_CODE -eq 1 ]; then
+    echo ""
+    echo "[!] Validation warnings present. Commit allowed."
+    echo ""
+    exit 0
+else
+    echo ""
+    echo "[OK] Validation passed. Proceeding with commit."
+    echo ""
+    exit 0
+fi
+
