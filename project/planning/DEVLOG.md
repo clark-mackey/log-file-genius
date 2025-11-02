@@ -91,11 +91,67 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Decisions (ADR Index) - Newest First
 
+- **ADR-009:** Two-Branch Strategy for Version Control (2025-11-02) - Implement two-branch strategy (main for distribution, development for work) to restore version control for project/ files while keeping clean user experience. Both branches public (transparency). Partially modifies ADR-008.
 - **ADR-008:** Product/Project Directory Separation (2025-11-02) - Separate product/ (distributable) from project/ (development) to eliminate AI agent confusion between templates and working logs
 
 ---
 
 ## Daily Log - Newest First
+
+### 2025-11-02: ADR-009 - Two-Branch Strategy Restores Version Control
+
+**The Situation:** After implementing ADR-008 (Product/Project Directory Separation), we excluded `project/` from git via `.gitignore`. This solved AI agent confusion but created a new problem: lost version control, backup, and single source of truth for development files (planning, specs, ADRs, roadmaps).
+
+**The Challenge:**
+How do we maintain the benefits of ADR-008 (clean separation for users) while restoring version control for development files? Requirements:
+1. Version control for all files (product/ and project/)
+2. GitHub as single source of truth
+3. Clean user experience (template users don't see project/)
+4. GitHub Template button works correctly
+5. Transparency acceptable (planning process can be public)
+
+**The Decision:**
+**Implement two-branch strategy (ADR-009):**
+
+**Branch structure:**
+- `main` branch: Only `product/` directory (for distribution, GitHub Template)
+- `development` branch: Both `product/` and `project/` (for development work)
+- Both branches public (transparency, open-source best practice)
+
+**Workflow:**
+- Daily work on `development` branch
+- Merge `product/` changes to `main` when ready to release
+- Template button uses `main` (clean for users)
+
+**Why This Matters:**
+This restores full version control while preserving ADR-008's benefits. Many successful open-source projects (Kubernetes, React, VS Code) make their planning public - it builds trust and enables collaboration.
+
+**The Implementation:**
+1. Created ADR-009 documenting two-branch strategy
+2. Updated `.gitignore` to remove `/project/` exclusion
+3. Created `development` branch from current `main`
+4. Added all `project/` files to version control (17 files, 4,487 insertions)
+5. Pushed `development` branch to GitHub
+6. Created `project/WORKFLOW.md` with daily workflow guide
+
+**The Result:**
+- ✅ Full version control for all files
+- ✅ GitHub as single source of truth
+- ✅ Clean template for users (main branch)
+- ✅ Transparent planning process (development branch)
+- ✅ Can track changes to specs, roadmaps, ADRs
+
+**Files Changed:**
+- `project/adr/009-two-branch-strategy.md` (new)
+- `project/WORKFLOW.md` (new)
+- `.gitignore` (removed /project/ exclusion)
+- All project/ files now tracked in git (development branch)
+
+**Branches:**
+- `main`: Only product/ (for distribution)
+- `development`: Both product/ and project/ (for work)
+
+---
 
 ### 2025-11-02: Strategic Pivot - Security-First Roadmap Based on Red Team Analysis
 
