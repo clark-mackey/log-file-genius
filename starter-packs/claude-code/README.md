@@ -17,16 +17,18 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 
 3. **Copy the validation scripts (optional but recommended):**
    ```bash
-   # Copy validation script
+   # Copy validation scripts (includes both PowerShell and Bash versions)
    cp -r starter-packs/claude-code/scripts/ /path/to/your/project/
 
    # Copy git hook template
    cp -r starter-packs/claude-code/.git-hooks/ /path/to/your/project/
 
-   # Install git hook (optional)
+   # Install git hook (optional - enables automatic validation before commits)
    cp .git-hooks/pre-commit .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit  # Mac/Linux only
    ```
+
+   **Note:** The validation scripts include both `validate-log-files.ps1` (PowerShell for Windows) and `validate-log-files.sh` (Bash for Mac/Linux/WSL). The git hook automatically detects your platform and runs the appropriate script.
 
 4. **Open your project in Claude Code:**
    - Claude Code will automatically detect and load `project_instructions.md`
@@ -46,8 +48,9 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 - **`.claude/rules/update-planning-docs.md`** - Documentation update command (improved v2.0)
 
 ### Validation Tools (Optional but Recommended)
-- **`scripts/validate-log-files.ps1`** - PowerShell validation script
-- **`.git-hooks/pre-commit`** - Git hook template for automatic validation
+- **`scripts/validate-log-files.ps1`** - PowerShell validation script (Windows)
+- **`scripts/validate-log-files.sh`** - Bash validation script (Mac/Linux/WSL)
+- **`.git-hooks/pre-commit`** - Git hook template for automatic validation (cross-platform)
 
 ### Templates (Copy from main repository)
 You'll need to copy the templates from the main `templates/` directory:

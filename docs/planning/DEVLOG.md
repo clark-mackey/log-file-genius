@@ -98,6 +98,58 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2025-10-31: Cross-Platform Validation - Bash Script for Mac/Linux/WSL
+
+**The Situation:** After completing Epic 7 with PowerShell validation, we realized the system was Windows-centric. The project is intended to work on ANY OS with ANY AI coding agent, but Mac/Linux users would get "validation skipped" messages. This violated the core principle of universal accessibility.
+
+**The Challenge:**
+1. **Platform Bias:** PowerShell is not standard on Mac/Linux
+2. **Second-Class Experience:** Non-Windows users couldn't validate without installing PowerShell Core
+3. **Incomplete Epic:** True cross-platform support should have been part of Epic 7 from the start
+4. **Parity Required:** Bash script must have identical functionality to PowerShell version
+
+**The Decision:**
+Created `validate-log-files.sh` (Bash version) with identical functionality:
+1. **Standard Unix Tools Only:** Uses grep, wc, awk, sed - no dependencies
+2. **Identical Logic:** Same validation rules as PowerShell version
+3. **Same Exit Codes:** 0 (success), 1 (warning), 2 (error)
+4. **Same Output Format:** Color-coded results with clear messages
+5. **Bug Fixes:** Fixed two validation logic issues found during Bash implementation:
+   - CHANGELOG: Changed from "all categories required" to "at least one category" (matches PowerShell)
+   - DEVLOG: Changed from exact field match to pattern match (e.g., "**Version" matches "**Current Version:")
+
+**Why This Approach:**
+- **True Cross-Platform:** Works on stock Mac/Linux installations
+- **No Dependencies:** Uses only built-in Unix tools
+- **Consistent Experience:** All users get same validation regardless of OS
+- **Git Hook Compatibility:** Pre-commit hook already detects platform and runs appropriate script
+- **Completes Epic 7:** This should have been part of the original scope
+
+**The Result:**
+- ✅ Bash validation script created and tested (300+ lines)
+- ✅ Identical functionality to PowerShell version
+- ✅ Both scripts pass validation on current log files
+- ✅ Copied to both starter packs
+- ✅ READMEs updated to mention both scripts
+- ✅ True cross-platform support achieved
+
+**Files Changed:**
+- `scripts/validate-log-files.sh` (created)
+- `starter-packs/augment/scripts/validate-log-files.sh` (created)
+- `starter-packs/claude-code/scripts/validate-log-files.sh` (created)
+- `starter-packs/augment/README.md` (updated with cross-platform notes)
+- `starter-packs/claude-code/README.md` (updated with cross-platform notes)
+- `docs/planning/CHANGELOG.md` (this entry)
+- `docs/planning/DEVLOG.md` (this entry)
+
+**Impact:**
+- Mac/Linux/WSL users now have first-class validation support
+- No PowerShell Core installation required
+- System truly works on "any OS" as intended
+- Epic 7 is now genuinely complete
+
+---
+
 ### 2025-10-31: Epic 7 Complete - Validation System Fully Integrated
 
 **The Situation:** After creating validation scripts, documentation, and examples, we needed to complete Epic 7 by integrating validation into the starter packs and updating the log-file-maintenance rule so users and AI agents know about validation.
