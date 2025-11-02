@@ -10,24 +10,29 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 **You MUST complete ALL steps before running `git commit`:**
 
+**IMPORTANT:** Read `.logfile-config.yml` to determine log file locations. If config not found, use defaults below.
+
 ### Step 1: Update CHANGELOG.md (REQUIRED)
-1. Open `project/planning/CHANGELOG.md`
+1. Read `.logfile-config.yml` → `paths.changelog` to find CHANGELOG location
+   - Default: `docs/planning/CHANGELOG.md` or `project/planning/CHANGELOG.md`
 2. Add entry under "Unreleased" in appropriate category (Added/Changed/Fixed/Deprecated/Removed/Security)
 3. Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\``
-4. See `product/templates/CHANGELOG_template.md` for examples
+4. See `log-file-genius/templates/CHANGELOG_template.md` for examples
 
 ### Step 2: Update DEVLOG.md (If Milestone/Decision)
 **Only if this commit is:** a completed epic, major milestone, architectural decision, or significant problem solved
 
-1. Add entry to `project/planning/DEVLOG.md` → "Daily Log" section (newest first)
-2. Use Situation/Challenge/Decision/Why/Result/Files format (see `product/templates/DEVLOG_template.md`)
-3. Keep entries 150-250 words
+1. Read `.logfile-config.yml` → `paths.devlog` to find DEVLOG location
+   - Default: `docs/planning/DEVLOG.md` or `project/planning/DEVLOG.md`
+2. Add entry to DEVLOG → "Daily Log" section (newest first)
+3. Use Situation/Challenge/Decision/Why/Result/Files format (see `log-file-genius/templates/DEVLOG_template.md`)
+4. Keep entries 150-250 words
 
 ### Step 3: Run Validation (OPTIONAL but Recommended)
 **If validation script is available:**
 ```bash
-.\product\scripts\validate-log-files.ps1  # Windows
-./product/scripts/validate-log-files.sh   # Mac/Linux
+.\log-file-genius\scripts\validate-log-files.ps1  # Windows
+./log-file-genius/scripts/validate-log-files.sh   # Mac/Linux
 ```
 - Validates CHANGELOG/DEVLOG format
 - Checks token counts against profile limits (reads `.logfile-config.yml`)
@@ -38,8 +43,8 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 **Note:** Validation scripts are profile-aware. If `.logfile-config.yml` exists, they will use profile-specific token targets and validation strictness.
 
 ### Step 4: Include Planning Files in Commit
-- `git add project/planning/CHANGELOG.md`
-- `git add project/planning/DEVLOG.md` (if updated)
+- `git add [path from .logfile-config.yml]` (e.g., `git add docs/planning/CHANGELOG.md`)
+- `git add [DEVLOG path]` (if updated)
 - Planning files MUST be in the SAME commit as code changes
 
 ### Step 5: Show Pre-Commit Checklist
@@ -69,22 +74,23 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ## 🔄 SESSION START - READ CONTEXT
 
 **At start of EVERY session:**
-1. Read `project/planning/DEVLOG.md` → "Current Context" section
-2. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
+1. Read `.logfile-config.yml` → `paths.devlog` to find DEVLOG location
+2. Read DEVLOG → "Current Context" section
+3. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
 
 ---
 
 ## 📊 DAILY UPDATES
 
 **Update DEVLOG Current Context when:** version/branch/phase/objectives change, or new risks identified
-**Location:** `project/planning/DEVLOG.md` → "Current Context (Source of Truth)"
+**Location:** Read from `.logfile-config.yml` → `paths.devlog` → "Current Context (Source of Truth)"
 
 ---
 
 ## 🗄️ ARCHIVAL
 
 **Trigger:** CHANGELOG or DEVLOG >10,000 tokens
-**Action:** Archive entries >2 weeks old to `project/planning/archive/[FILENAME]-YYYY-MM.md`
+**Action:** Archive entries >2 weeks old to archive folder
 **Targets:** CHANGELOG <10k, DEVLOG <15k, Combined <25k tokens
 
 **Note:** If `.logfile-config.yml` exists, use profile-specific token targets and archival thresholds instead of defaults above.
@@ -105,12 +111,13 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 - `open-source` - Strict formatting, public-facing docs
 - `startup` - Minimal overhead, DEVLOG optional
 
-**See:** `product/docs/profile-selection-guide.md` for details
+**See:** `.log-file-genius/product/docs/profile-selection-guide.md` for details
 
 ---
 
 ## 🚫 KEY RULES
 
+- ✅ Read `.logfile-config.yml` to find log file locations
 - ✅ Update CHANGELOG BEFORE every commit (not after)
 - ✅ Include planning files IN same commit as code
 - ✅ Write specific entries (not "Updated files")
@@ -121,9 +128,8 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ## 📚 Reference
 
-Full docs: `product/docs/log_file_how_to.md` | Templates: `product/templates/` | Logs: `project/planning/` | ADRs: `project/adr/` | Validation: `product/docs/validation-guide.md`
+Full docs: `.log-file-genius/product/docs/log_file_how_to.md` | Templates: `log-file-genius/templates/` | Config: `.logfile-config.yml` | Validation: `.log-file-genius/product/docs/validation-guide.md`
 
 ---
 
 ## 🎯 Success = Every commit includes updated CHANGELOG + pre-commit checklist shown + post-commit confirmation
-

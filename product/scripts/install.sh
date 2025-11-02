@@ -179,7 +179,28 @@ main() {
     PROFILE=$(prompt_profile)
     print_info "Selected profile: $PROFILE"
     echo ""
-    
+
+    # Prompt for log file locations (brownfield support)
+    echo -e "${CYAN}Where should your log files be located?${NC}"
+    echo -e "${CYAN}Press Enter to use defaults, or specify custom paths:${NC}"
+    echo ""
+
+    read -p "CHANGELOG location [docs/planning/CHANGELOG.md]: " CHANGELOG_PATH
+    CHANGELOG_PATH=${CHANGELOG_PATH:-docs/planning/CHANGELOG.md}
+
+    read -p "DEVLOG location [docs/planning/DEVLOG.md]: " DEVLOG_PATH
+    DEVLOG_PATH=${DEVLOG_PATH:-docs/planning/DEVLOG.md}
+
+    read -p "ADR directory [docs/adr]: " ADR_PATH
+    ADR_PATH=${ADR_PATH:-docs/adr}
+
+    read -p "STATE location [docs/STATE.md]: " STATE_PATH
+    STATE_PATH=${STATE_PATH:-docs/STATE.md}
+
+    echo ""
+    print_info "Log file paths configured"
+    echo ""
+
     # Determine source paths
     STARTER_PACK_DIR="$SOURCE_ROOT/product/starter-packs/$AI_ASSISTANT"
     TEMPLATES_DIR="$SOURCE_ROOT/product/templates"
@@ -195,8 +216,12 @@ main() {
     
     print_info "Installing from: $STARTER_PACK_DIR"
     echo ""
-    
-    # Install AI assistant configuration
+
+    # Create log-file-genius folder for all installed files
+    INSTALL_FOLDER="$PROJECT_ROOT/log-file-genius"
+    mkdir -p "$INSTALL_FOLDER"
+
+    # Install AI assistant configuration (must be at root)
     if [[ "$AI_ASSISTANT" == "augment" ]]; then
         if copy_directory_contents "$STARTER_PACK_DIR/.augment" "$PROJECT_ROOT/.augment"; then
             print_success "Installed Augment rules"
@@ -206,59 +231,72 @@ main() {
             print_success "Installed Claude Code configuration"
         fi
     fi
-    
-    # Install templates
-    if copy_directory_contents "$TEMPLATES_DIR" "$PROJECT_ROOT/templates"; then
+
+    # Install templates to log-file-genius/templates/
+    if copy_directory_contents "$TEMPLATES_DIR" "$INSTALL_FOLDER/templates"; then
         print_success "Installed templates"
     fi
-    
-    # Install validation scripts
-    mkdir -p "$PROJECT_ROOT/scripts"
-    if copy_file "$SCRIPTS_DIR/validate-log-files.sh" "$PROJECT_ROOT/scripts/validate-log-files.sh"; then
-        chmod +x "$PROJECT_ROOT/scripts/validate-log-files.sh"
+
+    # Install validation scripts to log-file-genius/scripts/
+    mkdir -p "$INSTALL_FOLDER/scripts"
+    if copy_file "$SCRIPTS_DIR/validate-log-files.sh" "$INSTALL_FOLDER/scripts/validate-log-files.sh"; then
+        chmod +x "$INSTALL_FOLDER/scripts/validate-log-files.sh"
         print_success "Installed validation script (Bash)"
     fi
-    if copy_file "$SCRIPTS_DIR/validate-log-files.ps1" "$PROJECT_ROOT/scripts/validate-log-files.ps1"; then
+    if copy_file "$SCRIPTS_DIR/validate-log-files.ps1" "$INSTALL_FOLDER/scripts/validate-log-files.ps1"; then
         print_success "Installed validation script (PowerShell)"
     fi
-    
-    # Install profile configuration
+
+    # Install profile configuration (at root)
     if copy_file "$STARTER_PACK_DIR/.logfile-config.yml" "$PROJECT_ROOT/.logfile-config.yml"; then
-        # Update profile in config file
+        # Update profile and add paths in config file
         if command -v sed &> /dev/null; then
             sed -i.bak "s/profile: .*/profile: $PROFILE/" "$PROJECT_ROOT/.logfile-config.yml"
             rm -f "$PROJECT_ROOT/.logfile-config.yml.bak"
         fi
+
+        # Add paths section
+        cat >> "$PROJECT_ROOT/.logfile-config.yml" << EOF
+
+installation:
+  folder: log-file-genius
+
+paths:
+  changelog: $CHANGELOG_PATH
+  devlog: $DEVLOG_PATH
+  adr: $ADR_PATH
+  state: $STATE_PATH
+EOF
         print_success "Installed profile configuration ($PROFILE)"
     fi
-    
-    # Install git hooks (optional)
+
+    # Install git hooks to log-file-genius/git-hooks/
     if [[ -d "$STARTER_PACK_DIR/.git-hooks" ]]; then
-        copy_directory_contents "$STARTER_PACK_DIR/.git-hooks" "$PROJECT_ROOT/.git-hooks"
+        copy_directory_contents "$STARTER_PACK_DIR/.git-hooks" "$INSTALL_FOLDER/git-hooks"
         print_success "Installed git hook templates"
         echo ""
         print_info "To enable git hooks, run:"
-        echo "  cp .git-hooks/pre-commit .git/hooks/pre-commit"
+        echo "  cp log-file-genius/git-hooks/pre-commit .git/hooks/pre-commit"
         echo "  chmod +x .git/hooks/pre-commit"
     fi
     
     echo ""
     echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║   Installation Complete! 🎉            ║${NC}"
+    echo -e "${GREEN}║   Installation Complete!               ║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
     echo ""
     print_info "Next steps:"
     echo "  1. Initialize your log files from templates:"
-    echo "     cp templates/CHANGELOG_template.md docs/planning/CHANGELOG.md"
-    echo "     cp templates/DEVLOG_template.md docs/planning/DEVLOG.md"
-    echo "     cp templates/ADR_template.md docs/adr/ADR-template.md"
+    echo "     cp log-file-genius/templates/CHANGELOG_template.md docs/planning/CHANGELOG.md"
+    echo "     cp log-file-genius/templates/DEVLOG_template.md docs/planning/DEVLOG.md"
+    echo "     cp log-file-genius/templates/ADR_template.md docs/adr/ADR-template.md"
     echo ""
-    echo "  2. Customize the templates for your project"
+    echo "  2. Customize templates in log-file-genius/templates/ if needed"
     echo ""
     echo "  3. Start using your AI assistant - it will automatically maintain logs!"
     echo ""
     print_info "Documentation: .log-file-genius/product/docs/"
-    print_info "Run validation: ./scripts/validate-log-files.sh"
+    print_info "Run validation: ./log-file-genius/scripts/validate-log-files.sh"
     echo ""
 }
 

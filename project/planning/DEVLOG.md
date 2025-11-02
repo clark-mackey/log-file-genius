@@ -92,6 +92,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Decisions (ADR Index) - Newest First
 
+- **ADR-011:** Single Folder Installation Structure (2025-11-02) - Install all distributable files to single `log-file-genius/` folder to reduce root pollution from 5-6 items to 3 items. Add brownfield support with config-based paths. Fix PowerShell Unicode issues.
 - **ADR-010:** Hidden Source Folder Installation Architecture (2025-11-02) - Implement automated installation using `.log-file-genius/` as hidden git submodule with installer scripts to eliminate manual copy errors and prevent meta-directory pollution in user projects
 - **ADR-009:** Two-Branch Strategy for Version Control (2025-11-02) - Implement two-branch strategy (main for distribution, development for work) to restore version control for project/ files while keeping clean user experience. Both branches public (transparency). Partially modifies ADR-008.
 - **ADR-008:** Product/Project Directory Separation (2025-11-02) - Separate product/ (distributable) from project/ (development) to eliminate AI agent confusion between templates and working logs
@@ -99,6 +100,70 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ---
 
 ## Daily Log - Newest First
+
+### 2025-11-02: ADR-011 - Single Folder Installation & Brownfield Support
+
+**The Situation:** After implementing automated installation (ADR-010), user attempted a clean install and reported three critical issues: (1) PowerShell scripts failed with Unicode character parsing errors, (2) Installation created 5-6 items at project root (templates/, scripts/, .git-hooks/, .augment/, .logfile-config.yml), reducing discoverability and cleanliness, (3) No support for brownfield projects with existing documentation in custom locations.
+
+**The Challenge:**
+How do we create the cleanest possible installation while supporting both greenfield and brownfield projects? Requirements:
+1. Minimal root folder pollution (fewest items possible)
+2. Brownfield support (existing docs in any location)
+3. Windows PowerShell compatibility (not just PowerShell Core)
+4. Config-based paths (no hardcoded assumptions)
+5. Easy discoverability (users can find what's installed)
+6. Maintain AI assistant compatibility
+
+**The Decision:**
+**Implement single folder installation structure (ADR-011):**
+
+**New installation structure:**
+- `log-file-genius/` - All distributable files (templates, scripts, git-hooks) in ONE folder
+- `.logfile-config.yml` - Config with `paths` section for brownfield support
+- `.augment/` or `.claude/` - AI rules (required at root)
+- `.log-file-genius/` - Source submodule (hidden, for updates)
+
+**Total: 3 items at root** (down from 5-6) ✅
+
+**Brownfield support:**
+- Installer prompts for log file locations during installation
+- Defaults: `docs/planning/CHANGELOG.md`, `docs/planning/DEVLOG.md`, `docs/adr`, `docs/STATE.md`
+- Paths stored in `.logfile-config.yml` → `paths` section
+- AI rules read config to find files (no hardcoded paths)
+
+**PowerShell fixes:**
+- Replaced Unicode symbols (✓✗⚠ℹ) with ASCII ([OK][ERROR][WARNING][INFO])
+- Fixed parsing errors in Windows PowerShell (powershell.exe)
+
+**Why This Matters:**
+- Cleaner root (3 items vs 5-6) improves project organization
+- Brownfield support enables enterprise adoption (existing projects)
+- Config-based paths support any project structure (monorepos, custom layouts)
+- PowerShell fixes unblock Windows users (majority of enterprise)
+- Single folder improves discoverability ("what did I install?")
+- Easier updates (one folder to replace)
+
+**The Result:**
+- ✅ Root items reduced: 5-6 → 3 (50% reduction)
+- ✅ Brownfield support: Interactive path prompts + config storage
+- ✅ PowerShell compatibility: Works on Windows PowerShell + PowerShell Core
+- ✅ AI rules updated: Read config for paths (Augment + Claude Code)
+- ✅ Documentation updated: README + starter pack READMEs
+- ✅ ADR-011 created: Full architectural decision record
+
+**Files Changed:**
+- Installers: `product/scripts/install.ps1`, `product/scripts/install.sh` (single folder + path prompts)
+- Scripts: `product/scripts/cleanup.ps1`, `product/scripts/update.ps1` (Unicode fixes)
+- AI Rules: `product/starter-packs/augment/.augment/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/project_instructions.md` (config-based paths)
+- Docs: `README.md`, `product/starter-packs/augment/README.md`, `product/starter-packs/claude-code/README.md` (new structure)
+- ADR: `project/adr/011-single-folder-installation.md` (architectural decision)
+
+**Alternatives Considered:**
+1. Minimal root (reference submodule directly) - Rejected: Too minimal, reduces customizability
+2. CLI wrapper (global npm/pip package) - Rejected: Too complex for simple file copying
+3. Current approach (multiple root folders) - Rejected: User feedback indicated too cluttered
+
+---
 
 ### 2025-11-02: ADR-010 - Automated Installation Eliminates User Errors
 
