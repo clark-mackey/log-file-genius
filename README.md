@@ -71,27 +71,6 @@ This isn't just another documentation template. It's a complete system designed 
 
 ## � Repository Structure
 
-**⚠️ Important:** This repository has a unique structure because it both *teaches* the log file methodology AND *uses* it for its own development (dogfooding).
-
-```
-log-file-genius/
-├── product/                    # 📦 THE PRODUCT (what we distribute to you)
-│   ├── templates/              # Clean templates for your projects
-│   ├── docs/                   # How-to guides and documentation
-│   ├── examples/               # Sample projects showing the system in action
-│   └── starter-packs/          # Pre-configured setups for different AI assistants
-│
-├── project/                    # 🔧 THE PROJECT (our development process)
-│   ├── planning/               # Our CHANGELOG, DEVLOG, STATE
-│   ├── adr/                    # Our architectural decision records
-│   └── specs/                  # Our PRD and epic files
-│
-└── .project-identity.yaml      # Explains the meta-problem (read this first!)
-```
-
-**When using this repository:**
-- **Copy from `product/`** - These are the clean templates and docs for YOUR projects
-- **Don't copy from `project/`** - These are OUR development files (examples of the system in use, but specific to building Log File Genius)
 
 See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation of this structure and why it exists.
 
