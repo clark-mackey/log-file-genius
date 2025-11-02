@@ -115,30 +115,164 @@ ADR-008 (Product/Project Directory Separation) solved AI agent confusion by sepa
 
 ### Ongoing Workflow
 
-**For product/ changes:**
+**Daily development (most common):**
+```bash
+# Work on development branch (default)
+git checkout development
+
+# Make changes to product/ or project/
+# ... edit files ...
+
+# Commit and push
+git add .
+git commit -m "Your commit message"
+git push origin development
+```
+
+**For product/ changes only:**
 ```bash
 # Work on development branch
 git checkout development
+
 # Make changes to product/
+# ... edit product/docs/log_file_how_to.md ...
+
+# Commit to development
 git add product/
-git commit -m "Add new feature"
+git commit -m "Update log file documentation"
+git push origin development
+
+# When ready to release to users
+git checkout main
+git checkout development -- product/
+git commit -m "Release: Update log file documentation"
+git push origin main
+
+# Switch back to development
+git checkout development
+```
+
+**For project/ changes only:**
+```bash
+# Work on development branch
+git checkout development
+
+# Make changes to project/
+# ... edit project/specs/EPIC-12-security-secrets-detection.md ...
+
+# Commit to development
+git add project/
+git commit -m "Update Epic 12 task list"
+git push origin development
+
+# No need to merge to main (project/ not in main)
+```
+
+**For both product/ and project/ changes:**
+```bash
+# Work on development branch
+git checkout development
+
+# Make changes to both directories
+# ... edit product/docs/log_file_how_to.md ...
+# ... edit project/planning/DEVLOG.md ...
+
+# Commit everything to development
+git add product/ project/
+git commit -m "Update docs and planning"
+git push origin development
+
+# When ready to release product changes
+git checkout main
+git checkout development -- product/docs/log_file_how_to.md
+git commit -m "Release: Update log file documentation"
+git push origin main
+
+# Switch back to development
+git checkout development
+```
+
+### Common Scenarios
+
+**Scenario 1: Add new template to product/**
+```bash
+# On development branch
+git checkout development
+
+# Create new template
+# ... create product/templates/new-template.md ...
+
+# Commit to development
+git add product/templates/new-template.md
+git commit -m "Add new template for X"
 git push origin development
 
 # When ready to release
 git checkout main
-git merge development -- product/  # Only merge product/ directory
+git checkout development -- product/templates/new-template.md
+git commit -m "Release: Add new template for X"
 git push origin main
+git checkout development
 ```
 
-**For project/ changes:**
+**Scenario 2: Update epic specs (project/ only)**
 ```bash
-# Work on development branch
+# On development branch
 git checkout development
-# Make changes to project/
-git add project/
-git commit -m "Update roadmap"
+
+# Update specs
+# ... edit project/specs/EPIC-12-security-secrets-detection.md ...
+
+# Commit to development
+git add project/specs/
+git commit -m "Update Epic 12 task list"
 git push origin development
+
 # No need to merge to main (project/ not in main)
+```
+
+**Scenario 3: Create new ADR**
+```bash
+# On development branch
+git checkout development
+
+# Create ADR
+# ... create project/adr/010-new-decision.md ...
+
+# Update ADR index in DEVLOG
+# ... edit project/planning/DEVLOG.md ...
+
+# Commit to development
+git add project/adr/ project/planning/
+git commit -m "ADR-010: Document new architectural decision"
+git push origin development
+
+# No need to merge to main (project/ not in main)
+```
+
+**Scenario 4: Update starter pack (product/) and document in DEVLOG (project/)**
+```bash
+# On development branch
+git checkout development
+
+# Update starter pack
+# ... edit product/starter-packs/augment/README.md ...
+
+# Document in DEVLOG
+# ... edit project/planning/DEVLOG.md ...
+# ... edit project/planning/CHANGELOG.md ...
+
+# Commit everything to development
+git add product/starter-packs/ project/planning/
+git commit -m "Update Augment starter pack with new instructions"
+git push origin development
+
+# When ready to release
+git checkout main
+git checkout development -- product/starter-packs/augment/README.md
+git commit -m "Release: Update Augment starter pack"
+git push origin main
+git checkout development
 ```
 
 ### GitHub Settings
