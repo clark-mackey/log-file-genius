@@ -11,16 +11,16 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 **You MUST complete ALL steps before running `git commit`:**
 
 ### Step 1: Update CHANGELOG.md (REQUIRED)
-1. Open `docs/planning/CHANGELOG.md`
+1. Open `project/planning/CHANGELOG.md`
 2. Add entry under "Unreleased" in appropriate category (Added/Changed/Fixed/Deprecated/Removed/Security)
 3. Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\``
-4. See `templates/CHANGELOG_template.md` for examples
+4. See `product/templates/CHANGELOG_template.md` for examples
 
 ### Step 2: Update DEVLOG.md (If Milestone/Decision)
 **Only if this commit is:** a completed epic, major milestone, architectural decision, or significant problem solved
 
-1. Add entry to `docs/planning/DEVLOG.md` → "Daily Log" section (newest first)
-2. Use Situation/Challenge/Decision/Why/Result/Files format (see `templates/DEVLOG_template.md`)
+1. Add entry to `project/planning/DEVLOG.md` → "Daily Log" section (newest first)
+2. Use Situation/Challenge/Decision/Why/Result/Files format (see `product/templates/DEVLOG_template.md`)
 3. Keep entries 150-250 words
 
 ### Step 3: Run Validation (OPTIONAL but Recommended)
@@ -30,13 +30,16 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ./product/scripts/validate-log-files.sh   # Mac/Linux
 ```
 - Validates CHANGELOG/DEVLOG format
-- Checks token counts
+- Checks token counts against profile limits (reads `.logfile-config.yml`)
+- Applies profile-specific strictness settings
 - Catches common errors before commit
 - Can be skipped if not installed
 
+**Note:** Validation scripts are profile-aware. If `.logfile-config.yml` exists, they will use profile-specific token targets and validation strictness.
+
 ### Step 4: Include Planning Files in Commit
-- `git add docs/planning/CHANGELOG.md`
-- `git add docs/planning/DEVLOG.md` (if updated)
+- `git add project/planning/CHANGELOG.md`
+- `git add project/planning/DEVLOG.md` (if updated)
 - Planning files MUST be in the SAME commit as code changes
 
 ### Step 5: Show Pre-Commit Checklist
@@ -66,7 +69,7 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ## 🔄 SESSION START - READ CONTEXT
 
 **At start of EVERY session:**
-1. Read `docs/planning/DEVLOG.md` → "Current Context" section
+1. Read `project/planning/DEVLOG.md` → "Current Context" section
 2. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
 
 ---
@@ -74,15 +77,35 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ## 📊 DAILY UPDATES
 
 **Update DEVLOG Current Context when:** version/branch/phase/objectives change, or new risks identified
-**Location:** `docs/planning/DEVLOG.md` → "Current Context (Source of Truth)"
+**Location:** `project/planning/DEVLOG.md` → "Current Context (Source of Truth)"
 
 ---
 
 ## 🗄️ ARCHIVAL
 
 **Trigger:** CHANGELOG or DEVLOG >10,000 tokens
-**Action:** Archive entries >2 weeks old to `docs/planning/archive/[FILENAME]-YYYY-MM.md`
+**Action:** Archive entries >2 weeks old to `project/planning/archive/[FILENAME]-YYYY-MM.md`
 **Targets:** CHANGELOG <10k, DEVLOG <15k, Combined <25k tokens
+
+**Note:** If `.logfile-config.yml` exists, use profile-specific token targets and archival thresholds instead of defaults above.
+
+---
+
+## 📋 PROFILE AWARENESS
+
+**If `.logfile-config.yml` exists in project root:**
+- Respect profile-specific token targets (may differ from defaults above)
+- Respect profile-specific required files (DEVLOG/ADR may be optional in some profiles)
+- Respect profile-specific update frequency (some profiles allow less frequent updates)
+- Validation scripts automatically apply profile settings
+
+**Profiles:**
+- `solo-developer` (default) - Flexible, DEVLOG optional for milestones
+- `team` - Stricter, DEVLOG required for significant changes
+- `open-source` - Strict formatting, public-facing docs
+- `startup` - Minimal overhead, DEVLOG optional
+
+**See:** `product/docs/profile-selection-guide.md` for details
 
 ---
 
@@ -98,7 +121,7 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ## 📚 Reference
 
-Full docs: `docs/log_file_how_to.md` | Templates: `templates/` | Logs: `docs/planning/` | ADRs: `docs/adr/` | Validation: `docs/validation-guide.md`
+Full docs: `product/docs/log_file_how_to.md` | Templates: `product/templates/` | Logs: `project/planning/` | ADRs: `project/adr/` | Validation: `product/docs/validation-guide.md`
 
 ---
 

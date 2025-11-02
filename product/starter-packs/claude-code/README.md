@@ -15,7 +15,21 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
    cp -r templates/ /path/to/your/project/
    ```
 
-3. **Copy the validation scripts (optional but recommended):**
+3. **Copy the profile configuration (optional but recommended):**
+   ```bash
+   # Copy the default profile configuration
+   cp starter-packs/claude-code/.logfile-config.yml /path/to/your/project/
+   ```
+
+   **Choose your profile:** Edit `.logfile-config.yml` and set your profile:
+   - `solo-developer` (default) - Individual developers, flexible
+   - `team` - Teams of 2+, consistent documentation
+   - `open-source` - Public projects, strict formatting
+   - `startup` - MVPs/prototypes, minimal overhead
+
+   See `product/docs/profile-selection-guide.md` for help choosing.
+
+4. **Copy the validation scripts (optional but recommended):**
    ```bash
    # Copy validation scripts (includes both PowerShell and Bash versions)
    cp -r product/starter-packs/claude-code/scripts/ /path/to/your/project/
@@ -30,10 +44,10 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 
    **Note:** The validation scripts include both `validate-log-files.ps1` (PowerShell for Windows) and `validate-log-files.sh` (Bash for Mac/Linux/WSL). The git hook automatically detects your platform and runs the appropriate script.
 
-4. **Open your project in Claude Code:**
+5. **Open your project in Claude Code:**
    - Claude Code will automatically detect and load `project_instructions.md`
 
-5. **Start using the system:**
+6. **Start using the system:**
    - Make a code change
    - Commit it
    - Claude will automatically update your CHANGELOG (if the rule is active)
@@ -47,10 +61,17 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 - **`.claude/rules/status-update.md`** - Status update command (improved v2.0)
 - **`.claude/rules/update-planning-docs.md`** - Documentation update command (improved v2.0)
 
+### Profile Configuration (Optional but Recommended)
+- **`.logfile-config.yml`** - Profile configuration file
+  - Choose from 4 predefined profiles (solo-developer, team, open-source, startup)
+  - Customize token targets, validation strictness, archival settings
+  - See `product/docs/profile-selection-guide.md` for help choosing
+
 ### Validation Tools (Optional but Recommended)
 - **`product/scripts/validate-log-files.ps1`** - PowerShell validation script (Windows)
 - **`product/scripts/validate-log-files.sh`** - Bash validation script (Mac/Linux/WSL)
 - **`.git-hooks/pre-commit`** - Git hook template for automatic validation (cross-platform)
+- **Profile-aware:** Validation scripts automatically read `.logfile-config.yml` and apply profile settings
 
 ### Templates (Copy from main repository)
 You'll need to copy the templates from the main `templates/` directory:
@@ -96,9 +117,21 @@ Once set up, you can use these commands with Claude Code:
    - **"trigger phrase"** → See `.claude/rules/my-custom-rule.md`
    ```
 
-### Adjusting Token Budgets
+### Adjusting Token Budgets and Validation
 
-Edit `.claude/rules/log-file-maintenance.md` to adjust token targets:
+**Recommended:** Use the profile system by editing `.logfile-config.yml`:
+
+```yaml
+profile: solo-developer
+
+# Override token targets
+overrides:
+  token_targets:
+    changelog_error: 12000  # Increase from default 10,000
+    devlog_error: 20000     # Increase from default 15,000
+```
+
+**Alternative:** Edit `.claude/rules/log-file-maintenance.md` to adjust token targets (legacy method):
 
 ```markdown
 ## Token Budget Targets
@@ -107,6 +140,8 @@ Edit `.claude/rules/log-file-maintenance.md` to adjust token targets:
 - **DEVLOG:** <15,000 tokens (adjust as needed)
 - **Combined:** <25,000 tokens (adjust as needed)
 ```
+
+**Note:** The profile system (`.logfile-config.yml`) is the recommended approach as it integrates with validation scripts and provides more flexibility.
 
 ## Troubleshooting
 

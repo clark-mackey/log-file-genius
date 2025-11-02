@@ -30,9 +30,12 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ./product/scripts/validate-log-files.sh   # Mac/Linux
 ```
 - Validates CHANGELOG/DEVLOG format
-- Checks token counts
+- Checks token counts against profile limits (reads `.logfile-config.yml`)
+- Applies profile-specific strictness settings
 - Catches common errors before commit
 - Can be skipped if not installed
+
+**Note:** Validation scripts are profile-aware. If `.logfile-config.yml` exists, they will use profile-specific token targets and validation strictness.
 
 ### Step 4: Include Planning Files in Commit
 - `git add project/planning/CHANGELOG.md`
@@ -83,6 +86,26 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 **Trigger:** CHANGELOG or DEVLOG >10,000 tokens
 **Action:** Archive entries >2 weeks old to `project/planning/archive/[FILENAME]-YYYY-MM.md`
 **Targets:** CHANGELOG <10k, DEVLOG <15k, Combined <25k tokens
+
+**Note:** If `.logfile-config.yml` exists, use profile-specific token targets and archival thresholds instead of defaults above.
+
+---
+
+## 📋 PROFILE AWARENESS
+
+**If `.logfile-config.yml` exists in project root:**
+- Respect profile-specific token targets (may differ from defaults above)
+- Respect profile-specific required files (DEVLOG/ADR may be optional in some profiles)
+- Respect profile-specific update frequency (some profiles allow less frequent updates)
+- Validation scripts automatically apply profile settings
+
+**Profiles:**
+- `solo-developer` (default) - Flexible, DEVLOG optional for milestones
+- `team` - Stricter, DEVLOG required for significant changes
+- `open-source` - Strict formatting, public-facing docs
+- `startup` - Minimal overhead, DEVLOG optional
+
+**See:** `product/docs/profile-selection-guide.md` for details
 
 ---
 

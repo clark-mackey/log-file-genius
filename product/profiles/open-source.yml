@@ -1,0 +1,155 @@
+# Open Source Profile
+# Optimized for open-source projects
+# Emphasizes public-facing documentation, community engagement, and transparency
+
+profile_name: open-source
+profile_version: 1.0
+description: |
+  Optimized for open-source projects with public repositories and community contributors.
+  Emphasizes clear, well-formatted documentation that serves both maintainers and contributors.
+  Perfect for OSS libraries, tools, frameworks, and community-driven projects.
+
+# Use cases
+use_cases:
+  - Open-source libraries and frameworks
+  - Community-driven projects
+  - Public tools and utilities
+  - Educational projects and examples
+  - Projects seeking contributors
+  - Projects with public roadmaps
+
+# Token targets - Same as team, but stricter formatting
+token_targets:
+  # CHANGELOG limits
+  changelog_warning: 8000      # Warn at 8,000 tokens (80% of 10k target)
+  changelog_error: 10000       # Error at 10,000 tokens
+  
+  # DEVLOG limits
+  devlog_warning: 12000        # Warn at 12,000 tokens (80% of 15k target)
+  devlog_error: 15000          # Error at 15,000 tokens
+  
+  # Combined limits (CHANGELOG + DEVLOG)
+  combined_warning: 20000      # Warn at 20,000 tokens (80% of 25k target)
+  combined_error: 25000        # Error at 25,000 tokens
+  
+  # STATE limits (optional file)
+  state_warning: 400           # Warn at 400 tokens (80% of 500 target)
+  state_error: 500             # Error at 500 tokens
+
+# Required files - Comprehensive for public transparency
+required_files:
+  - CHANGELOG                  # Always required (public release notes)
+  # DEVLOG optional (can be private or public)
+  # ADR recommended but optional
+  # STATE optional
+  # PRD optional
+
+# Update frequency - Public-facing cadence
+update_frequency:
+  changelog: every-commit      # Update CHANGELOG on every commit (public visibility)
+  devlog: optional             # DEVLOG can be private or public (maintainer choice)
+  state: optional              # STATE can be public roadmap or private
+  adr: as-needed               # Create ADRs for architectural decisions (public transparency)
+  prd: as-needed               # Create PRD for major features (public roadmap)
+
+# Validation - Strict formatting for public docs
+validation:
+  strictness: strict           # Fail on warnings (public docs must be clean)
+  format_validation: true      # Validate CHANGELOG/DEVLOG format strictly
+  token_validation: true       # Validate token counts
+  crosslink_validation: false  # Skip cross-link validation (future feature)
+  fail_on_warnings: true       # Fail on warnings (maintain high quality)
+
+# Archival - Longer retention for public history
+archival:
+  changelog_age_days: 90       # Archive CHANGELOG entries older than 90 days
+  devlog_age_days: 60          # Archive DEVLOG entries older than 60 days
+  auto_archive_on_warning: false  # Don't auto-archive (manual control)
+  auto_archive_on_error: false    # Don't auto-archive (manual control)
+  archive_directory: project/planning/archive  # Archive location
+
+# AI assistant behavior - Careful and visible
+ai_assistant:
+  proactive_updates: true      # AI should proactively update planning files
+  require_confirmation: false  # Don't ask before updating (trust but verify)
+  show_checklist: true         # Show pre-commit checklist
+  suggest_validation: true     # Suggest running validation before commits
+
+# Open-source specific guidance
+open_source_guidance: |
+  Open-source projects should consider:
+  
+  1. **Public vs Private Docs:**
+     - CHANGELOG: Always public (release notes)
+     - DEVLOG: Can be private (internal context) or public (transparency)
+     - ADRs: Recommended public (architectural transparency)
+     - STATE: Can be public (roadmap) or private (internal planning)
+     - PRD: Can be public (feature planning) or private (strategy)
+  
+  2. **Contributor Experience:**
+     - CHANGELOG helps contributors understand project evolution
+     - ADRs help contributors understand architectural decisions
+     - Clear documentation reduces maintainer burden
+  
+  3. **Release Process:**
+     - CHANGELOG entries become release notes
+     - Use semantic versioning in CHANGELOG
+     - Archive old versions to keep current docs focused
+  
+  4. **Community Engagement:**
+     - Link to CHANGELOG in README
+     - Reference ADRs in issues/PRs
+     - Use DEVLOG for project updates (if public)
+
+# Customization tips
+customization_tips: |
+  Open-source projects can customize this profile:
+  
+  - **Public DEVLOG:** Set `devlog: significant-changes` to document publicly
+  - **Public roadmap:** Add `STATE` to `required_files` for public visibility
+  - **Stricter validation:** Already strict, but can add custom rules
+  - **Longer retention:** Increase archival thresholds for longer public history
+  
+  To customize, copy this file to your project root as `.logfile-config.yml` and modify.
+
+# Example overrides
+example_overrides:
+  # For high-visibility OSS projects (1k+ stars)
+  high_visibility:
+    required_files:
+      - CHANGELOG
+      - DEVLOG  # Public DEVLOG for transparency
+      - ADR     # Public ADRs for architectural transparency
+      - STATE   # Public roadmap
+    update_frequency:
+      devlog: significant-changes  # Document publicly
+      state: weekly  # Update public roadmap weekly
+    archival:
+      changelog_age_days: 180  # Keep longer history
+      devlog_age_days: 90
+  
+  # For library/framework projects
+  library_project:
+    required_files:
+      - CHANGELOG  # Required for release notes
+      - ADR        # Required for API design decisions
+    update_frequency:
+      changelog: every-commit
+      devlog: optional  # Internal only
+      adr: as-needed    # Document API decisions
+    validation:
+      strictness: strict  # Strict formatting for public docs
+      fail_on_warnings: true
+  
+  # For community-driven projects
+  community_driven:
+    required_files:
+      - CHANGELOG
+      - DEVLOG  # Public for community engagement
+      - STATE   # Public roadmap
+    update_frequency:
+      devlog: significant-changes
+      state: weekly
+    ai_assistant:
+      require_confirmation: true  # Ask before updating public docs
+

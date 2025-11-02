@@ -1,0 +1,136 @@
+# Log File Genius Configuration
+# Copy this file to your project root as `.logfile-config.yml` to customize settings
+
+# ============================================================================
+# PROFILE SELECTION
+# ============================================================================
+# Choose a profile that matches your project type:
+#
+# - solo-developer: Individual developers working alone (flexible, minimal overhead)
+# - team: Teams of 2+ developers (consistent documentation, clear communication)
+# - open-source: Public projects (strict formatting, community-facing docs)
+# - startup: Fast-moving startups/MVPs (minimal overhead, maximum speed)
+#
+# See product/profiles/*.yml for full profile definitions
+# See product/docs/profile-selection-guide.md for help choosing
+# ============================================================================
+
+profile: solo-developer
+
+# ============================================================================
+# CUSTOM OVERRIDES (Optional)
+# ============================================================================
+# Override specific settings from your chosen profile.
+# Uncomment and modify the sections you want to customize.
+# ============================================================================
+
+# Token targets - Customize token limits for your project size
+# overrides:
+#   token_targets:
+#     changelog_warning: 8000
+#     changelog_error: 10000
+#     devlog_warning: 12000
+#     devlog_error: 15000
+#     combined_warning: 20000
+#     combined_error: 25000
+#     state_warning: 400
+#     state_error: 500
+
+# Required files - Customize which files are mandatory
+# overrides:
+#   required_files:
+#     - CHANGELOG      # Always required
+#     - DEVLOG         # Uncomment to require
+#     # - ADR          # Uncomment to require
+#     # - STATE        # Uncomment to require
+#     # - PRD          # Uncomment to require
+
+# Update frequency - Customize how often files should be updated
+# overrides:
+#   update_frequency:
+#     changelog: every-commit
+#     devlog: significant-changes  # Options: every-commit, significant-changes, milestones-only, optional
+#     state: daily                 # Options: every-commit, daily, weekly, optional
+#     adr: as-needed
+#     prd: as-needed
+
+# Validation - Customize validation strictness
+# overrides:
+#   validation:
+#     strictness: warnings-only    # Options: strict, errors, warnings-only, disabled
+#     format_validation: true
+#     token_validation: true
+#     crosslink_validation: false
+#     fail_on_warnings: false
+
+# Archival - Customize when to archive old entries
+# overrides:
+#   archival:
+#     changelog_age_days: 30
+#     devlog_age_days: 14
+#     auto_archive_on_warning: false
+#     auto_archive_on_error: true
+#     archive_directory: project/planning/archive
+
+# AI assistant behavior - Customize how AI assistants behave
+# overrides:
+#   ai_assistant:
+#     proactive_updates: true
+#     require_confirmation: false
+#     show_checklist: true
+#     suggest_validation: true
+
+# ============================================================================
+# QUICK START EXAMPLES
+# ============================================================================
+# Uncomment one of these examples to get started quickly
+# ============================================================================
+
+# Example 1: Small personal project
+# profile: solo-developer
+# overrides:
+#   token_targets:
+#     changelog_warning: 4000
+#     changelog_error: 5000
+#     devlog_warning: 6000
+#     devlog_error: 8000
+
+# Example 2: Team project with daily standups
+# profile: team
+# overrides:
+#   required_files:
+#     - CHANGELOG
+#     - DEVLOG
+#     - STATE
+#   update_frequency:
+#     state: daily
+
+# Example 3: Open-source library
+# profile: open-source
+# overrides:
+#   required_files:
+#     - CHANGELOG
+#     - ADR
+#   validation:
+#     strictness: strict
+#     fail_on_warnings: true
+
+# Example 4: Fast-moving startup
+# profile: startup
+# overrides:
+#   validation:
+#     strictness: disabled
+#   ai_assistant:
+#     show_checklist: false
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+# For more information:
+# - Profile definitions: product/profiles/*.yml
+# - Profile selection guide: product/docs/profile-selection-guide.md
+# - Schema documentation: product/docs/profile-schema.md
+# - Validation guide: product/docs/validation-guide.md
+# - Log file how-to: product/docs/log_file_how_to.md
+# ============================================================================
+

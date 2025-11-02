@@ -18,7 +18,7 @@
 #   2 = Error (blocking, commit prevented)
 #
 
-# Configuration
+# Configuration - Default values (can be overridden by profile)
 CHANGELOG_PATH="project/planning/CHANGELOG.md"
 DEVLOG_PATH="project/planning/DEVLOG.md"
 CHANGELOG_TOKEN_WARNING=8000
@@ -27,6 +27,8 @@ DEVLOG_TOKEN_WARNING=12000
 DEVLOG_TOKEN_ERROR=15000
 COMBINED_TOKEN_WARNING=20000
 COMBINED_TOKEN_ERROR=25000
+VALIDATION_STRICTNESS="errors"  # Options: strict, errors, warnings-only, disabled
+FAIL_ON_WARNINGS=false
 
 # Exit codes
 EXIT_SUCCESS=0
@@ -105,8 +107,71 @@ get_token_count() {
 get_percentage() {
     local current=$1
     local target=$2
-    
+
     awk "BEGIN {print int(($current / $target) * 100 + 0.5)}"
+}
+
+load_profile_config() {
+    # Check for config file in standard locations
+    local config_file=""
+
+    for path in ".logfile-config.yml" "config/logfile.yml" ".config/logfile.yml"; do
+        if [ -f "$path" ]; then
+            config_file="$path"
+            break
+        fi
+    done
+
+    if [ -z "$config_file" ]; then
+        if [ "$VERBOSE" = true ]; then
+            echo -e "\033[36mNo config file found. Using default profile (solo-developer)\033[0m"
+        fi
+        return
+    fi
+
+    if [ "$VERBOSE" = true ]; then
+        echo -e "\033[36mLoading profile config from: $config_file\033[0m"
+    fi
+
+    # Simple YAML parsing for our limited use case
+    # Extract profile name
+    if grep -q "^profile:" "$config_file"; then
+        local profile_name=$(grep "^profile:" "$config_file" | awk '{print $2}')
+        if [ "$VERBOSE" = true ]; then
+            echo -e "\033[36mProfile: $profile_name\033[0m"
+        fi
+    fi
+
+    # Extract token target overrides if present
+    if grep -q "changelog_warning:" "$config_file"; then
+        CHANGELOG_TOKEN_WARNING=$(grep "changelog_warning:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "changelog_error:" "$config_file"; then
+        CHANGELOG_TOKEN_ERROR=$(grep "changelog_error:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "devlog_warning:" "$config_file"; then
+        DEVLOG_TOKEN_WARNING=$(grep "devlog_warning:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "devlog_error:" "$config_file"; then
+        DEVLOG_TOKEN_ERROR=$(grep "devlog_error:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "combined_warning:" "$config_file"; then
+        COMBINED_TOKEN_WARNING=$(grep "combined_warning:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "combined_error:" "$config_file"; then
+        COMBINED_TOKEN_ERROR=$(grep "combined_error:" "$config_file" | awk '{print $2}')
+    fi
+
+    # Extract validation strictness
+    if grep -q "strictness:" "$config_file"; then
+        VALIDATION_STRICTNESS=$(grep "strictness:" "$config_file" | awk '{print $2}')
+    fi
+    if grep -q "fail_on_warnings:" "$config_file"; then
+        local fail_value=$(grep "fail_on_warnings:" "$config_file" | awk '{print $2}')
+        if [ "$fail_value" = "true" ]; then
+            FAIL_ON_WARNINGS=true
+        fi
+    fi
 }
 
 # CHANGELOG Validation
@@ -287,6 +352,9 @@ echo -e "\033[36mLog File Genius Validation\033[0m"
 echo -e "\033[36m================================\033[0m"
 echo ""
 
+# Load profile configuration
+load_profile_config
+
 # Run validations
 if [ "$RUN_CHANGELOG" = true ]; then
     validate_changelog
@@ -313,19 +381,53 @@ echo ""
 echo -e "\033[36m================================\033[0m"
 echo -e "\033[36mSummary: $PASSED passed, $WARNINGS warning(s), $ERRORS error(s)\033[0m"
 
-if [ $EXIT_CODE -eq $EXIT_ERROR ]; then
+# Apply strictness settings
+if [ "$VALIDATION_STRICTNESS" = "disabled" ]; then
+    EXIT_CODE=$EXIT_SUCCESS
     echo ""
-    echo -e "\033[31m[X] Validation failed. Please fix errors before committing.\033[0m"
-    echo -e "\033[36m    To bypass validation, use: git commit --no-verify\033[0m"
+    echo -e "\033[36m[INFO] Validation disabled by profile. All checks passed.\033[0m"
     echo ""
-elif [ $EXIT_CODE -eq $EXIT_WARNING ]; then
-    echo ""
-    echo -e "\033[33m[!] Validation warnings present. Commit allowed.\033[0m"
-    echo ""
+elif [ "$VALIDATION_STRICTNESS" = "warnings-only" ]; then
+    # Never fail, just show warnings
+    EXIT_CODE=$EXIT_SUCCESS
+    if [ $WARNINGS -gt 0 ] || [ $ERRORS -gt 0 ]; then
+        echo ""
+        echo -e "\033[33m[!] Validation issues found (warnings-only mode). Commit allowed.\033[0m"
+        echo ""
+    else
+        echo ""
+        echo -e "\033[32m[OK] All validations passed!\033[0m"
+        echo ""
+    fi
+elif [ "$VALIDATION_STRICTNESS" = "strict" ] || [ "$FAIL_ON_WARNINGS" = true ]; then
+    # Fail on warnings or errors
+    if [ $EXIT_CODE -ge $EXIT_WARNING ]; then
+        echo ""
+        echo -e "\033[31m[X] Validation failed (strict mode). Please fix all issues before committing.\033[0m"
+        echo -e "\033[36m    To bypass validation, use: git commit --no-verify\033[0m"
+        echo ""
+        EXIT_CODE=$EXIT_ERROR
+    else
+        echo ""
+        echo -e "\033[32m[OK] All validations passed!\033[0m"
+        echo ""
+    fi
 else
-    echo ""
-    echo -e "\033[32m[OK] All validations passed!\033[0m"
-    echo ""
+    # Default: errors mode - fail only on errors
+    if [ $EXIT_CODE -eq $EXIT_ERROR ]; then
+        echo ""
+        echo -e "\033[31m[X] Validation failed. Please fix errors before committing.\033[0m"
+        echo -e "\033[36m    To bypass validation, use: git commit --no-verify\033[0m"
+        echo ""
+    elif [ $EXIT_CODE -eq $EXIT_WARNING ]; then
+        echo ""
+        echo -e "\033[33m[!] Validation warnings present. Commit allowed.\033[0m"
+        echo ""
+    else
+        echo ""
+        echo -e "\033[32m[OK] All validations passed!\033[0m"
+        echo ""
+    fi
 fi
 
 exit $EXIT_CODE

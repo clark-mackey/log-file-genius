@@ -39,7 +39,7 @@ param(
     [switch]$Verbose
 )
 
-# Configuration
+# Configuration - Default values (can be overridden by profile)
 $CHANGELOG_PATH = "project/planning/CHANGELOG.md"
 $DEVLOG_PATH = "project/planning/DEVLOG.md"
 $CHANGELOG_TOKEN_WARNING = 8000
@@ -48,6 +48,8 @@ $DEVLOG_TOKEN_WARNING = 12000
 $DEVLOG_TOKEN_ERROR = 15000
 $COMBINED_TOKEN_WARNING = 20000
 $COMBINED_TOKEN_ERROR = 25000
+$VALIDATION_STRICTNESS = "errors"  # Options: strict, errors, warnings-only, disabled
+$FAIL_ON_WARNINGS = $false
 
 # Colors
 $COLOR_SUCCESS = "Green"
@@ -115,8 +117,76 @@ function Get-PercentageOfTarget {
         [int]$Current,
         [int]$Target
     )
-    
+
     return [math]::Round(($Current / $Target) * 100)
+}
+
+function Load-ProfileConfig {
+    # Check for config file in standard locations
+    $configPaths = @(
+        ".logfile-config.yml",
+        "config/logfile.yml",
+        ".config/logfile.yml"
+    )
+
+    $configFile = $null
+    foreach ($path in $configPaths) {
+        if (Test-Path $path) {
+            $configFile = $path
+            break
+        }
+    }
+
+    if (-not $configFile) {
+        if ($Verbose) {
+            Write-Host "No config file found. Using default profile (solo-developer)" -ForegroundColor $COLOR_INFO
+        }
+        return
+    }
+
+    if ($Verbose) {
+        Write-Host "Loading profile config from: $configFile" -ForegroundColor $COLOR_INFO
+    }
+
+    # Simple YAML parsing for our limited use case
+    # We only need to read profile name and overrides.token_targets
+    $content = Get-Content $configFile -Raw
+
+    # Extract profile name
+    if ($content -match 'profile:\s*(\S+)') {
+        $profileName = $matches[1]
+        if ($Verbose) {
+            Write-Host "Profile: $profileName" -ForegroundColor $COLOR_INFO
+        }
+    }
+
+    # Extract token target overrides if present
+    if ($content -match 'changelog_warning:\s*(\d+)') {
+        $script:CHANGELOG_TOKEN_WARNING = [int]$matches[1]
+    }
+    if ($content -match 'changelog_error:\s*(\d+)') {
+        $script:CHANGELOG_TOKEN_ERROR = [int]$matches[1]
+    }
+    if ($content -match 'devlog_warning:\s*(\d+)') {
+        $script:DEVLOG_TOKEN_WARNING = [int]$matches[1]
+    }
+    if ($content -match 'devlog_error:\s*(\d+)') {
+        $script:DEVLOG_TOKEN_ERROR = [int]$matches[1]
+    }
+    if ($content -match 'combined_warning:\s*(\d+)') {
+        $script:COMBINED_TOKEN_WARNING = [int]$matches[1]
+    }
+    if ($content -match 'combined_error:\s*(\d+)') {
+        $script:COMBINED_TOKEN_ERROR = [int]$matches[1]
+    }
+
+    # Extract validation strictness
+    if ($content -match 'strictness:\s*(\S+)') {
+        $script:VALIDATION_STRICTNESS = $matches[1]
+    }
+    if ($content -match 'fail_on_warnings:\s*(true|false)') {
+        $script:FAIL_ON_WARNINGS = $matches[1] -eq 'true'
+    }
 }
 
 #endregion
@@ -332,6 +402,9 @@ Write-Host "Log File Genius Validation" -ForegroundColor $COLOR_INFO
 Write-Host "================================" -ForegroundColor $COLOR_INFO
 Write-Host "" -ForegroundColor $COLOR_INFO
 
+# Load profile configuration
+Load-ProfileConfig
+
 $exitCode = $EXIT_SUCCESS
 
 # Determine which validations to run
@@ -356,19 +429,53 @@ if ($runAll -or $Tokens) {
 Write-Host "`n================================" -ForegroundColor $COLOR_INFO
 Write-Host "Summary: $($validationResults.Passed) passed, $($validationResults.Warnings) warning(s), $($validationResults.Errors) error(s)" -ForegroundColor $COLOR_INFO
 
-if ($exitCode -eq $EXIT_ERROR) {
-    Write-Host "" -ForegroundColor $COLOR_ERROR
-    Write-Host "[X] Validation failed. Please fix errors before committing." -ForegroundColor $COLOR_ERROR
-    Write-Host "    To bypass validation, use: git commit --no-verify" -ForegroundColor $COLOR_INFO
+# Apply strictness settings
+if ($VALIDATION_STRICTNESS -eq "disabled") {
+    $exitCode = $EXIT_SUCCESS
     Write-Host "" -ForegroundColor $COLOR_INFO
-} elseif ($exitCode -eq $EXIT_WARNING) {
-    Write-Host "" -ForegroundColor $COLOR_WARNING
-    Write-Host "[!] Validation warnings present. Commit allowed." -ForegroundColor $COLOR_WARNING
-    Write-Host "" -ForegroundColor $COLOR_WARNING
+    Write-Host "[INFO] Validation disabled by profile. All checks passed." -ForegroundColor $COLOR_INFO
+    Write-Host "" -ForegroundColor $COLOR_INFO
+} elseif ($VALIDATION_STRICTNESS -eq "warnings-only") {
+    # Never fail, just show warnings
+    $exitCode = $EXIT_SUCCESS
+    if ($validationResults.Warnings -gt 0 -or $validationResults.Errors -gt 0) {
+        Write-Host "" -ForegroundColor $COLOR_WARNING
+        Write-Host "[!] Validation issues found (warnings-only mode). Commit allowed." -ForegroundColor $COLOR_WARNING
+        Write-Host "" -ForegroundColor $COLOR_WARNING
+    } else {
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "[OK] All validations passed!" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+    }
+} elseif ($VALIDATION_STRICTNESS -eq "strict" -or $FAIL_ON_WARNINGS) {
+    # Fail on warnings or errors
+    if ($exitCode -ge $EXIT_WARNING) {
+        Write-Host "" -ForegroundColor $COLOR_ERROR
+        Write-Host "[X] Validation failed (strict mode). Please fix all issues before committing." -ForegroundColor $COLOR_ERROR
+        Write-Host "    To bypass validation, use: git commit --no-verify" -ForegroundColor $COLOR_INFO
+        Write-Host "" -ForegroundColor $COLOR_INFO
+        $exitCode = $EXIT_ERROR
+    } else {
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "[OK] All validations passed!" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+    }
 } else {
-    Write-Host "" -ForegroundColor $COLOR_SUCCESS
-    Write-Host "[OK] All validations passed!" -ForegroundColor $COLOR_SUCCESS
-    Write-Host "" -ForegroundColor $COLOR_SUCCESS
+    # Default: errors mode - fail only on errors
+    if ($exitCode -eq $EXIT_ERROR) {
+        Write-Host "" -ForegroundColor $COLOR_ERROR
+        Write-Host "[X] Validation failed. Please fix errors before committing." -ForegroundColor $COLOR_ERROR
+        Write-Host "    To bypass validation, use: git commit --no-verify" -ForegroundColor $COLOR_INFO
+        Write-Host "" -ForegroundColor $COLOR_INFO
+    } elseif ($exitCode -eq $EXIT_WARNING) {
+        Write-Host "" -ForegroundColor $COLOR_WARNING
+        Write-Host "[!] Validation warnings present. Commit allowed." -ForegroundColor $COLOR_WARNING
+        Write-Host "" -ForegroundColor $COLOR_WARNING
+    } else {
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "[OK] All validations passed!" -ForegroundColor $COLOR_SUCCESS
+        Write-Host "" -ForegroundColor $COLOR_SUCCESS
+    }
 }
 
 exit $exitCode

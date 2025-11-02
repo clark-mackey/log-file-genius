@@ -1,0 +1,136 @@
+# Team Profile
+# Optimized for team collaboration
+# Emphasizes consistency, clear communication, and shared understanding
+
+profile_name: team
+profile_version: 1.0
+description: |
+  Optimized for teams of 2+ developers working together on shared codebases.
+  Emphasizes consistent documentation, clear communication, and shared context.
+  Perfect for product teams, engineering teams, and collaborative development.
+
+# Use cases
+use_cases:
+  - Product development teams (2-10 developers)
+  - Engineering teams working on shared services
+  - Cross-functional teams (eng + design + product)
+  - Remote/distributed teams needing async context
+  - Medium to large codebases (10k-100k LOC)
+
+# Token targets - Same as solo, but enforced more strictly
+token_targets:
+  # CHANGELOG limits
+  changelog_warning: 8000      # Warn at 8,000 tokens (80% of 10k target)
+  changelog_error: 10000       # Error at 10,000 tokens
+  
+  # DEVLOG limits
+  devlog_warning: 12000        # Warn at 12,000 tokens (80% of 15k target)
+  devlog_error: 15000          # Error at 15,000 tokens
+  
+  # Combined limits (CHANGELOG + DEVLOG)
+  combined_warning: 20000      # Warn at 20,000 tokens (80% of 25k target)
+  combined_error: 25000        # Error at 25,000 tokens
+  
+  # STATE limits (optional file)
+  state_warning: 400           # Warn at 400 tokens (80% of 500 target)
+  state_error: 500             # Error at 500 tokens
+
+# Required files - More comprehensive for team context
+required_files:
+  - CHANGELOG                  # Always required
+  - DEVLOG                     # Required for significant changes
+  - ADR                        # Required for architectural decisions
+  # STATE optional but recommended
+  # PRD optional but recommended
+
+# Update frequency - More frequent for team coordination
+update_frequency:
+  changelog: every-commit      # Update CHANGELOG on every commit
+  devlog: significant-changes  # Update DEVLOG for features, breaking changes, major fixes
+  state: daily                 # Update STATE daily for team visibility
+  adr: as-needed               # Create ADRs for architectural decisions
+  prd: as-needed               # Create PRD when planning major features
+
+# Validation - Enforce errors, allow warnings
+validation:
+  strictness: errors           # Fail on errors, allow warnings
+  format_validation: true      # Validate CHANGELOG/DEVLOG format
+  token_validation: true       # Validate token counts
+  crosslink_validation: false  # Skip cross-link validation (future feature)
+  fail_on_warnings: false      # Allow warnings (don't block commits)
+
+# Archival - Longer retention for team history
+archival:
+  changelog_age_days: 60       # Archive CHANGELOG entries older than 60 days
+  devlog_age_days: 30          # Archive DEVLOG entries older than 30 days
+  auto_archive_on_warning: false  # Don't auto-archive on warnings
+  auto_archive_on_error: true     # Auto-archive when hitting error threshold
+  archive_directory: project/planning/archive  # Archive location
+
+# AI assistant behavior - Proactive but visible
+ai_assistant:
+  proactive_updates: true      # AI should proactively update planning files
+  require_confirmation: false  # Don't ask before updating (trust but verify)
+  show_checklist: true         # Show pre-commit checklist
+  suggest_validation: true     # Suggest running validation before commits
+
+# Team-specific guidance
+team_guidance: |
+  Teams should establish conventions for:
+  
+  1. **DEVLOG Ownership:** Who writes DEVLOG entries? (PR author, tech lead, rotating)
+  2. **ADR Process:** When to create ADRs? (before implementation, during design review)
+  3. **STATE Updates:** Who updates STATE? (daily standup, rotating, tech lead)
+  4. **Review Process:** Should planning files be reviewed in PRs? (recommended: yes)
+  5. **Archival Cadence:** Who archives old entries? (monthly, quarterly, automated)
+  
+  Document your team's conventions in DEVLOG "Current Context" section.
+
+# Customization tips
+customization_tips: |
+  Teams can customize this profile to match their workflow:
+  
+  - **Stricter validation:** Set `validation.strictness: strict` to fail on warnings
+  - **More frequent DEVLOG:** Set `devlog: every-commit` for high-context teams
+  - **Require STATE:** Add `STATE` to `required_files` for daily standup visibility
+  - **Longer retention:** Increase `archival.changelog_age_days` to 90 for audit trails
+  
+  To customize, copy this file to your project root as `.logfile-config.yml` and modify.
+
+# Example overrides
+example_overrides:
+  # For larger teams (10+ developers)
+  large_team:
+    token_targets:
+      changelog_warning: 12000
+      changelog_error: 15000
+      devlog_warning: 16000
+      devlog_error: 20000
+      combined_warning: 28000
+      combined_error: 35000
+    archival:
+      changelog_age_days: 90
+      devlog_age_days: 60
+    required_files:
+      - CHANGELOG
+      - DEVLOG
+      - ADR
+      - STATE  # Required for large teams
+  
+  # For stricter teams (regulated industries, compliance)
+  strict_team:
+    validation:
+      strictness: strict  # Fail on warnings
+      fail_on_warnings: true
+    required_files:
+      - CHANGELOG
+      - DEVLOG
+      - ADR
+      - STATE
+      - PRD  # Required for compliance
+    archival:
+      changelog_age_days: 180  # Keep longer history
+      devlog_age_days: 90
+      auto_archive_on_warning: false
+      auto_archive_on_error: false  # Manual archival only
+

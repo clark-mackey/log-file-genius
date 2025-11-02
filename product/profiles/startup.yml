@@ -1,0 +1,164 @@
+# Startup/MVP Profile
+# Optimized for fast-moving startups and MVP development
+# Emphasizes speed, minimal overhead, and rapid iteration
+
+profile_name: startup
+profile_version: 1.0
+description: |
+  Optimized for fast-moving startups, MVP development, and rapid prototyping.
+  Emphasizes speed and minimal documentation overhead while maintaining essential context.
+  Perfect for pre-product-market-fit startups, hackathons, and rapid experimentation.
+
+# Use cases
+use_cases:
+  - Pre-product-market-fit startups
+  - MVP development and rapid prototyping
+  - Hackathons and time-boxed projects
+  - Early-stage product exploration
+  - Fast-moving small teams (2-5 people)
+  - Pivot-heavy development
+
+# Token targets - Reduced limits for speed
+token_targets:
+  # CHANGELOG limits - Smaller for rapid iteration
+  changelog_warning: 6000      # Warn at 6,000 tokens (80% of 7.5k target)
+  changelog_error: 7500        # Error at 7,500 tokens (reduced from 10k)
+  
+  # DEVLOG limits - Smaller for speed
+  devlog_warning: 8000         # Warn at 8,000 tokens (80% of 10k target)
+  devlog_error: 10000          # Error at 10,000 tokens (reduced from 15k)
+  
+  # Combined limits - Smaller overall
+  combined_warning: 14000      # Warn at 14,000 tokens (80% of 17.5k target)
+  combined_error: 17500        # Error at 17,500 tokens (reduced from 25k)
+  
+  # STATE limits - Same as other profiles
+  state_warning: 400           # Warn at 400 tokens (80% of 500 target)
+  state_error: 500             # Error at 500 tokens
+
+# Required files - Minimal requirements
+required_files:
+  - CHANGELOG                  # Always required (track what changed)
+  # DEVLOG optional (skip for speed)
+  # ADR optional (skip for speed)
+  # STATE optional (skip for speed)
+  # PRD optional (skip for speed)
+
+# Update frequency - Minimal overhead
+update_frequency:
+  changelog: every-commit      # Update CHANGELOG on every commit (track changes)
+  devlog: optional             # Skip DEVLOG for speed
+  state: optional              # Skip STATE for speed
+  adr: optional                # Skip ADRs for speed (revisit post-PMF)
+  prd: optional                # Skip PRD for speed (revisit post-PMF)
+
+# Validation - Minimal enforcement
+validation:
+  strictness: warnings-only    # Show warnings but never fail (don't block speed)
+  format_validation: true      # Validate CHANGELOG format (keep it clean)
+  token_validation: true       # Validate token counts (prevent bloat)
+  crosslink_validation: false  # Skip cross-link validation
+  fail_on_warnings: false      # Never fail on warnings (speed over perfection)
+
+# Archival - Aggressive archival for speed
+archival:
+  changelog_age_days: 14       # Archive CHANGELOG entries older than 14 days (aggressive)
+  devlog_age_days: 7           # Archive DEVLOG entries older than 7 days (aggressive)
+  auto_archive_on_warning: true   # Auto-archive on warnings (keep it lean)
+  auto_archive_on_error: true     # Auto-archive on errors (keep it lean)
+  archive_directory: project/planning/archive  # Archive location
+
+# AI assistant behavior - Maximum speed
+ai_assistant:
+  proactive_updates: true      # AI should proactively update planning files
+  require_confirmation: false  # Don't ask before updating (maximize speed)
+  show_checklist: false        # Skip checklist (maximize speed)
+  suggest_validation: false    # Skip validation suggestion (maximize speed)
+
+# Startup-specific guidance
+startup_guidance: |
+  Startups should focus on:
+  
+  1. **Speed Over Perfection:**
+     - CHANGELOG is enough for most changes
+     - Skip DEVLOG until you find product-market fit
+     - Skip ADRs until architecture stabilizes
+     - Skip STATE unless team coordination requires it
+  
+  2. **When to Upgrade:**
+     - **Found PMF?** → Switch to `team` profile
+     - **Hiring?** → Switch to `team` profile
+     - **Open-sourcing?** → Switch to `open-source` profile
+     - **Scaling?** → Switch to `team` profile
+  
+  3. **What to Track:**
+     - Track what changed (CHANGELOG)
+     - Track why you pivoted (DEVLOG - optional)
+     - Track major decisions (ADR - optional)
+     - Skip everything else until you need it
+  
+  4. **Pivot-Friendly:**
+     - Aggressive archival keeps docs lean during pivots
+     - CHANGELOG tracks what you tried
+     - Easy to restart with clean slate if needed
+
+# Customization tips
+customization_tips: |
+  Startups can customize this profile:
+  
+  - **Even faster:** Set `validation.strictness: disabled` to skip all validation
+  - **More context:** Set `devlog: milestones-only` to document major pivots
+  - **Team coordination:** Add `STATE` to `required_files` for daily standups
+  - **Post-PMF:** Switch to `team` profile when ready to scale
+  
+  To customize, copy this file to your project root as `.logfile-config.yml` and modify.
+
+# Example overrides
+example_overrides:
+  # For hackathons (ultra-minimal)
+  hackathon:
+    required_files:
+      - CHANGELOG  # Track what you built
+    validation:
+      strictness: disabled  # No validation (maximize speed)
+    ai_assistant:
+      show_checklist: false
+      suggest_validation: false
+    archival:
+      changelog_age_days: 7  # Archive aggressively
+  
+  # For pre-PMF with small team (2-5 people)
+  small_team_startup:
+    required_files:
+      - CHANGELOG
+      - STATE  # For team coordination
+    update_frequency:
+      state: daily  # Update STATE for standups
+    validation:
+      strictness: warnings-only
+    ai_assistant:
+      show_checklist: true  # Show checklist for team
+  
+  # For post-PMF transition (ready to scale)
+  scaling_startup:
+    required_files:
+      - CHANGELOG
+      - DEVLOG  # Start documenting decisions
+      - ADR     # Start documenting architecture
+    update_frequency:
+      devlog: significant-changes
+      adr: as-needed
+    validation:
+      strictness: errors  # Enforce errors
+    token_targets:
+      changelog_warning: 8000  # Increase limits
+      changelog_error: 10000
+      devlog_warning: 12000
+      devlog_error: 15000
+      combined_warning: 20000
+      combined_error: 25000
+    archival:
+      changelog_age_days: 30  # Keep longer history
+      devlog_age_days: 14
+      auto_archive_on_warning: false
+
