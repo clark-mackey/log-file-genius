@@ -4,8 +4,10 @@
 # Claude Code rules - internal guidance only (root level only, not starter packs)
 /.claude/
 
-# Context directory - pre-planning research and learning (not part of project or product)
-context/
+# Context directory - pre-planning materials (historical reference only)
+# Note: Research documents moved to project/research/ (tracked on development branch)
+context/original-method-v3/
+context/handoff-notes.md
 
 # Project identity file - explains meta-problem (not for distribution)
 /.project-identity.yaml

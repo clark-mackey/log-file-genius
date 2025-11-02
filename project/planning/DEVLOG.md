@@ -98,6 +98,39 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2025-11-02: Research Documents Added to Version Control
+
+**The Situation:** Research documents in `context/research/` (Red Team Analysis, Competing Repositories Analysis, etc.) directly informed major decisions (Epic 12-15, roadmap pivot) and are referenced in DEVLOG and roadmap documents. However, they were excluded from git via `.gitignore`, meaning they had no version control or backup.
+
+**The Challenge:**
+Should research documents be version controlled? They're not part of the product, but they're critical development context that informed major architectural decisions.
+
+**The Decision:**
+**Move research to `project/research/` and track on development branch.**
+
+**Why This Matters:**
+- Research documents are referenced in planning docs (DEVLOG, roadmap, ADRs)
+- They explain WHY decisions were made (Epic 12-15, security-first roadmap)
+- They're part of the project's intellectual history
+- Consistent with ADR-009 (development context should be versioned)
+- Transparency (public planning includes research that informed decisions)
+
+**What Was Excluded:**
+- `context/original-method-v3/` - Historical templates (v3), not decision inputs
+- `context/handoff-notes.md` - Personal notes, not formal research
+
+**The Result:**
+- ✅ 5 research documents now tracked on development branch
+- ✅ Version control for decision inputs
+- ✅ References in DEVLOG/roadmap work correctly
+- ✅ Complete intellectual history preserved
+
+**Files Changed:**
+- Moved: `context/research/*` → `project/research/` (5 files, ~80KB)
+- Updated: `.gitignore` (exclude only original-method-v3 and handoff-notes)
+
+---
+
 ### 2025-11-02: ADR-009 - Two-Branch Strategy Restores Version Control
 
 **The Situation:** After implementing ADR-008 (Product/Project Directory Separation), we excluded `project/` from git via `.gitignore`. This solved AI agent confusion but created a new problem: lost version control, backup, and single source of truth for development files (planning, specs, ADRs, roadmaps).
