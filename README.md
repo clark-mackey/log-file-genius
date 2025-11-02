@@ -148,9 +148,9 @@ cd .log-file-genius && git pull && cd ..
 ### Migration from Existing Docs
 
 Already have documentation? See the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for:
-- **Scenario A:** No docs → Start fresh (1-2 hours)
-- **Scenario B:** Have CHANGELOG → Expand (3-6 hours)
-- **Scenario C:** Verbose docs → Condense (1-2 days)
+- **Scenario A:** No docs → Start fresh (Minutes)
+- **Scenario B:** Have CHANGELOG → Expand (1-2 hours)
+- **Scenario C:** Verbose docs → Condense (1 day)
 - **Scenario D:** Partial implementation → Complete (2-4 hours)
 
 ## 📦 Starter Packs
