@@ -131,9 +131,12 @@ By default, `log-file-maintenance.md` is always active. To make it manual:
 ### Augment is updating the wrong files
 - Verify file paths in the rules match your project structure
 - Check that you have the correct directory structure:
-  - `docs/planning/CHANGELOG.md`
-  - `docs/planning/DEVLOG.md`
-  - `docs/adr/README.md`
+  - `project/planning/CHANGELOG.md` (for Log File Genius itself)
+  - `project/planning/DEVLOG.md` (for Log File Genius itself)
+  - `project/adr/README.md` (for Log File Genius itself)
+  - OR `docs/planning/CHANGELOG.md` (for your own projects)
+  - OR `docs/planning/DEVLOG.md` (for your own projects)
+  - OR `docs/adr/README.md` (for your own projects)
 - Update paths in rules if your structure differs
 
 ## Advanced Configuration
@@ -145,7 +148,7 @@ If you're using multiple AI agents (Augment + Claude Code, etc.):
 1. Enable `STATE.md` for real-time coordination
 2. Update `STATE.md` at the start/end of each work session
 3. Have each agent check `STATE.md` before starting work
-4. Use the handoff protocol in `docs/log_file_how_to.md`
+4. Use the handoff protocol in `product/docs/log_file_how_to.md`
 
 ### Custom File Paths
 

@@ -144,10 +144,10 @@ wc -c docs/**/*.md | awk '{print $1/4 " tokens"}'
 
 ```bash
 # Copy all templates to your project
-cp templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
-cp templates/DEVLOG_template.md docs/planning/DEVLOG.md
-cp templates/STATE_template.md docs/planning/STATE.md
-cp templates/ADR_template.md docs/adr/ADR-template.md
+cp product/templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
+cp product/templates/DEVLOG_template.md docs/planning/DEVLOG.md
+cp product/templates/STATE_template.md docs/planning/STATE.md
+cp product/templates/ADR_template.md docs/adr/ADR-template.md
 ```
 
 #### Step 2: Backfill Recent History
@@ -387,8 +387,8 @@ Create a checklist:
 
 Copy templates for missing documents:
 ```bash
-[ ! -f docs/planning/DEVLOG.md ] && cp templates/DEVLOG_template.md docs/planning/DEVLOG.md
-[ ! -f docs/planning/STATE.md ] && cp templates/STATE_template.md docs/planning/STATE.md
+[ ! -f docs/planning/DEVLOG.md ] && cp product/templates/DEVLOG_template.md docs/planning/DEVLOG.md
+[ ! -f docs/planning/STATE.md ] && cp product/templates/STATE_template.md docs/planning/STATE.md
 ```
 
 #### Step 3: Standardize Existing Documents

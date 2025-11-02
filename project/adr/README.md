@@ -25,7 +25,10 @@ An Architectural Decision Record (ADR) is a document that captures an important 
 
 ## ADR Index - Newest First
 
-- (No ADRs yet - will be created as architectural decisions are made)
+- **[ADR-008: Product/Project Directory Separation](008-product-project-directory-separation.md)** - *Accepted* (2025-11-02)
+  - Restructure repository into `product/` and `project/` directories to eliminate AI agent confusion between distributable content and development logs
+- **[ADR-007: Agent OS-Inspired Enhancements](007-agent-os-inspired-enhancements.md)** - *Status TBD*
+  - Agent OS-inspired enhancements for verification, profiles, skills, workflows, and layered context
 
 ---
 

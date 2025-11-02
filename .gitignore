@@ -7,8 +7,11 @@
 # Context directory - internal reference only
 context/
 
-# PRD - internal product strategy
-docs/prd.md
+# Project files - our development process (not for distribution)
+/project/
+
+# Project identity file - explains meta-problem (not for distribution)
+/.project-identity.yaml
 
 # Python
 __pycache__/

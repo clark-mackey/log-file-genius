@@ -69,7 +69,35 @@ This isn't just another documentation template. It's a complete system designed 
 
 ---
 
-## 🚀 Quick Start
+## � Repository Structure
+
+**⚠️ Important:** This repository has a unique structure because it both *teaches* the log file methodology AND *uses* it for its own development (dogfooding).
+
+```
+log-file-genius/
+├── product/                    # 📦 THE PRODUCT (what we distribute to you)
+│   ├── templates/              # Clean templates for your projects
+│   ├── docs/                   # How-to guides and documentation
+│   ├── examples/               # Sample projects showing the system in action
+│   └── starter-packs/          # Pre-configured setups for different AI assistants
+│
+├── project/                    # 🔧 THE PROJECT (our development process)
+│   ├── planning/               # Our CHANGELOG, DEVLOG, STATE
+│   ├── adr/                    # Our architectural decision records
+│   └── specs/                  # Our PRD and epic files
+│
+└── .project-identity.yaml      # Explains the meta-problem (read this first!)
+```
+
+**When using this repository:**
+- **Copy from `product/`** - These are the clean templates and docs for YOUR projects
+- **Don't copy from `project/`** - These are OUR development files (examples of the system in use, but specific to building Log File Genius)
+
+See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation of this structure and why it exists.
+
+---
+
+## �🚀 Quick Start
 
 ### For New Projects (30 Seconds)
 
@@ -81,7 +109,7 @@ This isn't just another documentation template. It's a complete system designed 
     Give it a name. You're done. You now have the complete `log-file-genius` structure.
 
 3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
+    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
 
 ### For Existing Projects (1-6 Hours)
 
@@ -93,7 +121,7 @@ Already have a project with some documentation? No problem!
     - Want full adoption or gradual migration?
 
 2.  **Follow the Migration Guide:**
-    Read the [**Migration Guide**](docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
+    Read the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
 
 3.  **Choose Your Path:**
     - **Scenario A:** No docs → Start fresh (1-2 hours)
@@ -107,10 +135,10 @@ Get running even faster with pre-configured starter packs for your favorite tool
 
 | Tool | Link | Status |
 |---|---|---|
-| **Claude Code** | `starter-packs/claude-code/` | ✅ Available |
-| **Cursor** | `starter-packs/cursor/` | 🚧 Coming Soon |
-| **GitHub Copilot** | `starter-packs/github-copilot/` | 🚧 Coming Soon |
-| **Augment** | `starter-packs/augment/` | ✅ Available |
+| **Claude Code** | `product/starter-packs/claude-code/` | ✅ Available |
+| **Cursor** | `product/starter-packs/cursor/` | 🚧 Coming Soon |
+| **GitHub Copilot** | `product/starter-packs/github-copilot/` | 🚧 Coming Soon |
+| **Augment** | `product/starter-packs/augment/` | ✅ Available |
 
 ---
 
