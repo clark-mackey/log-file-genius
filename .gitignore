@@ -1,8 +1,8 @@
-# Augment rules - internal guidance only
-.augment/
+# Augment rules - internal guidance only (root level only, not starter packs)
+/.augment/
 
-# Claude Code rules - internal guidance only (if created)
-.claude/
+# Claude Code rules - internal guidance only (root level only, not starter packs)
+/.claude/
 
 # Context directory - internal reference only
 context/

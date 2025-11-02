@@ -23,17 +23,29 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 2. Use Situation/Challenge/Decision/Why/Result/Files format (see `templates/DEVLOG_template.md`)
 3. Keep entries 150-250 words
 
-### Step 3: Include Planning Files in Commit
+### Step 3: Run Validation (OPTIONAL but Recommended)
+**If validation script is available:**
+```bash
+.\scripts\validate-log-files.ps1  # Windows
+./scripts/validate-log-files.sh   # Mac/Linux
+```
+- Validates CHANGELOG/DEVLOG format
+- Checks token counts
+- Catches common errors before commit
+- Can be skipped if not installed
+
+### Step 4: Include Planning Files in Commit
 - `git add docs/planning/CHANGELOG.md`
 - `git add docs/planning/DEVLOG.md` (if updated)
 - Planning files MUST be in the SAME commit as code changes
 
-### Step 4: Show Pre-Commit Checklist
+### Step 5: Show Pre-Commit Checklist
 **Display this to user BEFORE committing:**
 ```
 ✅ Pre-Commit Checklist:
 - [ ] CHANGELOG.md updated
 - [ ] DEVLOG.md updated (if milestone)
+- [ ] Validation run (if available)
 - [ ] Planning files added to commit
 - [ ] Ready to commit
 ```
@@ -86,7 +98,7 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ## 📚 Reference
 
-Full docs: `docs/log_file_how_to.md` | Templates: `templates/` | Logs: `docs/planning/` | ADRs: `docs/adr/`
+Full docs: `docs/log_file_how_to.md` | Templates: `templates/` | Logs: `docs/planning/` | ADRs: `docs/adr/` | Validation: `docs/validation-guide.md`
 
 ---
 

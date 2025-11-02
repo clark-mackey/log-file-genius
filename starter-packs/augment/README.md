@@ -15,10 +15,23 @@ Get up and running with Log File Genius in Augment in under 2 minutes.
    cp -r templates/ /path/to/your/project/
    ```
 
-3. **Open your project in Augment:**
+3. **Copy the validation scripts (optional but recommended):**
+   ```bash
+   # Copy validation script
+   cp -r starter-packs/augment/scripts/ /path/to/your/project/
+
+   # Copy git hook template
+   cp -r starter-packs/augment/.git-hooks/ /path/to/your/project/
+
+   # Install git hook (optional)
+   cp .git-hooks/pre-commit .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit  # Mac/Linux only
+   ```
+
+4. **Open your project in Augment:**
    - Augment will automatically detect and load the rules from `.augment/rules/`
 
-4. **Start using the system:**
+5. **Start using the system:**
    - Make a code change
    - Commit it
    - Augment will automatically update your CHANGELOG (if the rule is active)
@@ -29,6 +42,10 @@ Get up and running with Log File Genius in Augment in under 2 minutes.
 - **`.augment/rules/log-file-maintenance.md`** - Always-active maintenance rules
 - **`.augment/rules/status-update.md`** - Status update command
 - **`.augment/rules/update-planning-docs.md`** - Documentation update command
+
+### Validation Tools (Optional but Recommended)
+- **`scripts/validate-log-files.ps1`** - PowerShell validation script
+- **`.git-hooks/pre-commit`** - Git hook template for automatic validation
 
 ### Templates (Copy from main repository)
 You'll need to copy the templates from the main `templates/` directory:
@@ -45,6 +62,7 @@ Once set up, you can use these commands with Augment:
 |---------|--------------|
 | **"@status update"** | Provides a 3-5 bullet point summary of project status |
 | **"@update planning docs"** | Guides you through updating CHANGELOG, DEVLOG, or PRD |
+| **Run validation** | Manually run `.\scripts\validate-log-files.ps1` to check log files |
 
 ## Customization
 
