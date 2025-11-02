@@ -172,6 +172,19 @@ load_profile_config() {
             FAIL_ON_WARNINGS=true
         fi
     fi
+
+    # Extract version and check for updates
+    if grep -q "log_file_genius_version:" "$config_file"; then
+        local config_version=$(grep "log_file_genius_version:" "$config_file" | sed 's/.*"\([0-9.]*\)".*/\1/')
+        local latest_version="0.2.0"  # Current version
+
+        if [ "$config_version" != "$latest_version" ]; then
+            echo ""
+            echo -e "\033[33m⚠️  Log File Genius update available: v$latest_version (you have v$config_version)\033[0m"
+            echo -e "\033[33m    See: https://github.com/clark-mackey/log-file-genius/releases\033[0m"
+            echo ""
+        fi
+    fi
 }
 
 # CHANGELOG Validation

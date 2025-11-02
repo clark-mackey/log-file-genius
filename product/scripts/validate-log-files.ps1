@@ -187,6 +187,19 @@ function Load-ProfileConfig {
     if ($content -match 'fail_on_warnings:\s*(true|false)') {
         $script:FAIL_ON_WARNINGS = $matches[1] -eq 'true'
     }
+
+    # Extract version and check for updates
+    if ($content -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
+        $configVersion = $matches[1]
+        $latestVersion = "0.2.0"  # Current version
+
+        if ($configVersion -ne $latestVersion) {
+            Write-Host ""
+            Write-Host "⚠️  Log File Genius update available: v$latestVersion (you have v$configVersion)" -ForegroundColor Yellow
+            Write-Host "    See: https://github.com/clark-mackey/log-file-genius/releases" -ForegroundColor Yellow
+            Write-Host ""
+        }
+    }
 }
 
 #endregion

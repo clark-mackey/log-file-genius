@@ -2,6 +2,13 @@
 # Copy this file to your project root as `.logfile-config.yml` to customize settings
 
 # ============================================================================
+# VERSION TRACKING
+# ============================================================================
+# Log File Genius version (used for update notifications)
+# Check for updates: https://github.com/clark-mackey/log-file-genius/releases
+log_file_genius_version: "0.2.0"
+
+# ============================================================================
 # PROFILE SELECTION
 # ============================================================================
 # Choose a profile that matches your project type:
