@@ -109,7 +109,7 @@ See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation 
     Give it a name. You're done. You now have the complete `log-file-genius` structure.
 
 3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
+    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
 
 ### For Existing Projects (1-6 Hours)
 
@@ -121,7 +121,7 @@ Already have a project with some documentation? No problem!
     - Want full adoption or gradual migration?
 
 2.  **Follow the Migration Guide:**
-    Read the [**Migration Guide**](docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
+    Read the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
 
 3.  **Choose Your Path:**
     - **Scenario A:** No docs → Start fresh (1-2 hours)
@@ -135,10 +135,10 @@ Get running even faster with pre-configured starter packs for your favorite tool
 
 | Tool | Link | Status |
 |---|---|---|
-| **Claude Code** | `starter-packs/claude-code/` | ✅ Available |
-| **Cursor** | `starter-packs/cursor/` | 🚧 Coming Soon |
-| **GitHub Copilot** | `starter-packs/github-copilot/` | 🚧 Coming Soon |
-| **Augment** | `starter-packs/augment/` | ✅ Available |
+| **Claude Code** | `product/starter-packs/claude-code/` | ✅ Available |
+| **Cursor** | `product/starter-packs/cursor/` | 🚧 Coming Soon |
+| **GitHub Copilot** | `product/starter-packs/github-copilot/` | 🚧 Coming Soon |
+| **Augment** | `product/starter-packs/augment/` | ✅ Available |
 
 ---
 
