@@ -23,13 +23,12 @@ git submodule add -b main `
 **The installer will:**
 1. Detect that you're using Augment (or prompt you to select)
 2. Ask which profile fits your project (solo-developer, team, open-source, startup)
-3. Install all necessary files:
+3. Ask where your log files should be located (brownfield support)
+4. Install all necessary files:
+   - `log-file-genius/` - Templates, scripts, and git hooks (ONE folder)
    - `.augment/rules/` - AI assistant rules
-   - `templates/` - CHANGELOG, DEVLOG, ADR, STATE templates
-   - `scripts/` - Validation scripts (PowerShell + Bash)
-   - `.logfile-config.yml` - Profile configuration
-   - `.git-hooks/` - Optional pre-commit validation
-4. Configure everything for immediate use
+   - `.logfile-config.yml` - Profile configuration with your log file paths
+5. Configure everything for immediate use
 
 **What stays hidden:**
 - `.log-file-genius/` - Source repository (for easy updates)
@@ -49,9 +48,19 @@ If you prefer manual installation or need more control:
    cp -r .log-file-genius/product/starter-packs/augment/.augment/ .
    ```
 
-2. **Copy the templates to your project:**
+2. **Create log-file-genius folder and copy files:**
    ```bash
-   cp -r .log-file-genius/product/templates/ templates/
+   # Create folder
+   mkdir -p log-file-genius
+
+   # Copy templates
+   cp -r .log-file-genius/product/templates/ log-file-genius/templates/
+
+   # Copy validation scripts
+   cp -r .log-file-genius/product/scripts/validate-log-files.* log-file-genius/scripts/
+
+   # Copy git hooks
+   cp -r .log-file-genius/product/starter-packs/augment/.git-hooks/ log-file-genius/git-hooks/
    ```
 
 3. **Copy the profile configuration (optional but recommended):**
@@ -65,20 +74,20 @@ If you prefer manual installation or need more control:
    - `open-source` - Public projects, strict formatting
    - `startup` - MVPs/prototypes, minimal overhead
 
+   **Add log file paths:** Add a `paths` section to `.logfile-config.yml`:
+   ```yaml
+   paths:
+     changelog: docs/planning/CHANGELOG.md
+     devlog: docs/planning/DEVLOG.md
+     adr: docs/adr
+     state: docs/STATE.md
+   ```
+
    See `.log-file-genius/product/docs/profile-selection-guide.md` for help choosing.
 
-4. **Copy the validation scripts (optional but recommended):**
+4. **Install git hook (optional):**
    ```bash
-   # Copy validation scripts
-   mkdir -p scripts
-   cp .log-file-genius/product/scripts/validate-log-files.sh scripts/
-   cp .log-file-genius/product/scripts/validate-log-files.ps1 scripts/
-
-   # Copy git hook template
-   cp -r .log-file-genius/product/starter-packs/augment/.git-hooks/ .
-
-   # Install git hook (optional)
-   cp .git-hooks/pre-commit .git/hooks/pre-commit
+   cp log-file-genius/git-hooks/pre-commit .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit  # Mac/Linux only
    ```
 
@@ -96,9 +105,9 @@ After installation (automated or manual):
 2. **Initialize your log files:**
    ```bash
    mkdir -p docs/planning docs/adr
-   cp templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
-   cp templates/DEVLOG_template.md docs/planning/DEVLOG.md
-   cp templates/ADR_template.md docs/adr/ADR-template.md
+   cp log-file-genius/templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
+   cp log-file-genius/templates/DEVLOG_template.md docs/planning/DEVLOG.md
+   cp log-file-genius/templates/ADR_template.md docs/adr/ADR-template.md
    ```
 
 3. **Start using the system:**

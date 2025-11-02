@@ -17,8 +17,8 @@ $ProjectRoot = Get-Location
 
 # Check if running from .log-file-genius/
 if ($ScriptDir -notmatch '\.log-file-genius') {
-    Write-Host "⚠️  Warning: This script should be run from .log-file-genius/product/scripts/" -ForegroundColor Yellow
-    Write-Host "   Current location: $ScriptDir" -ForegroundColor Yellow
+    Write-Host "[WARNING] This script should be run from .log-file-genius/product/scripts/" -ForegroundColor Yellow
+    Write-Host "          Current location: $ScriptDir" -ForegroundColor Yellow
     Write-Host ""
     if (-not $Force) {
         $continue = Read-Host "Continue anyway? (y/N)"
@@ -36,22 +36,22 @@ Write-Host ""
 # Helper functions
 function Print-Success {
     param([string]$Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+    Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
 function Print-Error {
     param([string]$Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+    Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
 function Print-Warning {
     param([string]$Message)
-    Write-Host "⚠ $Message" -ForegroundColor Yellow
+    Write-Host "[WARNING] $Message" -ForegroundColor Yellow
 }
 
 function Print-Info {
     param([string]$Message)
-    Write-Host "ℹ $Message" -ForegroundColor Blue
+    Write-Host "[INFO] $Message" -ForegroundColor Blue
 }
 
 # Check for incorrect installation
@@ -197,7 +197,28 @@ function Main {
     }
     Print-Info "Selected profile: $Profile"
     Write-Host ""
-    
+
+    # Prompt for log file locations (brownfield support)
+    Write-Host "Where should your log files be located?" -ForegroundColor Cyan
+    Write-Host "Press Enter to use defaults, or specify custom paths:" -ForegroundColor Cyan
+    Write-Host ""
+
+    $changelogPath = Read-Host "CHANGELOG location [docs/planning/CHANGELOG.md]"
+    if ($changelogPath -eq "") { $changelogPath = "docs/planning/CHANGELOG.md" }
+
+    $devlogPath = Read-Host "DEVLOG location [docs/planning/DEVLOG.md]"
+    if ($devlogPath -eq "") { $devlogPath = "docs/planning/DEVLOG.md" }
+
+    $adrPath = Read-Host "ADR directory [docs/adr]"
+    if ($adrPath -eq "") { $adrPath = "docs/adr" }
+
+    $statePath = Read-Host "STATE location [docs/STATE.md]"
+    if ($statePath -eq "") { $statePath = "docs/STATE.md" }
+
+    Write-Host ""
+    Print-Info "Log file paths configured"
+    Write-Host ""
+
     # Determine source paths
     $StarterPackDir = Join-Path $SourceRoot "product\starter-packs\$AiAssistant"
     $TemplatesDir = Join-Path $SourceRoot "product\templates"
@@ -213,8 +234,14 @@ function Main {
     
     Print-Info "Installing from: $StarterPackDir"
     Write-Host ""
-    
-    # Install AI assistant configuration
+
+    # Create log-file-genius folder for all installed files
+    $installFolder = Join-Path $ProjectRoot "log-file-genius"
+    if (-not (Test-Path $installFolder)) {
+        New-Item -ItemType Directory -Path $installFolder -Force | Out-Null
+    }
+
+    # Install AI assistant configuration (must be at root)
     if ($AiAssistant -eq "augment") {
         $augmentSrc = Join-Path $StarterPackDir ".augment"
         $augmentDest = Join-Path $ProjectRoot ".augment"
@@ -228,70 +255,84 @@ function Main {
             Print-Success "Installed Claude Code configuration"
         }
     }
-    
-    # Install templates
-    $templatesDest = Join-Path $ProjectRoot "templates"
+
+    # Install templates to log-file-genius/templates/
+    $templatesDest = Join-Path $installFolder "templates"
     if (Copy-DirectoryContents $TemplatesDir $templatesDest) {
         Print-Success "Installed templates"
     }
-    
-    # Install validation scripts
-    $scriptsDest = Join-Path $ProjectRoot "scripts"
+
+    # Install validation scripts to log-file-genius/scripts/
+    $scriptsDest = Join-Path $installFolder "scripts"
     if (-not (Test-Path $scriptsDest)) {
         New-Item -ItemType Directory -Path $scriptsDest -Force | Out-Null
     }
-    
+
     $bashScript = Join-Path $ScriptsDir "validate-log-files.sh"
     $bashDest = Join-Path $scriptsDest "validate-log-files.sh"
     if (Copy-FileItem $bashScript $bashDest) {
         Print-Success "Installed validation script (Bash)"
     }
-    
+
     $ps1Script = Join-Path $ScriptsDir "validate-log-files.ps1"
     $ps1Dest = Join-Path $scriptsDest "validate-log-files.ps1"
     if (Copy-FileItem $ps1Script $ps1Dest) {
         Print-Success "Installed validation script (PowerShell)"
     }
-    
-    # Install profile configuration
+
+    # Install profile configuration (at root)
     $configSrc = Join-Path $StarterPackDir ".logfile-config.yml"
     $configDest = Join-Path $ProjectRoot ".logfile-config.yml"
     if (Copy-FileItem $configSrc $configDest) {
-        # Update profile in config file
+        # Update profile and paths in config file
         $content = Get-Content $configDest -Raw
         $content = $content -replace 'profile: .*', "profile: $Profile"
+
+        # Add paths section
+        $pathsSection = @"
+
+installation:
+  folder: log-file-genius
+
+paths:
+  changelog: $changelogPath
+  devlog: $devlogPath
+  adr: $adrPath
+  state: $statePath
+"@
+        $content = $content + $pathsSection
         Set-Content -Path $configDest -Value $content
         Print-Success "Installed profile configuration ($Profile)"
     }
-    
-    # Install git hooks (optional)
+
+    # Install git hooks to log-file-genius/git-hooks/
     $gitHooksSrc = Join-Path $StarterPackDir ".git-hooks"
     if (Test-Path $gitHooksSrc) {
-        $gitHooksDest = Join-Path $ProjectRoot ".git-hooks"
+        $gitHooksDest = Join-Path $installFolder "git-hooks"
         Copy-DirectoryContents $gitHooksSrc $gitHooksDest | Out-Null
         Print-Success "Installed git hook templates"
         Write-Host ""
         Print-Info "To enable git hooks, run:"
-        Write-Host "  Copy-Item .git-hooks\pre-commit .git\hooks\pre-commit"
+        Write-Host "  Copy-Item log-file-genius\git-hooks\pre-commit .git\hooks\pre-commit"
     }
     
     Write-Host ""
     Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║   Installation Complete! 🎉            ║" -ForegroundColor Green
+    Write-Host "║   Installation Complete!               ║" -ForegroundColor Green
     Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
     Print-Info "Next steps:"
     Write-Host "  1. Initialize your log files from templates:"
-    Write-Host "     Copy-Item templates\CHANGELOG_template.md docs\planning\CHANGELOG.md"
-    Write-Host "     Copy-Item templates\DEVLOG_template.md docs\planning\DEVLOG.md"
-    Write-Host "     Copy-Item templates\ADR_template.md docs\adr\ADR-template.md"
+    Write-Host "     Copy-Item log-file-genius\templates\CHANGELOG_template.md docs\planning\CHANGELOG.md"
+    Write-Host "     Copy-Item log-file-genius\templates\DEVLOG_template.md docs\planning\DEVLOG.md"
+    Write-Host "     Copy-Item log-file-genius\templates\ADR_template.md docs\adr\ADR-template.md"
     Write-Host ""
-    Write-Host "  2. Customize the templates for your project"
+    Write-Host "  2. Customize templates in log-file-genius\templates\ if needed"
     Write-Host ""
     Write-Host "  3. Start using your AI assistant - it will automatically maintain logs!"
     Write-Host ""
     Print-Info "Documentation: .log-file-genius\product\docs\"
-    Print-Info "Run validation: .\scripts\validate-log-files.ps1"
+    Print-Info "Run validation: .\log-file-genius\scripts\validate-log-files.ps1"
     Write-Host ""
 }
 

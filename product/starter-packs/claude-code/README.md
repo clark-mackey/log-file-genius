@@ -23,13 +23,12 @@ git submodule add -b main `
 **The installer will:**
 1. Detect that you're using Claude Code (or prompt you to select)
 2. Ask which profile fits your project (solo-developer, team, open-source, startup)
-3. Install all necessary files:
+3. Ask where your log files should be located (brownfield support)
+4. Install all necessary files:
+   - `log-file-genius/` - Templates, scripts, and git hooks (ONE folder)
    - `.claude/` - Project instructions and rules
-   - `templates/` - CHANGELOG, DEVLOG, ADR, STATE templates
-   - `scripts/` - Validation scripts (PowerShell + Bash)
-   - `.logfile-config.yml` - Profile configuration
-   - `.git-hooks/` - Optional pre-commit validation
-4. Configure everything for immediate use
+   - `.logfile-config.yml` - Profile configuration with your log file paths
+5. Configure everything for immediate use
 
 **What stays hidden:**
 - `.log-file-genius/` - Source repository (for easy updates)

@@ -15,12 +15,12 @@ $productDir = Join-Path $ProjectRoot "product"
 $projectDir = Join-Path $ProjectRoot "project"
 
 if (-not (Test-Path $productDir) -and -not (Test-Path $projectDir)) {
-    Write-Host "✓ No incorrect installation detected." -ForegroundColor Green
+    Write-Host "[OK] No incorrect installation detected." -ForegroundColor Green
     Write-Host "Your project looks clean!"
     exit 0
 }
 
-Write-Host "⚠ Detected incorrect installation:" -ForegroundColor Yellow
+Write-Host "[WARNING] Detected incorrect installation:" -ForegroundColor Yellow
 if (Test-Path $productDir) { Write-Host "  - /product folder found" }
 if (Test-Path $projectDir) { Write-Host "  - /project folder found" }
 Write-Host ""
@@ -44,20 +44,20 @@ if ($confirm -ne 'y' -and $confirm -ne 'Y') {
 # Remove folders
 if (Test-Path $productDir) {
     Remove-Item -Path $productDir -Recurse -Force
-    Write-Host "✓ Removed /product folder" -ForegroundColor Green
+    Write-Host "[OK] Removed /product folder" -ForegroundColor Green
 }
 
 if (Test-Path $projectDir) {
     Remove-Item -Path $projectDir -Recurse -Force
-    Write-Host "✓ Removed /project folder" -ForegroundColor Green
+    Write-Host "[OK] Removed /project folder" -ForegroundColor Green
 }
 
 Write-Host ""
 Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║   Cleanup Complete! ✓                  ║" -ForegroundColor Green
+Write-Host "║   Cleanup Complete!                    ║" -ForegroundColor Green
 Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
-Write-Host "ℹ Next steps:" -ForegroundColor Blue
+Write-Host "[INFO] Next steps:" -ForegroundColor Blue
 Write-Host "  1. Ensure .log-file-genius\ submodule is properly installed"
 Write-Host "  2. Run the installer: .\.log-file-genius\product\scripts\install.ps1"
 Write-Host ""

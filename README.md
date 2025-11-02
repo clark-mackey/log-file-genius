@@ -122,15 +122,14 @@ git submodule add -b main `
 The installer will:
 - ✅ Detect your AI assistant (Augment, Claude Code, etc.)
 - ✅ Prompt for your profile (solo-developer, team, open-source, startup)
+- ✅ Prompt for log file locations (brownfield support)
 - ✅ Install templates, validation scripts, and AI assistant rules
 - ✅ Configure everything for immediate use
 
 **What gets installed:**
+- `log-file-genius/` - Templates, scripts, and git hooks (ONE folder)
 - `.augment/` or `.claude/` - AI assistant rules
-- `templates/` - CHANGELOG, DEVLOG, ADR, STATE templates
-- `scripts/` - Validation scripts (PowerShell + Bash)
-- `.logfile-config.yml` - Profile configuration
-- `.git-hooks/` - Optional pre-commit validation
+- `.logfile-config.yml` - Profile configuration with your log file paths
 
 **What stays hidden:**
 - `.log-file-genius/` - Source repository (for updates)

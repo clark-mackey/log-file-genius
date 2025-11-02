@@ -4,20 +4,28 @@ This project uses the **Log File Genius** system - a token-efficient documentati
 
 ## Core Principles
 
-1. **Maintain the Five-Document System:**
-   - **PRD** (`docs/prd.md`) - What we're building and why
-   - **CHANGELOG** (`docs/planning/CHANGELOG.md`) - What changed (facts)
-   - **DEVLOG** (`docs/planning/DEVLOG.md`) - Why it changed (narrative)
-   - **STATE** (`docs/planning/STATE.md`) - What's happening now (optional)
-   - **ADRs** (`docs/adr/*.md`) - How we decided (architectural decisions)
+1. **Read Configuration First:**
+   - **ALWAYS** read `.logfile-config.yml` to find log file locations
+   - Default paths (if config not found):
+     - CHANGELOG: `docs/planning/CHANGELOG.md`
+     - DEVLOG: `docs/planning/DEVLOG.md`
+     - ADR: `docs/adr/`
+     - STATE: `docs/STATE.md`
 
-2. **Token Efficiency:**
+2. **Maintain the Five-Document System:**
+   - **PRD** - What we're building and why
+   - **CHANGELOG** - What changed (facts)
+   - **DEVLOG** - Why it changed (narrative)
+   - **STATE** - What's happening now (optional)
+   - **ADRs** - How we decided (architectural decisions)
+
+3. **Token Efficiency:**
    - Keep CHANGELOG + DEVLOG + STATE under 10,000 tokens combined
    - Use single-line entries in CHANGELOG
    - Use structured format (Situation/Challenge/Decision/Impact/Files) in DEVLOG
    - Archive old entries when files exceed token budgets
 
-3. **Always-Active Rules:**
+4. **Always-Active Rules:**
    - Follow the log file maintenance rules in `.claude/rules/log-file-maintenance.md`
    - Update CHANGELOG after every commit
    - Update DEVLOG after milestones/decisions
@@ -32,16 +40,13 @@ When the user invokes these commands, follow the corresponding rule file:
 
 ## Quick Reference
 
-- **Full methodology:** `docs/log_file_how_to.md`
-- **Templates:** `templates/` directory
-- **Examples:** `examples/` directory
-- **Working logs:** `docs/planning/` directory
-- **ADRs:** `docs/adr/` directory
+- **Configuration:** `.logfile-config.yml` (log file paths)
+- **Full methodology:** `.log-file-genius/product/docs/log_file_how_to.md`
+- **Templates:** `log-file-genius/templates/` directory
+- **Validation:** `./log-file-genius/scripts/validate-log-files.sh`
 
 ## Important Notes
 
-- This project dogfoods its own log file system
-- Templates in `templates/` are for distribution (don't edit with project-specific content)
-- Working logs in `docs/planning/` are this project's actual logs
-- Always check `docs/log_file_how_to.md` for detailed guidance on entry formats
-
+- Always read `.logfile-config.yml` to find log file locations
+- Templates in `log-file-genius/templates/` are customizable
+- Check `.log-file-genius/product/docs/log_file_how_to.md` for detailed guidance
