@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - v0.1.0-dev
 
 ### Changed
+- **BREAKING:** Directory structure - Separated product/ (distributable content) from project/ (development files) to eliminate AI agent confusion between templates and working logs. All templates, docs, examples, starter-packs moved to product/. All planning, ADRs, specs moved to project/. Updated .gitignore to exclude project/ directory. Files: All files restructured, .gitignore, README.md, all cross-references. Commits: `62adf96`, `05d846a`, `9872d72`
 - Augment rules location - Moved from `.augment/rules/` to `starter-packs/augment/.augment/rules/` for better distribution. Files: `starter-packs/augment/.augment/rules/log-file-maintenance.md`, `starter-packs/augment/.augment/rules/status-update.md`, `starter-packs/augment/.augment/rules/update-planning-docs.md`. Commit: `a93e543`
 - .gitignore - Simplified to exclude entire `.augment/` and `.claude/` directories instead of individual files. Files: `.gitignore`. Commit: `a93e543`
 - Augment starter pack README - Updated setup instructions to reflect new `.augment/` directory location. Files: `starter-packs/augment/README.md`. Commit: `a93e543`

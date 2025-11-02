@@ -17,13 +17,13 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Current Context (Source of Truth)
 
-**Last Updated:** 2025-10-31
+**Last Updated:** 2025-11-02
 
 ### Project State
 - **Project:** Log File Genius
 - **Current Version:** v0.1.0-dev (pre-release)
-- **Active Branch:** `main`
-- **Phase:** Foundation - Initial commit pushed to GitHub (663ab19)
+- **Active Branch:** `refactor/product-project-separation` (ready to merge to main)
+- **Phase:** Foundation - Architectural refactoring complete (ADR-008)
 - **Repository:** https://github.com/clark-mackey/log-file-genius
 
 ### Stack & Tools
@@ -41,7 +41,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Safety First:** Never delete existing files in brownfield installations
 
 ### Key Architectural Decisions
-- (No ADRs yet - will be created as architectural decisions are made)
+- **ADR-008:** Product/Project Directory Separation - Separate product/ (distributable) from project/ (development) to eliminate AI agent confusion
 
 ### Constraints & Requirements
 - **Token Efficiency:** CHANGELOG + DEVLOG combined must be <25,000 tokens
@@ -50,30 +50,16 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Safety:** Brownfield installation must preserve existing documentation
 - **Accessibility:** Clear documentation for both greenfield and brownfield use cases
 
-### Current Objectives (Week of Oct 28-31)
-- [x] Complete PRD with all 6 epics and 30 stories
-- [x] Incorporate success metrics and deployment strategy feedback
-- [x] Run PM checklist validation
-- [x] Create template files (CHANGELOG, DEVLOG, ADR)
-- [x] Create STATE.md template for multi-agent coordination
-- [x] Initialize working log files for this project
-- [x] Create ADR directory structure
-- [x] Copy documentation files (log_file_how_to.md, ADR_how_to.md)
-- [x] Install Augment rules for log file maintenance
-- [x] Create examples directory with realistic sample project
-- [x] Document Context Layers progressive disclosure strategy
-- [x] Create templates README with usage guidance
-- [x] Push initial commit to GitHub
-- [x] Add MIT License
-- [x] Create .gitignore for internal files
-- [x] Create Claude Code integration
-- [x] Create Migration Guide for brownfield integration (PRD Epic 2)
-- [x] Create README.md with quick start guide
-- [x] Create CONTRIBUTING.md for community engagement
-- [x] Create Augment starter pack
-- [x] Move Augment rules into starter pack for better distribution
-- [x] Simplify .gitignore to exclude entire .augment/ and .claude/ directories
-- [x] Update planning files to reflect all completed work
+### Current Objectives (Week of Nov 2-8)
+- [x] Execute product/project directory separation (ADR-008)
+- [x] Update all cross-references to new structure
+- [x] Update validation scripts for new paths
+- [x] Update Augment rules for new structure
+- [x] Create .project-identity.yaml with decision tree
+- [x] Update CHANGELOG and DEVLOG with migration narrative
+- [ ] Merge refactor/product-project-separation to main
+- [ ] Push to GitHub (will remove planning files from public repo)
+- [ ] Verify public repository only shows product/ directory
 - [ ] Set up GitHub repository features (About, Topics, Template button)
 
 ### Known Risks & Blockers
@@ -92,11 +78,69 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Decisions (ADR Index) - Newest First
 
-- (No ADRs yet - will be created as architectural decisions are made)
+- **ADR-008:** Product/Project Directory Separation (2025-11-02) - Separate product/ (distributable) from project/ (development) to eliminate AI agent confusion between templates and working logs
 
 ---
 
 ## Daily Log - Newest First
+
+### 2025-11-02: Product/Project Directory Separation - Solving the Meta-Problem
+
+**The Situation:** Log File Genius has a unique meta-problem: it's a project that teaches developers how to use log files, AND it uses log files itself (dogfooding). This creates inherent confusion for AI agents between:
+- **The Product:** Templates and documentation we're creating to teach others
+- **The Project:** Our actual development logs, ADRs, and planning files
+- **The PRD:** Requirements describing what the product should contain
+
+Despite having Augment rules to prevent confusion, AI agents consistently mixed up "update the logs" (project planning files) with "show example logs" (product templates). The confusion was so persistent that planning files were accidentally exposed in the public GitHub repository.
+
+**The Challenge:**
+1. **Structural Ambiguity:** Flat directory structure (`docs/planning/`, `templates/`) created ambiguous context
+2. **Rules-Based Approach Failed:** Behavioral instructions were reactive, not preventive
+3. **Public Exposure:** Planning files (CHANGELOG.md, DEVLOG.md, ADRs) were visible in public repo
+4. **Similar File Names:** `docs/planning/CHANGELOG.md` vs `templates/CHANGELOG_template.md` looked too similar
+5. **Git History Preservation:** Any solution must preserve all file history
+
+**The Decision:**
+Implemented ADR-008: Separate `product/` and `project/` directories with physical isolation:
+1. **product/** - All distributable content (templates, docs, examples, starter-packs) - PUBLIC
+2. **project/** - All development files (planning, adr, specs) - PRIVATE (in .gitignore)
+3. **`.project-identity.yaml`** - Explicit meta-problem documentation with decision tree
+4. **Updated all cross-references** - README, docs, rules, validation scripts, starter packs
+5. **Used `git mv`** - Preserved all file history during migration
+
+**Why This Approach:**
+- **Physical Separation > Rules:** Structural clarity prevents confusion rather than trying to correct it
+- **Clear Mental Model:** "product = what we ship, project = how we build it"
+- **Privacy by Default:** .gitignore excludes project/ from public repo
+- **Explicit Documentation:** .project-identity.yaml provides decision tree for common scenarios
+- **Preserves History:** All Git history maintained through proper git mv commands
+
+**The Result:**
+- ✅ All files moved to product/ or project/ directories (commit 62adf96)
+- ✅ All cross-references updated (commits 05d846a, 9872d72)
+- ✅ Validation scripts updated to use project/planning/ paths
+- ✅ Augment rules updated with new structure
+- ✅ Starter pack READMEs updated
+- ✅ .gitignore excludes project/ directory
+- ✅ ADR-008 documents the architectural decision
+- ✅ Migration plan created for reference
+- ✅ Zero broken links, all tests passing
+
+**Files Changed:**
+- **Structure:** All files moved to product/ or project/ subdirectories
+- **Configuration:** .gitignore, .project-identity.yaml (created)
+- **Documentation:** README.md, product/docs/MIGRATION_GUIDE.md, project/adr/008-product-project-directory-separation.md (created)
+- **Rules:** .augment/rules/*.md (all 6 files updated)
+- **Scripts:** scripts/validate-log-files.ps1, scripts/validate-log-files.sh
+- **Starter Packs:** product/starter-packs/*/README.md
+- **Planning:** project/planning/CHANGELOG.md, project/planning/DEVLOG.md (this entry)
+
+**Impact:**
+- AI agents now have clear structural cues for product vs project context
+- Planning files no longer exposed in public repository
+- Decision tree in .project-identity.yaml provides explicit guidance
+- Future confusion prevented through architecture, not just rules
+- Clean separation makes repository purpose immediately clear
 
 ### 2025-10-31: Cross-Platform Validation - Bash Script for Mac/Linux/WSL
 
