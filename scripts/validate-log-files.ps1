@@ -40,8 +40,8 @@ param(
 )
 
 # Configuration
-$CHANGELOG_PATH = "docs/planning/CHANGELOG.md"
-$DEVLOG_PATH = "docs/planning/DEVLOG.md"
+$CHANGELOG_PATH = "project/planning/CHANGELOG.md"
+$DEVLOG_PATH = "project/planning/DEVLOG.md"
 $CHANGELOG_TOKEN_WARNING = 8000
 $CHANGELOG_TOKEN_ERROR = 10000
 $DEVLOG_TOKEN_WARNING = 12000
