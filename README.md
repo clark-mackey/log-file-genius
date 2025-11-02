@@ -99,35 +99,81 @@ See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation 
 
 ## �🚀 Quick Start
 
-### For New Projects (30 Seconds)
+### One-Command Installation (30 Seconds)
+
+Install Log File Genius in your existing project with a single command:
+
+**Bash/Mac/Linux:**
+```bash
+git submodule add -b main \
+  https://github.com/clark-mackey/log-file-genius.git \
+  .log-file-genius && \
+  ./.log-file-genius/product/scripts/install.sh
+```
+
+**PowerShell/Windows:**
+```powershell
+git submodule add -b main `
+  https://github.com/clark-mackey/log-file-genius.git `
+  .log-file-genius; `
+  .\.log-file-genius\product\scripts\install.ps1
+```
+
+The installer will:
+- ✅ Detect your AI assistant (Augment, Claude Code, etc.)
+- ✅ Prompt for your profile (solo-developer, team, open-source, startup)
+- ✅ Install templates, validation scripts, and AI assistant rules
+- ✅ Configure everything for immediate use
+
+**What gets installed:**
+- `.augment/` or `.claude/` - AI assistant rules
+- `templates/` - CHANGELOG, DEVLOG, ADR, STATE templates
+- `scripts/` - Validation scripts (PowerShell + Bash)
+- `.logfile-config.yml` - Profile configuration
+- `.git-hooks/` - Optional pre-commit validation
+
+**What stays hidden:**
+- `.log-file-genius/` - Source repository (for updates)
+
+---
+
+### Alternative: GitHub Template (For New Projects)
+
+Starting a brand new project? Use the GitHub template:
 
 1.  **Click the Button:**
 
     [![Use this template](https://img.shields.io/badge/use%20this-template-blue?style=for-the-badge)](https://github.com/clark-mackey/log-file-genius/generate)
 
 2.  **Create Your New Repository:**
-    Give it a name. You're done. You now have the complete `log-file-genius` structure.
+    Give it a name. You now have the complete structure.
 
 3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start populating your new, genius-level documentation.
+    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start using the system.
 
-### For Existing Projects (1-6 Hours)
+---
 
-Already have a project with some documentation? No problem!
+### Updating Log File Genius
 
-1.  **Quick Assessment:**
-    - Do you have a CHANGELOG? DEVLOG? PRD?
-    - How many tokens are your docs consuming?
-    - Want full adoption or gradual migration?
+Already installed? Update to the latest version:
 
-2.  **Follow the Migration Guide:**
-    Read the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for step-by-step instructions tailored to your situation.
+```bash
+# Update source
+cd .log-file-genius && git pull && cd ..
 
-3.  **Choose Your Path:**
-    - **Scenario A:** No docs → Start fresh (1-2 hours)
-    - **Scenario B:** Have CHANGELOG → Expand (3-6 hours)
-    - **Scenario C:** Verbose docs → Condense (1-2 days)
-    - **Scenario D:** Partial implementation → Complete (2-4 hours)
+# Re-run installer (smart merge, preserves customizations)
+./.log-file-genius/product/scripts/install.sh --update
+```
+
+---
+
+### Migration from Existing Docs
+
+Already have documentation? See the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for:
+- **Scenario A:** No docs → Start fresh (1-2 hours)
+- **Scenario B:** Have CHANGELOG → Expand (3-6 hours)
+- **Scenario C:** Verbose docs → Condense (1-2 days)
+- **Scenario D:** Partial implementation → Complete (2-4 hours)
 
 ## 📦 Starter Packs
 

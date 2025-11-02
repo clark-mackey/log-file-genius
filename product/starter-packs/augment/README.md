@@ -2,23 +2,61 @@
 
 Get up and running with Log File Genius in Augment in under 2 minutes.
 
-## Quick Setup
+## 🚀 Quick Setup (Automated - Recommended)
+
+**One command installs everything:**
+
+```bash
+# Bash/Mac/Linux
+git submodule add -b main \
+  https://github.com/clark-mackey/log-file-genius.git \
+  .log-file-genius && \
+  ./.log-file-genius/product/scripts/install.sh
+
+# PowerShell/Windows
+git submodule add -b main `
+  https://github.com/clark-mackey/log-file-genius.git `
+  .log-file-genius; `
+  .\.log-file-genius\product\scripts\install.ps1
+```
+
+**The installer will:**
+1. Detect that you're using Augment (or prompt you to select)
+2. Ask which profile fits your project (solo-developer, team, open-source, startup)
+3. Install all necessary files:
+   - `.augment/rules/` - AI assistant rules
+   - `templates/` - CHANGELOG, DEVLOG, ADR, STATE templates
+   - `scripts/` - Validation scripts (PowerShell + Bash)
+   - `.logfile-config.yml` - Profile configuration
+   - `.git-hooks/` - Optional pre-commit validation
+4. Configure everything for immediate use
+
+**What stays hidden:**
+- `.log-file-genius/` - Source repository (for easy updates)
+
+---
+
+## 📖 Manual Setup (Advanced)
+
+<details>
+<summary>Click to expand manual installation instructions</summary>
+
+If you prefer manual installation or need more control:
 
 1. **Copy the `.augment/` directory from this starter pack to your project root:**
    ```bash
    # From the log-file-genius repository
-   cp -r starter-packs/augment/.augment/ /path/to/your/project/
+   cp -r .log-file-genius/product/starter-packs/augment/.augment/ .
    ```
 
 2. **Copy the templates to your project:**
    ```bash
-   cp -r templates/ /path/to/your/project/
+   cp -r .log-file-genius/product/templates/ templates/
    ```
 
 3. **Copy the profile configuration (optional but recommended):**
    ```bash
-   # Copy the default profile configuration
-   cp starter-packs/augment/.logfile-config.yml /path/to/your/project/
+   cp .log-file-genius/product/starter-packs/augment/.logfile-config.yml .
    ```
 
    **Choose your profile:** Edit `.logfile-config.yml` and set your profile:
@@ -27,27 +65,43 @@ Get up and running with Log File Genius in Augment in under 2 minutes.
    - `open-source` - Public projects, strict formatting
    - `startup` - MVPs/prototypes, minimal overhead
 
-   See `product/docs/profile-selection-guide.md` for help choosing.
+   See `.log-file-genius/product/docs/profile-selection-guide.md` for help choosing.
 
 4. **Copy the validation scripts (optional but recommended):**
    ```bash
-   # Copy validation scripts (includes both PowerShell and Bash versions)
-   cp -r product/starter-packs/augment/scripts/ /path/to/your/project/
+   # Copy validation scripts
+   mkdir -p scripts
+   cp .log-file-genius/product/scripts/validate-log-files.sh scripts/
+   cp .log-file-genius/product/scripts/validate-log-files.ps1 scripts/
 
    # Copy git hook template
-   cp -r starter-packs/augment/.git-hooks/ /path/to/your/project/
+   cp -r .log-file-genius/product/starter-packs/augment/.git-hooks/ .
 
-   # Install git hook (optional - enables automatic validation before commits)
+   # Install git hook (optional)
    cp .git-hooks/pre-commit .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit  # Mac/Linux only
    ```
 
-   **Note:** The validation scripts include both `validate-log-files.ps1` (PowerShell for Windows) and `validate-log-files.sh` (Bash for Mac/Linux/WSL). The git hook automatically detects your platform and runs the appropriate script.
+</details>
 
-5. **Open your project in Augment:**
+---
+
+## ✅ Next Steps
+
+After installation (automated or manual):
+
+1. **Open your project in Augment:**
    - Augment will automatically detect and load the rules from `.augment/rules/`
 
-6. **Start using the system:**
+2. **Initialize your log files:**
+   ```bash
+   mkdir -p docs/planning docs/adr
+   cp templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
+   cp templates/DEVLOG_template.md docs/planning/DEVLOG.md
+   cp templates/ADR_template.md docs/adr/ADR-template.md
+   ```
+
+3. **Start using the system:**
    - Make a code change
    - Commit it
    - Augment will automatically update your CHANGELOG (if the rule is active)
