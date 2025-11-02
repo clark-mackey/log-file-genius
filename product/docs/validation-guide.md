@@ -22,7 +22,7 @@ The Log File Genius validation system automatically checks your CHANGELOG and DE
 
 **Mac/Linux (Bash):**
 ```bash
-./scripts/validate-log-files.sh
+./product/scripts/validate-log-files.sh
 ```
 
 ### Installing Git Pre-Commit Hook
@@ -299,20 +299,20 @@ For older versions, see:
 
 **Fix:** Ensure you're in the repository root and the script exists:
 ```bash
-ls scripts/validate-log-files.ps1  # Windows
-ls scripts/validate-log-files.sh   # Mac/Linux
+ls product/scripts/validate-log-files.ps1  # Windows
+ls product/scripts/validate-log-files.sh   # Mac/Linux
 ```
 
 ### Permission denied (Mac/Linux)
 
 **Error:**
 ```
-bash: ./scripts/validate-log-files.sh: Permission denied
+bash: ./product/scripts/validate-log-files.sh: Permission denied
 ```
 
 **Fix:** Make the script executable:
 ```bash
-chmod +x scripts/validate-log-files.sh
+chmod +x product/scripts/validate-log-files.sh
 ```
 
 ### PowerShell execution policy (Windows)

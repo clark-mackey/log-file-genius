@@ -4,7 +4,7 @@
 # Claude Code rules - internal guidance only (root level only, not starter packs)
 /.claude/
 
-# Context directory - internal reference only
+# Context directory - pre-planning research and learning (not part of project or product)
 context/
 
 # Project files - our development process (not for distribution)

@@ -21,7 +21,7 @@ The Log File Genius validation system provides automated checks for CHANGELOG an
 ## Architecture
 
 ```
-scripts/
+product/scripts/
 ├── validate-log-files.sh (or .ps1)    # Master validation script
 ├── validate-changelog.sh (or .ps1)    # CHANGELOG format validation
 ├── validate-devlog.sh (or .ps1)       # DEVLOG format validation
@@ -110,15 +110,15 @@ docs/
 **Usage:**
 ```bash
 # Run all validations
-./scripts/validate-log-files.sh
+./product/scripts/validate-log-files.sh
 
 # Run with verbose output
-./scripts/validate-log-files.sh --verbose
+./product/scripts/validate-log-files.sh --verbose
 
 # Run specific validation only
-./scripts/validate-log-files.sh --changelog
-./scripts/validate-log-files.sh --devlog
-./scripts/validate-log-files.sh --tokens
+./product/scripts/validate-log-files.sh --changelog
+./product/scripts/validate-log-files.sh --devlog
+./product/scripts/validate-log-files.sh --tokens
 ```
 
 **Output Format:**
@@ -160,7 +160,7 @@ chmod +x .git/hooks/pre-commit
 # Pre-commit hook for Log File Genius validation
 
 echo "Running log file validation..."
-./scripts/validate-log-files.sh
+./product/scripts/validate-log-files.sh
 
 EXIT_CODE=$?
 

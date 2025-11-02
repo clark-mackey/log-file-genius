@@ -469,7 +469,7 @@ project-root/
 │   └── specs/
 │       ├── PRD.md                # Product requirements
 │       └── ...
-└── scripts/
+└── product/scripts/
     ├── condense_changelog.py     # Transformation script
     ├── condense_devlog.py        # Transformation script
     └── check_token_counts.py    # Monitoring script
@@ -835,7 +835,7 @@ When multiple agents or developers work on the same codebase:
 - MCP Server: `core/mcp-server/src/server.py`
 - Tools: `core/mcp-server/src/tools/`
 - Database: `core/database/schema.sql`
-- Scripts: `scripts/`
+- Scripts: `product/scripts/`
 ```
 
 **Update Frequency for Current Context:**
@@ -1032,7 +1032,7 @@ git commit -m "Pre-transformation snapshot: CHANGELOG + DEVLOG"
 
 **Step 4: Verify**
 ```bash
-python scripts/check_token_counts.py
+python product/scripts/check_token_counts.py
 ```
 
 **Step 5: Commit**
@@ -1078,7 +1078,7 @@ def estimate_tokens(file_path):
 
 ### Monitoring Script
 
-Create `scripts/check_token_counts.py`:
+Create `product/scripts/check_token_counts.py`:
 ```python
 import os
 
@@ -1498,7 +1498,7 @@ See [ADR_template.md](../planning/templates/ADR_template.md) for the standard fo
 - [ ] Create directory structure (`docs/planning/`, `docs/adr/`, `docs/specs/`)
 - [ ] Copy starter templates (CHANGELOG.md, DEVLOG.md, ADR README.md)
 - [ ] Create template files (`templates/Changelog_template.md`, etc.)
-- [ ] Set up monitoring script (`scripts/check_token_counts.py`)
+- [ ] Set up monitoring script (`product/scripts/check_token_counts.py`)
 - [ ] Add cross-links to all documents
 - [ ] Set token budget targets (CHANGELOG <2k, DEVLOG <4k)
 - [ ] Schedule quarterly maintenance (calendar reminder)

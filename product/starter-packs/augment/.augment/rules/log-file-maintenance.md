@@ -26,8 +26,8 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 ### Step 3: Run Validation (OPTIONAL but Recommended)
 **If validation script is available:**
 ```bash
-.\scripts\validate-log-files.ps1  # Windows
-./scripts/validate-log-files.sh   # Mac/Linux
+.\product\scripts\validate-log-files.ps1  # Windows
+./product/scripts/validate-log-files.sh   # Mac/Linux
 ```
 - Validates CHANGELOG/DEVLOG format
 - Checks token counts

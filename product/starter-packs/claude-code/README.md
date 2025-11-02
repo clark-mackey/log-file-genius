@@ -18,7 +18,7 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 3. **Copy the validation scripts (optional but recommended):**
    ```bash
    # Copy validation scripts (includes both PowerShell and Bash versions)
-   cp -r starter-packs/claude-code/scripts/ /path/to/your/project/
+   cp -r product/starter-packs/claude-code/scripts/ /path/to/your/project/
 
    # Copy git hook template
    cp -r starter-packs/claude-code/.git-hooks/ /path/to/your/project/
@@ -48,8 +48,8 @@ Get up and running with Log File Genius in Claude Code in under 2 minutes.
 - **`.claude/rules/update-planning-docs.md`** - Documentation update command (improved v2.0)
 
 ### Validation Tools (Optional but Recommended)
-- **`scripts/validate-log-files.ps1`** - PowerShell validation script (Windows)
-- **`scripts/validate-log-files.sh`** - Bash validation script (Mac/Linux/WSL)
+- **`product/scripts/validate-log-files.ps1`** - PowerShell validation script (Windows)
+- **`product/scripts/validate-log-files.sh`** - Bash validation script (Mac/Linux/WSL)
 - **`.git-hooks/pre-commit`** - Git hook template for automatic validation (cross-platform)
 
 ### Templates (Copy from main repository)
