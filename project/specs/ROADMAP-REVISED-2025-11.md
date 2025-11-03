@@ -1,9 +1,18 @@
 # Revised Roadmap - November 2025
 
-**Date:** 2025-11-02  
-**Author:** John (PM Agent)  
-**Source:** Red Team Analysis + Competing Repositories Analysis  
+**Date:** 2025-11-02
+**Author:** John (PM Agent)
+**Source:** Red Team Analysis + Competing Repositories Analysis
 **Context:** Post-Epic 8 completion, security-first focus for solo developers and teams
+
+---
+
+## Related Documents
+
+📋 **[DEVLOG](../planning/DEVLOG.md)** - Historical context, decisions, and current objectives
+📊 **[CHANGELOG](../planning/CHANGELOG.md)** - Technical changes and version history
+📐 **[PRD](../../product/docs/prd.md)** - Product requirements and specifications
+⚖️ **[ADRs](../adr/README.md)** - Architectural decision records
 
 ---
 
@@ -37,6 +46,7 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 **Important for team adoption, optional for solo developers.**
 
 - **Epic 15: Governance & Review** (1 week, simplified)
+- **Epic 17: Incident Reports & Learning** (3-5 days)
 
 ### P2 - MEDIUM (Nice to Have)
 **Competitive differentiators, but not blockers.**
@@ -115,9 +125,9 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 **Goal:** Add lightweight governance for team adoption.
 
 #### Epic 15: Governance & Review (Week 5)
-**Status:** Not Started  
-**Priority:** P1 - HIGH  
-**Effort:** 1 week (simplified)  
+**Status:** Not Started
+**Priority:** P1 - HIGH
+**Effort:** 1 week (simplified)
 **Dependencies:** Epic 13
 
 **Why Third:**
@@ -140,23 +150,94 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 
 ---
 
+#### Epic 17: Incident Reports & Learning (Week 5, parallel with Epic 15)
+**Status:** Not Started
+**Priority:** P1 - HIGH
+**Effort:** 3-5 days
+**Dependencies:** Epic 12 (Security), Epic 13 (Validation)
+
+**Why Now:**
+- Complements Epic 15 (both focus on learning and review)
+- Captures lessons from Epic 12/13 implementation
+- Enables AI to report its own failures
+- Small effort (3-5 days) can run parallel with Epic 15
+
+**Deliverables:**
+- Incident report template and how-to guide
+- AI rules for auto-creating incident reports
+- Example incidents (SEV-1, SEV-2, SEV-3)
+- Integration with CHANGELOG/DEVLOG/ADR workflows
+- Verification framework for tracking effectiveness
+
+**Success Criteria:**
+- Template and guide published
+- AI can detect and report rule violations
+- 3+ example incidents documented
+- Integration with existing workflows tested
+
+---
+
 ### Phase 3: Validation & Sharing (Week 6)
 
 **Goal:** Use the system on a real project and share with experienced developers.
 
-#### Dogfooding & Feedback
-- Use Log File Genius on a real project for 2 weeks
-- Test all security, validation, and governance features
-- Gather feedback from experienced developers
-- Identify gaps and improvements
-- Document learnings
+#### Dogfooding Plan
+
+**Project Selection:**
+- Select active project with 2+ weeks of planned commits
+- Criteria: Real work (not test project), multiple file types, active development
+- Install Log File Genius with all security/validation features enabled
+- Document installation experience and issues
+
+**Daily Usage (2 weeks):**
+- Make commits as normal, let AI maintain logs
+- Run validation script daily, track pass rate
+- Monitor security hooks for false positives/negatives
+- Document friction points and usability issues
+- Track time spent on log maintenance vs. manual approach
+
+**Metrics to Track:**
+- Validation pass rate (target: 95%+)
+- Security incidents (target: 0)
+- False positive rate for secrets detection (target: <5%)
+- Time saved vs. manual documentation (target: 50%+)
+- AI agent compliance with rules (target: 90%+)
+
+#### Feedback Collection Plan
+
+**Target Audience:**
+- 3-5 experienced developers (5+ years experience)
+- Mix of solo developers and team members
+- Familiar with AI coding assistants (Augment, Cursor, Claude Code, etc.)
+- Active GitHub users with public repositories
+
+**Feedback Method:**
+1. **Structured Survey** (15 questions, 10 minutes)
+   - Usefulness rating (1-5 scale)
+   - Would you recommend? (Yes/No/Maybe)
+   - Biggest pain point? (Open text)
+   - Most valuable feature? (Open text)
+   - Missing features? (Open text)
+
+2. **30-Minute Interviews** (3 developers)
+   - Watch them install and use the system
+   - Ask about workflow integration
+   - Identify confusion points
+   - Gather feature requests
+
+3. **GitHub Issues** (Public feedback)
+   - Create "Feedback" issue template
+   - Encourage bug reports and feature requests
+   - Track adoption metrics (stars, forks, clones)
 
 **Success Criteria:**
-- System used successfully on real project
-- Zero security incidents
-- 95%+ validation pass rate
-- Positive feedback from experienced developers
-- Clear list of improvements for next phase
+- [ ] 2 weeks of daily use on real project completed
+- [ ] 95%+ validation pass rate achieved
+- [ ] Zero security incidents (no secrets leaked)
+- [ ] 3+ developers provide structured feedback
+- [ ] At least 2/3 would recommend to others (rating ≥4/5)
+- [ ] Clear list of top 5 improvements identified
+- [ ] Decision made on next phase (RAG, Skills, or Enterprise)
 
 ---
 
@@ -202,15 +283,76 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 
 ---
 
+## Resource & Capacity Planning
+
+**Team Size:** 1 (solo developer)
+**Availability:** TBD - Update based on actual capacity
+**Adjusted Timeline:**
+- If 40 hrs/week → 6 weeks (as planned below)
+- If 20 hrs/week → 12 weeks (realistic for side project)
+- If 10 hrs/week → 24 weeks (hobby pace)
+
+**Capacity Risks:**
+- Solo developer = no backup if blocked on technical issues
+- Context switching between epics may slow progress
+- Burnout risk if pushing too hard without breaks
+- External commitments may impact availability
+
+**Mitigation:**
+- Track actual hours/week for first 2 weeks, adjust timeline if needed
+- Build in buffer time (20% contingency)
+- Take breaks between epics to avoid burnout
+- Use task lists to minimize context switching
+
+---
+
 ## Timeline
 
-**Weeks 1-2:** Epic 12 (Security)  
-**Weeks 3-4:** Epic 13 (Validation)  
-**Week 5:** Epic 15 (Governance)  
-**Week 6:** Dogfooding & Feedback  
+**Weeks 1-2:** Epic 12 (Security)
+**Weeks 3-4:** Epic 13 (Validation)
+**Week 5:** Epic 15 (Governance)
+**Week 6:** Dogfooding & Feedback
 **Week 7+:** Iterate based on feedback
 
-**Total Time to "Shareable with Experienced Devs":** 6 weeks
+**Total Time to "Shareable with Experienced Devs":** 6 weeks (assumes 40 hrs/week)
+
+---
+
+## Timeline Visualization
+
+### Epic Dependencies
+
+```
+Epic 12 (Security) → Epic 13 (Validation) → Epic 15 (Governance) → Dogfooding
+     ↓                      ↓                  ↓         ↓                ↓
+  (Blocks)              (Builds on)      (Requires) (Enables)      (Validates all)
+                                              ↓
+                                         Epic 17 (Incidents)
+                                         (Parallel with Epic 15)
+```
+
+**Critical Path:** Epic 12 → Epic 13 → Epic 15 → Dogfooding (sequential)
+**Parallel Work:** Epic 17 can run alongside Epic 15 (both in Week 5)
+
+### Gantt Timeline (6-Week Plan)
+
+```
+Week 1:  [████████████ Epic 12: Security ████████████]
+Week 2:  [████████████ Epic 12: Security ████████████]
+Week 3:                [████████████ Epic 13: Validation ████████████]
+Week 4:                [████████████ Epic 13: Validation ████████████]
+Week 5:                               [██████ Epic 15: Governance ██████]
+                                      [███ Epic 17: Incidents ███] (parallel)
+Week 6:                                      [██████ Dogfooding & Feedback ██████]
+         └─────────────────────────────────────────────────────────────┘
+                        6 weeks to "Shareable with Experienced Devs"
+```
+
+**Milestones:**
+- 🎯 **Week 2:** Security system complete, secrets detection working
+- 🎯 **Week 4:** Validation system complete, 95%+ pass rate
+- 🎯 **Week 5:** Governance + Incident Reports complete, team-ready
+- 🎯 **Week 6:** Dogfooding complete, feedback collected, decision made
 
 ---
 
@@ -244,6 +386,61 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 | Timeline slips (solo developer) | Medium | Focus on MVP, defer nice-to-haves | Mitigated |
 | Experienced devs find critical gaps | Medium | Dogfooding phase, feedback loop | Planned |
 | Scope creep (adding features) | Medium | Strict prioritization, defer to Phase 4+ | Mitigated |
+
+---
+
+## Pivot/Rollback Criteria
+
+**Stop and Reassess If:**
+- ❌ Security validation fails >50% of tests (Epic 12)
+- ❌ Validation pass rate <80% after 2 weeks of dogfooding (Epic 13)
+- ❌ Dogfooding reveals critical usability issues (system unusable)
+- ❌ Experienced devs rate system <3/5 on usefulness
+- ❌ Time investment exceeds 2x estimate (12 weeks vs 6 weeks)
+- ❌ AI assistants consistently ignore rules despite improvements
+
+**Pivot Options:**
+
+1. **Simplify Scope** (Most Likely)
+   - Drop Epic 15 (Governance), focus on solo developer use only
+   - Reduce validation strictness, make it optional
+   - Ship "beta" version with warnings about limitations
+
+2. **Change Approach** (If Fundamental Issues)
+   - Switch from AI-maintained to AI-assisted (human reviews all changes)
+   - Focus on templates only, drop automated maintenance
+   - Pivot to educational content (how to maintain logs manually)
+
+3. **Defer Project** (If Market Not Ready)
+   - Archive project, document learnings
+   - Revisit in 6-12 months when AI assistants improve
+   - Share research publicly to help community
+
+**Decision Criteria:**
+- If 1-2 pivot triggers → Simplify scope
+- If 3-4 pivot triggers → Change approach
+- If 5+ pivot triggers → Defer project
+
+---
+
+## Communication & Updates
+
+**Weekly Updates:** (For accountability and progress tracking)
+- Update DEVLOG Current Context every Friday
+- Update roadmap if priorities shift significantly
+- Track epic progress in CHANGELOG with each commit
+- Share progress in personal notes or blog (optional)
+
+**Milestone Announcements:**
+- **Epic 12 Complete** → Update README with security features, create GitHub release
+- **Epic 13 Complete** → Share validation results, publish metrics
+- **Phase 3 Complete** → Publish "Lessons Learned" blog post or GitHub discussion
+- **Public Launch** → Announce on relevant communities (Reddit, HN, Twitter)
+
+**Stakeholder Communication:** (Solo developer = self-accountability)
+- Weekly self-review: "What went well? What's blocked? What's next?"
+- Monthly retrospective: "Am I on track? Should I pivot?"
+- Document decisions in DEVLOG for future reference
 
 ---
 
@@ -303,9 +500,12 @@ Based on analysis of two research documents (Red Team Analysis and Competing Rep
 
 ## References
 
-- **Red Team Analysis:** `context/research/Red Team Analysis_ (REVISED) (1).md`
-- **Competing Repos Analysis:** `context/research/Competing Repositories Analysis (1).md`
-- **Epic 12 Spec:** `project/specs/EPIC-12-security-secrets-detection.md`
-- **Epic 13 Spec:** `project/specs/EPIC-13-validation-reliability.md`
-- **Epic 15 Spec:** `project/specs/EPIC-15-governance-review.md`
+- **Definition of Done:** [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) - Epic completion checklists
+- **Traceability Matrix:** [ROADMAP-TRACEABILITY.md](ROADMAP-TRACEABILITY.md) - Red Team → Roadmap mapping
+- **Red Team Analysis:** `project/research/Red Team Analysis_ (REVISED) (1).md`
+- **Competing Repos Analysis:** `project/research/Competing Repositories Analysis (1).md`
+- **Epic 12 Spec:** [EPIC-12-security-secrets-detection.md](EPIC-12-security-secrets-detection.md)
+- **Epic 13 Spec:** [EPIC-13-validation-reliability.md](EPIC-13-validation-reliability.md)
+- **Epic 15 Spec:** [EPIC-15-governance-review.md](EPIC-15-governance-review.md)
+- **Epic 17 Spec:** [EPIC-17-incident-reports-learning.md](EPIC-17-incident-reports-learning.md)
 
