@@ -128,8 +128,8 @@ How do we integrate incident reports into the existing documentation system with
 - Provides structured learning framework for continuous improvement
 
 **Deliverables:**
-1. Template: `product/templates/INCIDENT_REPORT_template.md` ✅
-2. How-to guide: `product/docs/incident-report-how-to.md` ✅
+1. Template: `project/templates/INCIDENT_REPORT_template.md` ✅ (WIP, moves to product/ when Epic 17 complete)
+2. How-to guide: `project/docs/incident-report-how-to.md` ✅ (WIP, moves to product/ when Epic 17 complete)
 3. Epic spec: `project/specs/EPIC-17-incident-reports-learning.md` ✅
 4. Roadmap integration: Updated ROADMAP-REVISED-2025-11.md ✅
 5. Planning docs: Updated CHANGELOG and DEVLOG ✅
@@ -141,9 +141,9 @@ How do we integrate incident reports into the existing documentation system with
 - **Integrated:** Links to CHANGELOG (fixes), DEVLOG (decisions), ADRs (architecture)
 - **Verifiable:** Re-evaluation dates ensure fixes are effective
 
-**Result:** Incident reporting system ready for implementation in Week 5, alongside governance features. Provides structured way to learn from failures and improve system reliability over time.
+**Result:** Incident reporting system ready for implementation in Week 5, alongside governance features. Provides structured way to learn from failures and improve system reliability over time. Template and how-to guide kept in project/ (WIP) until Epic 17 is complete, following two-branch strategy (ADR-009).
 
-**Files:** `product/templates/INCIDENT_REPORT_template.md`, `product/docs/incident-report-how-to.md`, `project/specs/EPIC-17-incident-reports-learning.md`, `project/specs/ROADMAP-REVISED-2025-11.md`, `project/planning/CHANGELOG.md`, `project/planning/DEVLOG.md`
+**Files:** `project/templates/INCIDENT_REPORT_template.md`, `project/docs/incident-report-how-to.md`, `project/specs/EPIC-17-incident-reports-learning.md`, `project/specs/ROADMAP-REVISED-2025-11.md`, `project/planning/CHANGELOG.md`, `project/planning/DEVLOG.md`
 
 ---
 

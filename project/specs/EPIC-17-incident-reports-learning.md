@@ -57,8 +57,8 @@ But lacks:
 **So that** we can learn from mistakes and prevent recurrence.
 
 **Acceptance Criteria:**
-- [ ] Template available in `product/templates/INCIDENT_REPORT_template.md`
-- [ ] How-to guide explains when and how to create reports
+- [x] Template available in `project/templates/INCIDENT_REPORT_template.md`
+- [x] How-to guide explains when and how to create reports
 - [ ] Example incidents demonstrate best practices
 - [ ] Clear severity levels (SEV-1 to SEV-5)
 - [ ] Action items tracked with owners and due dates
@@ -113,11 +113,11 @@ docs/incidents/
 └── archive/                            # Resolved incidents >90 days old
     └── INCIDENT-2025-08-01-001-*.md
 
-product/templates/
-└── INCIDENT_REPORT_template.md         # Template for new incidents
+project/templates/
+└── INCIDENT_REPORT_template.md         # Template (WIP, moves to product/ when Epic 17 complete)
 
-product/docs/
-└── incident-report-how-to.md           # How-to guide
+project/docs/
+└── incident-report-how-to.md           # How-to guide (WIP, moves to product/ when Epic 17 complete)
 
 product/examples/incidents/
 ├── INCIDENT-2025-11-03-001-secrets-leaked.md    # SEV-1 example
@@ -174,8 +174,8 @@ Owner: [Name]  Systems: [Service A, Tool B]  Env: [Prod|Staging]
 ## Tasks
 
 ### Task 1: Create Templates and Documentation (1 day)
-- [x] Create `product/templates/INCIDENT_REPORT_template.md`
-- [x] Create `product/docs/incident-report-how-to.md`
+- [x] Create `project/templates/INCIDENT_REPORT_template.md` (WIP, moves to product/ when complete)
+- [x] Create `project/docs/incident-report-how-to.md` (WIP, moves to product/ when complete)
 - [ ] Create `docs/incidents/README.md` (index)
 - [ ] Update `product/docs/README.md` to reference incident reports
 
@@ -295,8 +295,8 @@ Owner: [Name]  Systems: [Service A, Tool B]  Env: [Prod|Staging]
 
 ## References
 
-- **Template:** [INCIDENT_REPORT_template.md](../../product/templates/INCIDENT_REPORT_template.md)
-- **How-To:** [incident-report-how-to.md](../../product/docs/incident-report-how-to.md)
-- **Examples:** `product/examples/incidents/`
+- **Template:** [INCIDENT_REPORT_template.md](../templates/INCIDENT_REPORT_template.md)
+- **How-To:** [incident-report-how-to.md](../docs/incident-report-how-to.md)
+- **Examples:** `product/examples/incidents/` (to be created)
 - **Related Epics:** Epic 12 (Security), Epic 13 (Validation), Epic 15 (Governance)
 
