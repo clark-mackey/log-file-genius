@@ -18,9 +18,11 @@
 #   2 = Error (blocking, commit prevented)
 #
 
-# Configuration - Default values (can be overridden by profile)
-CHANGELOG_PATH="project/planning/CHANGELOG.md"
-DEVLOG_PATH="project/planning/DEVLOG.md"
+# Configuration - Standard paths (all logs in /logs/ folder)
+CHANGELOG_PATH="logs/CHANGELOG.md"
+DEVLOG_PATH="logs/DEVLOG.md"
+
+# Default token targets (can be overridden by profile)
 CHANGELOG_TOKEN_WARNING=8000
 CHANGELOG_TOKEN_ERROR=10000
 DEVLOG_TOKEN_WARNING=12000
@@ -29,6 +31,9 @@ COMBINED_TOKEN_WARNING=20000
 COMBINED_TOKEN_ERROR=25000
 VALIDATION_STRICTNESS="errors"  # Options: strict, errors, warnings-only, disabled
 FAIL_ON_WARNINGS=false
+
+# Note: STATE and ADR validation not yet implemented
+# Future: Add STATE_TOKEN_WARNING=400, STATE_TOKEN_ERROR=500
 
 # Exit codes
 EXIT_SUCCESS=0

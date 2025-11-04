@@ -1,6 +1,14 @@
 #!/usr/bin/env pwsh
 # Log File Genius Installer (PowerShell)
-# Installs Log File Genius from .log-file-genius/ source to your project
+# Installs Log File Genius to your project with standard /logs/ structure
+#
+# Usage:
+#   install.ps1 [-Profile <profile>] [-AiAssistant <augment|claude-code>] [-Force]
+#
+# Options:
+#   -Profile        Profile to use (solo-developer, team, open-source, startup)
+#   -AiAssistant    AI assistant to install rules for (augment, claude-code)
+#   -Force          Skip confirmation prompts (validation still runs)
 
 param(
     [string]$Profile = "",
@@ -10,30 +18,23 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Script directory detection
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+$VERSION = "0.2.0"
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SourceRoot = Resolve-Path (Join-Path $ScriptDir "../..")
+$SourceRoot = Resolve-Path (Join-Path $ScriptDir "..")
 $ProjectRoot = Get-Location
 
-# Check if running from .log-file-genius/
-if ($ScriptDir -notmatch '\.log-file-genius') {
-    Write-Host "[WARNING] This script should be run from .log-file-genius/product/scripts/" -ForegroundColor Yellow
-    Write-Host "          Current location: $ScriptDir" -ForegroundColor Yellow
-    Write-Host ""
-    if (-not $Force) {
-        $continue = Read-Host "Continue anyway? (y/N)"
-        if ($continue -ne 'y' -and $continue -ne 'Y') {
-            exit 1
-        }
-    }
-}
+# Track created items for rollback
+$CreatedItems = @()
 
-Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║   Log File Genius Installer v1.0      ║" -ForegroundColor Blue
-Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Blue
-Write-Host ""
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
 
-# Helper functions
 function Print-Success {
     param([string]$Message)
     Write-Host "[OK] $Message" -ForegroundColor Green
@@ -51,291 +52,344 @@ function Print-Warning {
 
 function Print-Info {
     param([string]$Message)
-    Write-Host "[INFO] $Message" -ForegroundColor Blue
+    Write-Host "[INFO] $Message" -ForegroundColor Cyan
 }
 
-# Check for incorrect installation
-function Check-IncorrectInstallation {
-    $productDir = Join-Path $ProjectRoot "product"
-    $projectDir = Join-Path $ProjectRoot "project"
+function Rollback-Installation {
+    param([string]$Reason)
+
+    Print-Error "Installation failed: $Reason"
+
+    if ($CreatedItems.Count -gt 0) {
+        Print-Warning "Rolling back changes..."
+
+        foreach ($item in $CreatedItems) {
+            if (Test-Path $item) {
+                Remove-Item -Path $item -Recurse -Force -ErrorAction SilentlyContinue
+                Print-Info "Removed $item"
+            }
+        }
+
+        Print-Success "Rollback complete"
+    }
+
+    exit 1
+}
+
+# ============================================================================
+# BANNER
+# ============================================================================
+
+Write-Host ""
+Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Blue
+Write-Host "║   Log File Genius Installer v$VERSION      ║" -ForegroundColor Blue
+Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Blue
+Write-Host ""
+
+# ============================================================================
+# DETECT AI ASSISTANT
+# ============================================================================
+
+if (-not $AiAssistant) {
+    Print-Info "Detecting AI assistant..."
     
-    if ((Test-Path $productDir) -or (Test-Path $projectDir)) {
-        Print-Error "Detected incorrect installation!"
+    if (Test-Path ".augment") {
+        $AiAssistant = "augment"
+        Print-Success "Detected Augment"
+    }
+    elseif (Test-Path ".claude") {
+        $AiAssistant = "claude-code"
+        Print-Success "Detected Claude Code"
+    }
+    else {
         Write-Host ""
-        Write-Host "Found /product or /project folders in your project root."
-        Write-Host "These are meta-directories for building Log File Genius itself."
-        Write-Host "They should NOT be in your project."
+        Write-Host "Which AI assistant are you using?"
+        Write-Host "  1) Augment"
+        Write-Host "  2) Claude Code"
         Write-Host ""
-        $cleanup = Read-Host "Run cleanup script to fix this? (y/N)"
-        if ($cleanup -eq 'y' -or $cleanup -eq 'Y') {
-            & "$ScriptDir/cleanup.ps1"
-            Write-Host ""
-            Write-Host "Cleanup complete. Re-run this installer."
-            exit 0
-        } else {
-            Write-Host "Please manually remove /product and /project folders before continuing."
+        $choice = Read-Host "Enter choice (1-2)"
+        
+        switch ($choice) {
+            "1" { $AiAssistant = "augment" }
+            "2" { $AiAssistant = "claude-code" }
+            default {
+                Print-Error "Invalid choice. Exiting."
+                exit 1
+            }
+        }
+    }
+}
+
+# ============================================================================
+# SELECT PROFILE
+# ============================================================================
+
+if (-not $Profile) {
+    Write-Host ""
+    Write-Host "Select your project profile:"
+    Write-Host "  1) solo-developer  - Individual developers (flexible, minimal overhead)"
+    Write-Host "  2) team            - Teams of 2+ developers (consistent docs)"
+    Write-Host "  3) open-source     - Public projects (strict formatting)"
+    Write-Host "  4) startup         - Fast-moving startups (minimal overhead)"
+    Write-Host ""
+    $choice = Read-Host "Enter choice (1-4)"
+    
+    switch ($choice) {
+        "1" { $Profile = "solo-developer" }
+        "2" { $Profile = "team" }
+        "3" { $Profile = "open-source" }
+        "4" { $Profile = "startup" }
+        default {
+            Print-Error "Invalid choice. Exiting."
             exit 1
         }
     }
 }
 
-# Detect AI assistant
-function Detect-AiAssistant {
-    if (Test-Path (Join-Path $ProjectRoot ".augment")) {
-        return "augment"
-    } elseif (Test-Path (Join-Path $ProjectRoot ".claude")) {
-        return "claude-code"
-    } elseif (Test-Path (Join-Path $ProjectRoot ".cursor")) {
-        return "cursor"
-    } else {
-        return "unknown"
-    }
-}
+Print-Success "Profile: $Profile"
+Print-Success "AI Assistant: $AiAssistant"
 
-# Prompt for AI assistant
-function Prompt-AiAssistant {
-    Write-Host "Which AI assistant are you using?" -ForegroundColor Blue
-    Write-Host "1) Augment"
-    Write-Host "2) Claude Code"
-    Write-Host "3) Cursor (coming soon)"
-    Write-Host "4) GitHub Copilot (coming soon)"
+# ============================================================================
+# CHECK FOR EXISTING INSTALLATION
+# ============================================================================
+
+$logsExists = Test-Path "logs"
+$configExists = Test-Path ".logfile-config.yml"
+
+if ($logsExists -or $configExists) {
     Write-Host ""
-    $choice = Read-Host "Enter choice (1-4)"
-    
-    switch ($choice) {
-        "1" { return "augment" }
-        "2" { return "claude-code" }
-        "3" { return "cursor" }
-        "4" { return "github-copilot" }
-        default { return "augment" }
-    }
-}
-
-# Prompt for profile
-function Prompt-Profile {
-    Write-Host ""
-    Write-Host "Which profile fits your project best?" -ForegroundColor Blue
-    Write-Host "1) solo-developer (default) - Individual developers, flexible"
-    Write-Host "2) team - Teams of 2+, consistent documentation"
-    Write-Host "3) open-source - Public projects, strict formatting"
-    Write-Host "4) startup - MVPs/prototypes, minimal overhead"
-    Write-Host ""
-    $choice = Read-Host "Enter choice (1-4)"
-    
-    switch ($choice) {
-        "1" { return "solo-developer" }
-        "2" { return "team" }
-        "3" { return "open-source" }
-        "4" { return "startup" }
-        default { return "solo-developer" }
-    }
-}
-
-# Copy directory contents
-function Copy-DirectoryContents {
-    param(
-        [string]$Source,
-        [string]$Destination
-    )
-    
-    if (-not (Test-Path $Source)) {
-        Print-Error "Source directory not found: $Source"
-        return $false
-    }
-    
-    if (-not (Test-Path $Destination)) {
-        New-Item -ItemType Directory -Path $Destination -Force | Out-Null
-    }
-    
-    Copy-Item -Path "$Source\*" -Destination $Destination -Recurse -Force
-    return $true
-}
-
-# Copy file
-function Copy-FileItem {
-    param(
-        [string]$Source,
-        [string]$Destination
-    )
-    
-    if (-not (Test-Path $Source)) {
-        Print-Error "Source file not found: $Source"
-        return $false
-    }
-    
-    $destDir = Split-Path -Parent $Destination
-    if (-not (Test-Path $destDir)) {
-        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-    }
-    
-    Copy-Item -Path $Source -Destination $Destination -Force
-    return $true
-}
-
-# Main installation
-function Main {
-    Print-Info "Starting installation..."
+    Print-Warning "Existing installation detected!"
+    if ($logsExists) { Print-Warning "  - logs/ folder exists" }
+    if ($configExists) { Print-Warning "  - .logfile-config.yml exists" }
     Write-Host ""
     
-    # Check for incorrect installation
-    Check-IncorrectInstallation
-    
-    # Detect or prompt for AI assistant
-    if ($AiAssistant -eq "") {
-        $detectedAssistant = Detect-AiAssistant
-        if ($detectedAssistant -eq "unknown") {
-            $AiAssistant = Prompt-AiAssistant
-        } else {
-            $AiAssistant = $detectedAssistant
-            Print-Info "Detected AI assistant: $AiAssistant"
+    if (-not $Force) {
+        $continue = Read-Host "Continue and overwrite? (y/N)"
+        if ($continue -ne 'y' -and $continue -ne 'Y') {
+            Print-Info "Installation cancelled."
+            exit 0
         }
     }
-    
-    # Prompt for profile
-    if ($Profile -eq "") {
-        $Profile = Prompt-Profile
+}
+
+# ============================================================================
+# CREATE LOGS FOLDER STRUCTURE
+# ============================================================================
+
+Write-Host ""
+Print-Info "Creating /logs/ folder structure..."
+
+$foldersToCreate = @(
+    "logs",
+    "logs/adr",
+    "logs/incidents"
+)
+
+foreach ($folder in $foldersToCreate) {
+    if (-not (Test-Path $folder)) {
+        New-Item -ItemType Directory -Path $folder -Force | Out-Null
+        $CreatedItems += $folder
+        Print-Success "Created $folder/"
     }
-    Print-Info "Selected profile: $Profile"
-    Write-Host ""
+    else {
+        Print-Info "$folder/ already exists"
+    }
+}
 
-    # Prompt for log file locations (brownfield support)
-    Write-Host "Where should your log files be located?" -ForegroundColor Cyan
-    Write-Host "Press Enter to use defaults, or specify custom paths:" -ForegroundColor Cyan
-    Write-Host ""
+# ============================================================================
+# COPY TEMPLATES TO /logs/
+# ============================================================================
 
-    $changelogPath = Read-Host "CHANGELOG location [docs/planning/CHANGELOG.md]"
-    if ($changelogPath -eq "") { $changelogPath = "docs/planning/CHANGELOG.md" }
+Print-Info "Copying log file templates..."
 
-    $devlogPath = Read-Host "DEVLOG location [docs/planning/DEVLOG.md]"
-    if ($devlogPath -eq "") { $devlogPath = "docs/planning/DEVLOG.md" }
+$templateMappings = @{
+    "templates/CHANGELOG_template.md" = "logs/CHANGELOG.md"
+    "templates/DEVLOG_template.md" = "logs/DEVLOG.md"
+    "templates/STATE_template.md" = "logs/STATE.md"
+    "templates/ADR_template.md" = "logs/adr/TEMPLATE.md"
+}
 
-    $adrPath = Read-Host "ADR directory [docs/adr]"
-    if ($adrPath -eq "") { $adrPath = "docs/adr" }
+$templateErrors = @()
 
-    $statePath = Read-Host "STATE location [docs/STATE.md]"
-    if ($statePath -eq "") { $statePath = "docs/STATE.md" }
+foreach ($mapping in $templateMappings.GetEnumerator()) {
+    $source = Join-Path $SourceRoot $mapping.Key
+    $dest = $mapping.Value
 
-    Write-Host ""
-    Print-Info "Log file paths configured"
-    Write-Host ""
+    if (Test-Path $source) {
+        Copy-Item -Path $source -Destination $dest -Force
+        $CreatedItems += $dest
+        Print-Success "Copied $dest"
+    }
+    else {
+        Print-Error "Template not found: $source"
+        $templateErrors += $source
+    }
+}
 
-    # Determine source paths
-    $StarterPackDir = Join-Path $SourceRoot "product\starter-packs\$AiAssistant"
-    $TemplatesDir = Join-Path $SourceRoot "product\templates"
-    $ScriptsDir = Join-Path $SourceRoot "product\scripts"
+if ($templateErrors.Count -gt 0) {
+    Rollback-Installation "Missing template files"
+}
+
+# ============================================================================
+# INSTALL AI RULES
+# ============================================================================
+
+Print-Info "Installing AI assistant rules..."
+
+if ($AiAssistant -eq "augment") {
+    $rulesSource = Join-Path $SourceRoot "ai-rules/augment"
+    $rulesDest = ".augment/rules"
     
-    # Check if starter pack exists
-    if (-not (Test-Path $StarterPackDir)) {
-        Print-Error "Starter pack not found for $AiAssistant"
-        Print-Info "Available starter packs:"
-        Get-ChildItem (Join-Path $SourceRoot "product\starter-packs") -Directory | ForEach-Object { Write-Host "  - $($_.Name)" }
-        exit 1
+    if (-not (Test-Path ".augment")) {
+        New-Item -ItemType Directory -Path ".augment" -Force | Out-Null
+    }
+    if (-not (Test-Path $rulesDest)) {
+        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
     }
     
-    Print-Info "Installing from: $StarterPackDir"
-    Write-Host ""
+    Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
+        $destPath = Join-Path $rulesDest $relativePath
+        $destDir = Split-Path -Parent $destPath
 
-    # Create log-file-genius folder for all installed files
-    $installFolder = Join-Path $ProjectRoot "log-file-genius"
-    if (-not (Test-Path $installFolder)) {
-        New-Item -ItemType Directory -Path $installFolder -Force | Out-Null
-    }
-
-    # Install AI assistant configuration (must be at root)
-    if ($AiAssistant -eq "augment") {
-        $augmentSrc = Join-Path $StarterPackDir ".augment"
-        $augmentDest = Join-Path $ProjectRoot ".augment"
-        if (Copy-DirectoryContents $augmentSrc $augmentDest) {
-            Print-Success "Installed Augment rules"
+        if (-not (Test-Path $destDir)) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
         }
-    } elseif ($AiAssistant -eq "claude-code") {
-        $claudeSrc = Join-Path $StarterPackDir ".claude"
-        $claudeDest = Join-Path $ProjectRoot ".claude"
-        if (Copy-DirectoryContents $claudeSrc $claudeDest) {
-            Print-Success "Installed Claude Code configuration"
+
+        Copy-Item -Path $_.FullName -Destination $destPath -Force
+        $CreatedItems += $destPath
+        Print-Success "Installed .augment/rules/$relativePath"
+    }
+
+    if (-not (Test-Path ".augment")) {
+        $CreatedItems += ".augment"
+    }
+}
+elseif ($AiAssistant -eq "claude-code") {
+    $rulesSource = Join-Path $SourceRoot "ai-rules/claude-code"
+    $rulesDest = ".claude/rules"
+    
+    if (-not (Test-Path ".claude")) {
+        New-Item -ItemType Directory -Path ".claude" -Force | Out-Null
+    }
+    if (-not (Test-Path $rulesDest)) {
+        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
+    }
+    
+    Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
+        $destPath = Join-Path $rulesDest $relativePath
+        $destDir = Split-Path -Parent $destPath
+
+        if (-not (Test-Path $destDir)) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
         }
+
+        Copy-Item -Path $_.FullName -Destination $destPath -Force
+        $CreatedItems += $destPath
+        Print-Success "Installed .claude/rules/$relativePath"
     }
 
-    # Install templates to log-file-genius/templates/
-    $templatesDest = Join-Path $installFolder "templates"
-    if (Copy-DirectoryContents $TemplatesDir $templatesDest) {
-        Print-Success "Installed templates"
+    if (-not (Test-Path ".claude")) {
+        $CreatedItems += ".claude"
     }
-
-    # Install validation scripts to log-file-genius/scripts/
-    $scriptsDest = Join-Path $installFolder "scripts"
-    if (-not (Test-Path $scriptsDest)) {
-        New-Item -ItemType Directory -Path $scriptsDest -Force | Out-Null
+    
+    # Copy project_instructions.md if it exists
+    $projectInstructions = Join-Path $rulesSource "project_instructions.md"
+    if (Test-Path $projectInstructions) {
+        Copy-Item -Path $projectInstructions -Destination ".claude/" -Force
+        Print-Success "Installed .claude/project_instructions.md"
     }
+}
 
-    $bashScript = Join-Path $ScriptsDir "validate-log-files.sh"
-    $bashDest = Join-Path $scriptsDest "validate-log-files.sh"
-    if (Copy-FileItem $bashScript $bashDest) {
-        Print-Success "Installed validation script (Bash)"
-    }
+# ============================================================================
+# CREATE CONFIG FILE
+# ============================================================================
 
-    $ps1Script = Join-Path $ScriptsDir "validate-log-files.ps1"
-    $ps1Dest = Join-Path $scriptsDest "validate-log-files.ps1"
-    if (Copy-FileItem $ps1Script $ps1Dest) {
-        Print-Success "Installed validation script (PowerShell)"
-    }
+Print-Info "Creating .logfile-config.yml..."
 
-    # Install profile configuration (at root)
-    $configSrc = Join-Path $StarterPackDir ".logfile-config.yml"
-    $configDest = Join-Path $ProjectRoot ".logfile-config.yml"
-    if (Copy-FileItem $configSrc $configDest) {
-        # Update profile and paths in config file
-        $content = Get-Content $configDest -Raw
-        $content = $content -replace 'profile: .*', "profile: $Profile"
+$configContent = @"
+# Log File Genius Configuration
+# All log files are in /logs/ folder (standard structure)
 
-        # Add paths section
-        $pathsSection = @"
+# Version tracking
+log_file_genius_version: "$VERSION"
 
-installation:
-  folder: log-file-genius
+# Profile selection
+profile: $Profile
 
-paths:
-  changelog: $changelogPath
-  devlog: $devlogPath
-  adr: $adrPath
-  state: $statePath
+# AI assistant
+ai_assistant: $AiAssistant
+
+# For customization options, see:
+# - .log-file-genius/docs/profile-selection-guide.md
+# - .log-file-genius/profiles/*.yml
 "@
-        $content = $content + $pathsSection
-        Set-Content -Path $configDest -Value $content
-        Print-Success "Installed profile configuration ($Profile)"
-    }
 
-    # Install git hooks to log-file-genius/git-hooks/
-    $gitHooksSrc = Join-Path $StarterPackDir ".git-hooks"
-    if (Test-Path $gitHooksSrc) {
-        $gitHooksDest = Join-Path $installFolder "git-hooks"
-        Copy-DirectoryContents $gitHooksSrc $gitHooksDest | Out-Null
-        Print-Success "Installed git hook templates"
-        Write-Host ""
-        Print-Info "To enable git hooks, run:"
-        Write-Host "  Copy-Item log-file-genius\git-hooks\pre-commit .git\hooks\pre-commit"
-    }
-    
-    Write-Host ""
-    Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║   Installation Complete!               ║" -ForegroundColor Green
-    Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
-    Write-Host ""
-    Print-Info "Next steps:"
-    Write-Host "  1. Initialize your log files from templates:"
-    Write-Host "     Copy-Item log-file-genius\templates\CHANGELOG_template.md docs\planning\CHANGELOG.md"
-    Write-Host "     Copy-Item log-file-genius\templates\DEVLOG_template.md docs\planning\DEVLOG.md"
-    Write-Host "     Copy-Item log-file-genius\templates\ADR_template.md docs\adr\ADR-template.md"
-    Write-Host ""
-    Write-Host "  2. Customize templates in log-file-genius\templates\ if needed"
-    Write-Host ""
-    Write-Host "  3. Start using your AI assistant - it will automatically maintain logs!"
-    Write-Host ""
-    Print-Info "Documentation: .log-file-genius\product\docs\"
-    Print-Info "Run validation: .\log-file-genius\scripts\validate-log-files.ps1"
-    Write-Host ""
+Set-Content -Path ".logfile-config.yml" -Value $configContent -Force
+$CreatedItems += ".logfile-config.yml"
+Print-Success "Created .logfile-config.yml"
+
+# ============================================================================
+# VALIDATION
+# ============================================================================
+
+Write-Host ""
+Print-Info "Validating installation..."
+
+$errors = @()
+
+if (-not (Test-Path "logs/CHANGELOG.md")) { $errors += "logs/CHANGELOG.md missing" }
+if (-not (Test-Path "logs/DEVLOG.md")) { $errors += "logs/DEVLOG.md missing" }
+if (-not (Test-Path "logs/STATE.md")) { $errors += "logs/STATE.md missing" }
+if (-not (Test-Path ".logfile-config.yml")) { $errors += ".logfile-config.yml missing" }
+
+if ($AiAssistant -eq "augment" -and -not (Test-Path ".augment/rules/log-file-maintenance.md")) {
+    $errors += ".augment/rules/log-file-maintenance.md missing"
+}
+if ($AiAssistant -eq "claude-code" -and -not (Test-Path ".claude/rules/log-file-maintenance.md")) {
+    $errors += ".claude/rules/log-file-maintenance.md missing"
 }
 
-# Run main
-Main
+if ($errors.Count -gt 0) {
+    Print-Error "Installation validation failed:"
+    foreach ($err in $errors) {
+        Print-Error "  - $err"
+    }
+    Rollback-Installation "Validation failed"
+}
+
+Print-Success "Installation validated successfully!"
+
+# ============================================================================
+# SUCCESS MESSAGE
+# ============================================================================
+
+Write-Host ""
+Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║   Installation Complete!               ║" -ForegroundColor Green
+Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+Print-Success "Log files installed to: logs/"
+Print-Success "AI rules installed to: .$AiAssistant/"
+Print-Success "Config file: .logfile-config.yml"
+Write-Host ""
+Write-Host "🤖 NEXT: Ask your AI assistant to document this installation!" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "   Copy and paste this prompt:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host '   "I just installed Log File Genius. Please:' -ForegroundColor White
+Write-Host '    1. Update CHANGELOG.md with what was installed' -ForegroundColor White
+Write-Host '    2. Update DEVLOG.md with why we installed it' -ForegroundColor White
+Write-Host '    3. Create an ADR documenting the architectural decision' -ForegroundColor White
+Write-Host '       to adopt Log File Genius for project documentation"' -ForegroundColor White
+Write-Host ""
+Print-Info "This will:"
+Print-Info "  • Show you how the system works"
+Print-Info "  • Create your first log entries"
+Print-Info "  • Document the architectural decision"
+Print-Info "  • Validate that AI rules are working"
+Write-Host ""
+Print-Info "Documentation: .log-file-genius/docs/log_file_how_to.md"
+Write-Host ""
 

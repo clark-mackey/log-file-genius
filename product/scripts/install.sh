@@ -1,305 +1,369 @@
 #!/usr/bin/env bash
-# Log File Genius Installer
-# Installs Log File Genius from .log-file-genius/ source to your project
+# Log File Genius Installer (Bash)
+# Installs Log File Genius to your project with standard /logs/ structure
+#
+# Usage:
+#   install.sh [--profile <profile>] [--ai-assistant <augment|claude-code>] [--force]
+#
+# Options:
+#   --profile        Profile to use (solo-developer, team, open-source, startup)
+#   --ai-assistant   AI assistant to install rules for (augment, claude-code)
+#   --force          Skip confirmation prompts (validation still runs)
 
-set -e  # Exit on error
+set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
 
-# Script directory detection
+VERSION="0.2.0"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SOURCE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(pwd)"
 
-# Check if running from .log-file-genius/
-if [[ ! "$SCRIPT_DIR" =~ \.log-file-genius ]]; then
-    echo -e "${YELLOW}⚠️  Warning: This script should be run from .log-file-genius/product/scripts/${NC}"
-    echo -e "${YELLOW}   Current location: $SCRIPT_DIR${NC}"
-    echo ""
-    read -p "Continue anyway? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
+# Track created items for rollback
+CREATED_ITEMS=()
+
+PROFILE=""
+AI_ASSISTANT=""
+FORCE=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --profile)
+            PROFILE="$2"
+            shift 2
+            ;;
+        --ai-assistant)
+            AI_ASSISTANT="$2"
+            shift 2
+            ;;
+        --force)
+            FORCE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+print_success() {
+    echo -e "\033[0;32m[OK]\033[0m $1"
+}
+
+print_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1"
+}
+
+print_warning() {
+    echo -e "\033[0;33m[WARNING]\033[0m $1"
+}
+
+print_info() {
+    echo -e "\033[0;36m[INFO]\033[0m $1"
+}
+
+rollback_installation() {
+    local reason="$1"
+
+    print_error "Installation failed: $reason"
+
+    if [ ${#CREATED_ITEMS[@]} -gt 0 ]; then
+        print_warning "Rolling back changes..."
+
+        for item in "${CREATED_ITEMS[@]}"; do
+            if [ -e "$item" ]; then
+                rm -rf "$item" 2>/dev/null || true
+                print_info "Removed $item"
+            fi
+        done
+
+        print_success "Rollback complete"
+    fi
+
+    exit 1
+}
+
+# ============================================================================
+# BANNER
+# ============================================================================
+
+echo ""
+echo "╔════════════════════════════════════════╗"
+echo "║   Log File Genius Installer v$VERSION      ║"
+echo "╚════════════════════════════════════════╝"
+echo ""
+
+# ============================================================================
+# DETECT AI ASSISTANT
+# ============================================================================
+
+if [ -z "$AI_ASSISTANT" ]; then
+    print_info "Detecting AI assistant..."
+    
+    if [ -d ".augment" ]; then
+        AI_ASSISTANT="augment"
+        print_success "Detected Augment"
+    elif [ -d ".claude" ]; then
+        AI_ASSISTANT="claude-code"
+        print_success "Detected Claude Code"
+    else
+        echo ""
+        echo "Which AI assistant are you using?"
+        echo "  1) Augment"
+        echo "  2) Claude Code"
+        echo ""
+        read -p "Enter choice (1-2): " choice
+        
+        case $choice in
+            1) AI_ASSISTANT="augment" ;;
+            2) AI_ASSISTANT="claude-code" ;;
+            *)
+                print_error "Invalid choice. Exiting."
+                exit 1
+                ;;
+        esac
     fi
 fi
 
-echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   Log File Genius Installer v1.0      ║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
-echo ""
+# ============================================================================
+# SELECT PROFILE
+# ============================================================================
 
-# Function to print success
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-}
-
-# Function to print error
-print_error() {
-    echo -e "${RED}✗${NC} $1"
-}
-
-# Function to print warning
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
-
-# Function to print info
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
-}
-
-# Check for incorrect installation
-check_incorrect_installation() {
-    if [[ -d "$PROJECT_ROOT/product" ]] || [[ -d "$PROJECT_ROOT/project" ]]; then
-        print_error "Detected incorrect installation!"
-        echo ""
-        echo "Found /product or /project folders in your project root."
-        echo "These are meta-directories for building Log File Genius itself."
-        echo "They should NOT be in your project."
-        echo ""
-        echo "Would you like to run the cleanup script to fix this?"
-        read -p "Run cleanup? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            bash "$SCRIPT_DIR/cleanup.sh"
-            echo ""
-            echo "Cleanup complete. Re-run this installer."
-            exit 0
-        else
-            echo "Please manually remove /product and /project folders before continuing."
+if [ -z "$PROFILE" ]; then
+    echo ""
+    echo "Select your project profile:"
+    echo "  1) solo-developer  - Individual developers (flexible, minimal overhead)"
+    echo "  2) team            - Teams of 2+ developers (consistent docs)"
+    echo "  3) open-source     - Public projects (strict formatting)"
+    echo "  4) startup         - Fast-moving startups (minimal overhead)"
+    echo ""
+    read -p "Enter choice (1-4): " choice
+    
+    case $choice in
+        1) PROFILE="solo-developer" ;;
+        2) PROFILE="team" ;;
+        3) PROFILE="open-source" ;;
+        4) PROFILE="startup" ;;
+        *)
+            print_error "Invalid choice. Exiting."
             exit 1
-        fi
-    fi
-}
-
-# Detect AI assistant
-detect_ai_assistant() {
-    if [[ -d "$PROJECT_ROOT/.augment" ]]; then
-        echo "augment"
-    elif [[ -d "$PROJECT_ROOT/.claude" ]]; then
-        echo "claude-code"
-    elif [[ -d "$PROJECT_ROOT/.cursor" ]]; then
-        echo "cursor"
-    else
-        echo "unknown"
-    fi
-}
-
-# Prompt for AI assistant
-prompt_ai_assistant() {
-    echo -e "${BLUE}Which AI assistant are you using?${NC}"
-    echo "1) Augment"
-    echo "2) Claude Code"
-    echo "3) Cursor (coming soon)"
-    echo "4) GitHub Copilot (coming soon)"
-    echo ""
-    read -p "Enter choice (1-4): " choice
-    
-    case $choice in
-        1) echo "augment" ;;
-        2) echo "claude-code" ;;
-        3) echo "cursor" ;;
-        4) echo "github-copilot" ;;
-        *) echo "augment" ;;  # Default
+            ;;
     esac
-}
+fi
 
-# Prompt for profile
-prompt_profile() {
-    echo ""
-    echo -e "${BLUE}Which profile fits your project best?${NC}"
-    echo "1) solo-developer (default) - Individual developers, flexible"
-    echo "2) team - Teams of 2+, consistent documentation"
-    echo "3) open-source - Public projects, strict formatting"
-    echo "4) startup - MVPs/prototypes, minimal overhead"
-    echo ""
-    read -p "Enter choice (1-4): " choice
-    
-    case $choice in
-        1) echo "solo-developer" ;;
-        2) echo "team" ;;
-        3) echo "open-source" ;;
-        4) echo "startup" ;;
-        *) echo "solo-developer" ;;  # Default
-    esac
-}
+print_success "Profile: $PROFILE"
+print_success "AI Assistant: $AI_ASSISTANT"
 
-# Copy directory contents
-copy_directory_contents() {
-    local src="$1"
-    local dest="$2"
+# ============================================================================
+# CHECK FOR EXISTING INSTALLATION
+# ============================================================================
+
+if [ -d "logs" ] || [ -f ".logfile-config.yml" ]; then
+    echo ""
+    print_warning "Existing installation detected!"
+    [ -d "logs" ] && print_warning "  - logs/ folder exists"
+    [ -f ".logfile-config.yml" ] && print_warning "  - .logfile-config.yml exists"
+    echo ""
     
-    if [[ ! -d "$src" ]]; then
-        print_error "Source directory not found: $src"
-        return 1
+    if [ "$FORCE" != "true" ]; then
+        read -p "Continue and overwrite? (y/N): " continue
+        if [ "$continue" != "y" ] && [ "$continue" != "Y" ]; then
+            print_info "Installation cancelled."
+            exit 0
+        fi
     fi
-    
-    mkdir -p "$dest"
-    cp -r "$src"/* "$dest/" 2>/dev/null || true
-    return 0
-}
+fi
 
-# Copy file
-copy_file() {
-    local src="$1"
-    local dest="$2"
-    
-    if [[ ! -f "$src" ]]; then
-        print_error "Source file not found: $src"
-        return 1
-    fi
-    
-    mkdir -p "$(dirname "$dest")"
-    cp "$src" "$dest"
-    return 0
-}
+# ============================================================================
+# CREATE LOGS FOLDER STRUCTURE
+# ============================================================================
 
-# Main installation
-main() {
-    print_info "Starting installation..."
-    echo ""
-    
-    # Check for incorrect installation
-    check_incorrect_installation
-    
-    # Detect or prompt for AI assistant
-    AI_ASSISTANT=$(detect_ai_assistant)
-    if [[ "$AI_ASSISTANT" == "unknown" ]]; then
-        AI_ASSISTANT=$(prompt_ai_assistant)
+echo ""
+print_info "Creating /logs/ folder structure..."
+
+mkdir -p logs/adr
+mkdir -p logs/incidents
+CREATED_ITEMS+=("logs")
+
+print_success "Created logs/"
+print_success "Created logs/adr/"
+print_success "Created logs/incidents/"
+
+# ============================================================================
+# COPY TEMPLATES TO /logs/
+# ============================================================================
+
+print_info "Copying log file templates..."
+
+cp "$SOURCE_ROOT/templates/CHANGELOG_template.md" "logs/CHANGELOG.md"
+CREATED_ITEMS+=("logs/CHANGELOG.md")
+print_success "Copied logs/CHANGELOG.md"
+
+cp "$SOURCE_ROOT/templates/DEVLOG_template.md" "logs/DEVLOG.md"
+CREATED_ITEMS+=("logs/DEVLOG.md")
+print_success "Copied logs/DEVLOG.md"
+
+cp "$SOURCE_ROOT/templates/STATE_template.md" "logs/STATE.md"
+CREATED_ITEMS+=("logs/STATE.md")
+print_success "Copied logs/STATE.md"
+
+cp "$SOURCE_ROOT/templates/ADR_template.md" "logs/adr/TEMPLATE.md"
+CREATED_ITEMS+=("logs/adr/TEMPLATE.md")
+print_success "Copied logs/adr/TEMPLATE.md"
+
+# ============================================================================
+# INSTALL AI RULES
+# ============================================================================
+
+print_info "Installing AI assistant rules..."
+
+if [ "$AI_ASSISTANT" = "augment" ]; then
+    mkdir -p .augment/rules
+    CREATED_ITEMS+=(".augment")
+
+    if [ -d "$SOURCE_ROOT/ai-rules/augment" ]; then
+        # Copy all .md files recursively, preserving directory structure
+        if find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" | grep -q .; then
+            cd "$SOURCE_ROOT/ai-rules/augment"
+            find . -name "*.md" -type f | while read -r file; do
+                dest_dir=".augment/rules/$(dirname "$file")"
+                mkdir -p "$PROJECT_ROOT/$dest_dir"
+                cp "$file" "$PROJECT_ROOT/$dest_dir/"
+            done
+            cd "$PROJECT_ROOT"
+            print_success "Installed .augment/rules/"
+        else
+            rollback_installation "No .md files found in ai-rules/augment/"
+        fi
     else
-        print_info "Detected AI assistant: $AI_ASSISTANT"
+        rollback_installation "ai-rules/augment/ directory not found"
     fi
-    
-    # Prompt for profile
-    PROFILE=$(prompt_profile)
-    print_info "Selected profile: $PROFILE"
-    echo ""
 
-    # Prompt for log file locations (brownfield support)
-    echo -e "${CYAN}Where should your log files be located?${NC}"
-    echo -e "${CYAN}Press Enter to use defaults, or specify custom paths:${NC}"
-    echo ""
+elif [ "$AI_ASSISTANT" = "claude-code" ]; then
+    mkdir -p .claude/rules
+    CREATED_ITEMS+=(".claude")
 
-    read -p "CHANGELOG location [docs/planning/CHANGELOG.md]: " CHANGELOG_PATH
-    CHANGELOG_PATH=${CHANGELOG_PATH:-docs/planning/CHANGELOG.md}
-
-    read -p "DEVLOG location [docs/planning/DEVLOG.md]: " DEVLOG_PATH
-    DEVLOG_PATH=${DEVLOG_PATH:-docs/planning/DEVLOG.md}
-
-    read -p "ADR directory [docs/adr]: " ADR_PATH
-    ADR_PATH=${ADR_PATH:-docs/adr}
-
-    read -p "STATE location [docs/STATE.md]: " STATE_PATH
-    STATE_PATH=${STATE_PATH:-docs/STATE.md}
-
-    echo ""
-    print_info "Log file paths configured"
-    echo ""
-
-    # Determine source paths
-    STARTER_PACK_DIR="$SOURCE_ROOT/product/starter-packs/$AI_ASSISTANT"
-    TEMPLATES_DIR="$SOURCE_ROOT/product/templates"
-    SCRIPTS_DIR="$SOURCE_ROOT/product/scripts"
-    
-    # Check if starter pack exists
-    if [[ ! -d "$STARTER_PACK_DIR" ]]; then
-        print_error "Starter pack not found for $AI_ASSISTANT"
-        print_info "Available starter packs:"
-        ls -1 "$SOURCE_ROOT/product/starter-packs/"
-        exit 1
-    fi
-    
-    print_info "Installing from: $STARTER_PACK_DIR"
-    echo ""
-
-    # Create log-file-genius folder for all installed files
-    INSTALL_FOLDER="$PROJECT_ROOT/log-file-genius"
-    mkdir -p "$INSTALL_FOLDER"
-
-    # Install AI assistant configuration (must be at root)
-    if [[ "$AI_ASSISTANT" == "augment" ]]; then
-        if copy_directory_contents "$STARTER_PACK_DIR/.augment" "$PROJECT_ROOT/.augment"; then
-            print_success "Installed Augment rules"
+    if [ -d "$SOURCE_ROOT/ai-rules/claude-code" ]; then
+        # Copy all .md files recursively, preserving directory structure
+        if find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" | grep -q .; then
+            cd "$SOURCE_ROOT/ai-rules/claude-code"
+            find . -name "*.md" -type f | while read -r file; do
+                dest_dir=".claude/rules/$(dirname "$file")"
+                mkdir -p "$PROJECT_ROOT/$dest_dir"
+                cp "$file" "$PROJECT_ROOT/$dest_dir/"
+            done
+            cd "$PROJECT_ROOT"
+            print_success "Installed .claude/rules/"
+        else
+            rollback_installation "No .md files found in ai-rules/claude-code/"
         fi
-    elif [[ "$AI_ASSISTANT" == "claude-code" ]]; then
-        if copy_directory_contents "$STARTER_PACK_DIR/.claude" "$PROJECT_ROOT/.claude"; then
-            print_success "Installed Claude Code configuration"
-        fi
+    else
+        rollback_installation "ai-rules/claude-code/ directory not found"
     fi
 
-    # Install templates to log-file-genius/templates/
-    if copy_directory_contents "$TEMPLATES_DIR" "$INSTALL_FOLDER/templates"; then
-        print_success "Installed templates"
+    if [ -f "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" ]; then
+        cp "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" .claude/
+        print_success "Installed .claude/project_instructions.md"
     fi
+fi
 
-    # Install validation scripts to log-file-genius/scripts/
-    mkdir -p "$INSTALL_FOLDER/scripts"
-    if copy_file "$SCRIPTS_DIR/validate-log-files.sh" "$INSTALL_FOLDER/scripts/validate-log-files.sh"; then
-        chmod +x "$INSTALL_FOLDER/scripts/validate-log-files.sh"
-        print_success "Installed validation script (Bash)"
-    fi
-    if copy_file "$SCRIPTS_DIR/validate-log-files.ps1" "$INSTALL_FOLDER/scripts/validate-log-files.ps1"; then
-        print_success "Installed validation script (PowerShell)"
-    fi
+# ============================================================================
+# CREATE CONFIG FILE
+# ============================================================================
 
-    # Install profile configuration (at root)
-    if copy_file "$STARTER_PACK_DIR/.logfile-config.yml" "$PROJECT_ROOT/.logfile-config.yml"; then
-        # Update profile and add paths in config file
-        if command -v sed &> /dev/null; then
-            sed -i.bak "s/profile: .*/profile: $PROFILE/" "$PROJECT_ROOT/.logfile-config.yml"
-            rm -f "$PROJECT_ROOT/.logfile-config.yml.bak"
-        fi
+print_info "Creating .logfile-config.yml..."
 
-        # Add paths section
-        cat >> "$PROJECT_ROOT/.logfile-config.yml" << EOF
+cat > .logfile-config.yml << EOF
+# Log File Genius Configuration
+# All log files are in /logs/ folder (standard structure)
 
-installation:
-  folder: log-file-genius
+# Version tracking
+log_file_genius_version: "$VERSION"
 
-paths:
-  changelog: $CHANGELOG_PATH
-  devlog: $DEVLOG_PATH
-  adr: $ADR_PATH
-  state: $STATE_PATH
+# Profile selection
+profile: $PROFILE
+
+# AI assistant
+ai_assistant: $AI_ASSISTANT
+
+# For customization options, see:
+# - .log-file-genius/docs/profile-selection-guide.md
+# - .log-file-genius/profiles/*.yml
 EOF
-        print_success "Installed profile configuration ($PROFILE)"
-    fi
 
-    # Install git hooks to log-file-genius/git-hooks/
-    if [[ -d "$STARTER_PACK_DIR/.git-hooks" ]]; then
-        copy_directory_contents "$STARTER_PACK_DIR/.git-hooks" "$INSTALL_FOLDER/git-hooks"
-        print_success "Installed git hook templates"
-        echo ""
-        print_info "To enable git hooks, run:"
-        echo "  cp log-file-genius/git-hooks/pre-commit .git/hooks/pre-commit"
-        echo "  chmod +x .git/hooks/pre-commit"
-    fi
-    
-    echo ""
-    echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║   Installation Complete!               ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
-    echo ""
-    print_info "Next steps:"
-    echo "  1. Initialize your log files from templates:"
-    echo "     cp log-file-genius/templates/CHANGELOG_template.md docs/planning/CHANGELOG.md"
-    echo "     cp log-file-genius/templates/DEVLOG_template.md docs/planning/DEVLOG.md"
-    echo "     cp log-file-genius/templates/ADR_template.md docs/adr/ADR-template.md"
-    echo ""
-    echo "  2. Customize templates in log-file-genius/templates/ if needed"
-    echo ""
-    echo "  3. Start using your AI assistant - it will automatically maintain logs!"
-    echo ""
-    print_info "Documentation: .log-file-genius/product/docs/"
-    print_info "Run validation: ./log-file-genius/scripts/validate-log-files.sh"
-    echo ""
-}
+CREATED_ITEMS+=(".logfile-config.yml")
+print_success "Created .logfile-config.yml"
 
-# Run main
-main "$@"
+# ============================================================================
+# VALIDATION
+# ============================================================================
+
+echo ""
+print_info "Validating installation..."
+
+ERRORS=()
+
+[ ! -f "logs/CHANGELOG.md" ] && ERRORS+=("logs/CHANGELOG.md missing")
+[ ! -f "logs/DEVLOG.md" ] && ERRORS+=("logs/DEVLOG.md missing")
+[ ! -f "logs/STATE.md" ] && ERRORS+=("logs/STATE.md missing")
+[ ! -f ".logfile-config.yml" ] && ERRORS+=(".logfile-config.yml missing")
+
+if [ "$AI_ASSISTANT" = "augment" ] && [ ! -f ".augment/rules/log-file-maintenance.md" ]; then
+    ERRORS+=(".augment/rules/log-file-maintenance.md missing")
+fi
+
+if [ "$AI_ASSISTANT" = "claude-code" ] && [ ! -f ".claude/rules/log-file-maintenance.md" ]; then
+    ERRORS+=(".claude/rules/log-file-maintenance.md missing")
+fi
+
+if [ ${#ERRORS[@]} -gt 0 ]; then
+    print_error "Installation validation failed:"
+    for error in "${ERRORS[@]}"; do
+        print_error "  - $error"
+    done
+    exit 1
+fi
+
+print_success "Installation validated successfully!"
+
+# ============================================================================
+# SUCCESS MESSAGE
+# ============================================================================
+
+echo ""
+echo "╔════════════════════════════════════════╗"
+echo "║   Installation Complete!               ║"
+echo "╚════════════════════════════════════════╝"
+echo ""
+print_success "Log files installed to: logs/"
+print_success "AI rules installed to: .$AI_ASSISTANT/"
+print_success "Config file: .logfile-config.yml"
+echo ""
+echo -e "\033[0;36m🤖 NEXT: Ask your AI assistant to document this installation!\033[0m"
+echo ""
+echo -e "\033[0;33m   Copy and paste this prompt:\033[0m"
+echo ""
+echo '   "I just installed Log File Genius. Please:'
+echo '    1. Update CHANGELOG.md with what was installed'
+echo '    2. Update DEVLOG.md with why we installed it'
+echo '    3. Create an ADR documenting the architectural decision'
+echo '       to adopt Log File Genius for project documentation"'
+echo ""
+print_info "This will:"
+print_info "  • Show you how the system works"
+print_info "  • Create your first log entries"
+print_info "  • Document the architectural decision"
+print_info "  • Validate that AI rules are working"
+echo ""
+print_info "Documentation: .log-file-genius/docs/log_file_how_to.md"
+echo ""
 

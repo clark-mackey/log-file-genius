@@ -101,17 +101,17 @@ git submodule add -b main `
 The installer will:
 - ✅ Detect your AI assistant (Augment, Claude Code, etc.)
 - ✅ Prompt for your profile (solo-developer, team, open-source, startup)
-- ✅ Prompt for log file locations (brownfield support)
-- ✅ Install templates, validation scripts, and AI assistant rules
+- ✅ Create standard `/logs/` folder structure
+- ✅ Install log file templates and AI assistant rules
 - ✅ Configure everything for immediate use
 
 **What gets installed:**
-- `log-file-genius/` - Templates, scripts, and git hooks (ONE folder)
+- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs, incidents)
 - `.augment/` or `.claude/` - AI assistant rules
-- `.logfile-config.yml` - Profile configuration with your log file paths
+- `.logfile-config.yml` - Profile configuration
 
 **What stays hidden:**
-- `.log-file-genius/` - Source repository (for updates)
+- `.log-file-genius/` - Source repository (templates, scripts, docs - for updates)
 
 ---
 
@@ -127,7 +127,7 @@ Starting a brand new project? Use the GitHub template:
     Give it a name. You now have the complete structure.
 
 3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start using the system.
+    Follow the [**`log_file_how_to.md`**](.log-file-genius/docs/log_file_how_to.md) guide to start using the system.
 
 ---
 
@@ -140,29 +140,19 @@ Already installed? Update to the latest version:
 cd .log-file-genius && git pull && cd ..
 
 # Re-run installer (smart merge, preserves customizations)
-./.log-file-genius/product/scripts/install.sh --update
+./.log-file-genius/product/scripts/install.sh --force
 ```
 
 ---
 
 ### Migration from Existing Docs
 
-Already have documentation? See the [**Migration Guide**](product/docs/MIGRATION_GUIDE.md) for:
-- **Scenario A:** No docs → Start fresh (Minutes)
-- **Scenario B:** Have CHANGELOG → Expand (1-2 hours)
-- **Scenario C:** Verbose docs → Condense (1 day)
-- **Scenario D:** Partial implementation → Complete (2-4 hours)
+Already have documentation? The installer creates a clean `/logs/` structure. You can:
+- **Start fresh:** Let the installer create new templates, then manually migrate your existing content
+- **Brownfield:** Keep your existing docs where they are and use Log File Genius alongside them
+- **Full migration:** Copy your existing CHANGELOG/DEVLOG content into the new `/logs/` files
 
-## 📦 Starter Packs
-
-Get running even faster with pre-configured starter packs for your favorite tools.
-
-| Tool | Link | Status |
-|---|---|---|
-| **Claude Code** | `product/starter-packs/claude-code/` | ✅ Available |
-| **Cursor** | `product/starter-packs/cursor/` | 🚧 Coming Soon |
-| **GitHub Copilot** | `product/starter-packs/github-copilot/` | 🚧 Coming Soon |
-| **Augment** | `product/starter-packs/augment/` | ✅ Available |
+For detailed migration strategies, see [**Migration Guide**](.log-file-genius/docs/MIGRATION_GUIDE.md).
 
 ---
 
