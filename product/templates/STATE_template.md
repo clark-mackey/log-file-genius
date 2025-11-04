@@ -7,10 +7,9 @@
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications  
-📊 **[CHANGELOG](../planning/CHANGELOG.md)** - Technical changes and version history  
-📖 **[DEVLOG](../planning/DEVLOG.md)** - Development narrative and decision rationale  
-⚖️ **[ADRs](../docs/adr/README.md)** - Architectural decision records
+📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
+📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
 > **For AI Agents:** This file provides at-a-glance status for multi-agent coordination. Read this FIRST before starting work to avoid conflicts and duplicate effort. Update at the START and END of each work session.
 

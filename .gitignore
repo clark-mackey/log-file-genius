@@ -1,5 +1,9 @@
-# Augment rules - internal guidance only (root level only, not starter packs)
+# Augment - internal guidance only (root level only, not starter packs)
+# Ignore the entire .augment directory
 /.augment/
+# BUT track the user-preferences rule (it references the git-ignored config.yaml)
+!/.augment/rules/
+!/.augment/rules/user-preferences.md
 
 # Claude Code rules - internal guidance only (root level only, not starter packs)
 /.claude/

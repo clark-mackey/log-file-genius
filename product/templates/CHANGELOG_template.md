@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications
-📖 **[DEVLOG](DEVLOG.md)** - Development narrative and decision rationale
-📐 **[Architecture](../docs/architecture.md)** - System architecture and design
+📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
+📐 **[ADRs](./adr/README.md)** - Architectural decision records
+📊 **[STATE](./STATE.md)** - Current project state and metrics
 
 > **For AI Agents:** This file is a concise technical record of changes. For context on *why* decisions were made, see DEVLOG.md. For current project state, see DEVLOG.md → Current Context section.
 

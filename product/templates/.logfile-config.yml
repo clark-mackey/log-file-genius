@@ -18,8 +18,8 @@ log_file_genius_version: "0.2.0"
 # - open-source: Public projects (strict formatting, community-facing docs)
 # - startup: Fast-moving startups/MVPs (minimal overhead, maximum speed)
 #
-# See product/profiles/*.yml for full profile definitions
-# See product/docs/profile-selection-guide.md for help choosing
+# See .log-file-genius/profiles/*.yml for full profile definitions
+# See .log-file-genius/docs/profile-selection-guide.md for help choosing
 # ============================================================================
 
 profile: solo-developer
@@ -77,7 +77,7 @@ profile: solo-developer
 #     devlog_age_days: 14
 #     auto_archive_on_warning: false
 #     auto_archive_on_error: true
-#     archive_directory: project/planning/archive
+#     archive_directory: logs/archive
 
 # AI assistant behavior - Customize how AI assistants behave
 # overrides:
@@ -134,10 +134,10 @@ profile: solo-developer
 # DOCUMENTATION
 # ============================================================================
 # For more information:
-# - Profile definitions: product/profiles/*.yml
-# - Profile selection guide: product/docs/profile-selection-guide.md
-# - Schema documentation: product/docs/profile-schema.md
-# - Validation guide: product/docs/validation-guide.md
-# - Log file how-to: product/docs/log_file_how_to.md
+# - Profile definitions: .log-file-genius/profiles/*.yml
+# - Profile selection guide: .log-file-genius/docs/profile-selection-guide.md
+# - Schema documentation: .log-file-genius/docs/profile-schema.md
+# - Validation guide: .log-file-genius/docs/validation-guide.md
+# - Log file how-to: .log-file-genius/docs/log_file_how_to.md
 # ============================================================================
 

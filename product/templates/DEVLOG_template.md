@@ -6,10 +6,9 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications
-📊 **[CHANGELOG](CHANGELOG.md)** - Technical changes and version history
-📐 **[Architecture](../docs/architecture.md)** - System architecture and design
-⚖️ **[ADRs](../docs/adr/README.md)** - Architectural decision records
+📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
+📈 **[STATE](./STATE.md)** - Current project state and metrics
 
 > **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** and **Decisions (ADR)** sections. For technical details of *what* changed, see CHANGELOG.md.
 
