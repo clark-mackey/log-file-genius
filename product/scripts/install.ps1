@@ -239,66 +239,89 @@ Print-Info "Installing AI assistant rules..."
 if ($AiAssistant -eq "augment") {
     $rulesSource = Join-Path $SourceRoot "ai-rules/augment"
     $rulesDest = ".augment/rules"
-    
+
+    # Track if .augment existed before we started
+    $augmentExisted = Test-Path ".augment"
+
     if (-not (Test-Path ".augment")) {
         New-Item -ItemType Directory -Path ".augment" -Force | Out-Null
     }
     if (-not (Test-Path $rulesDest)) {
         New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
     }
-    
-    Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse | ForEach-Object {
-        $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
-        $destPath = Join-Path $rulesDest $relativePath
-        $destDir = Split-Path -Parent $destPath
 
-        if (-not (Test-Path $destDir)) {
-            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-        }
-
-        Copy-Item -Path $_.FullName -Destination $destPath -Force
-        $CreatedItems += $destPath
-        Print-Success "Installed .augment/rules/$relativePath"
+    # Track directory creation for rollback
+    if (-not $augmentExisted) {
+        $CreatedItems += ".augment"
+    } else {
+        $CreatedItems += ".augment/rules"
     }
 
-    if (-not (Test-Path ".augment")) {
-        $CreatedItems += ".augment"
+    try {
+        Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse -ErrorAction Stop | ForEach-Object {
+            $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
+            $destPath = Join-Path $rulesDest $relativePath
+            $destDir = Split-Path -Parent $destPath
+
+            if (-not (Test-Path $destDir)) {
+                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            }
+
+            Copy-Item -Path $_.FullName -Destination $destPath -Force -ErrorAction Stop
+            $CreatedItems += $destPath
+            Print-Success "Installed .augment/rules/$relativePath"
+        }
+    }
+    catch {
+        Rollback-Installation "Failed to copy AI rules: $($_.Exception.Message)"
     }
 }
 elseif ($AiAssistant -eq "claude-code") {
     $rulesSource = Join-Path $SourceRoot "ai-rules/claude-code"
     $rulesDest = ".claude/rules"
-    
+
+    # Track if .claude existed before we started
+    $claudeExisted = Test-Path ".claude"
+
     if (-not (Test-Path ".claude")) {
         New-Item -ItemType Directory -Path ".claude" -Force | Out-Null
     }
     if (-not (Test-Path $rulesDest)) {
         New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
     }
-    
-    Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse | ForEach-Object {
-        $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
-        $destPath = Join-Path $rulesDest $relativePath
-        $destDir = Split-Path -Parent $destPath
 
-        if (-not (Test-Path $destDir)) {
-            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+    # Track directory creation for rollback
+    if (-not $claudeExisted) {
+        $CreatedItems += ".claude"
+    } else {
+        $CreatedItems += ".claude/rules"
+    }
+
+    try {
+        Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse -ErrorAction Stop | ForEach-Object {
+            $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
+            $destPath = Join-Path $rulesDest $relativePath
+            $destDir = Split-Path -Parent $destPath
+
+            if (-not (Test-Path $destDir)) {
+                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            }
+
+            Copy-Item -Path $_.FullName -Destination $destPath -Force -ErrorAction Stop
+            $CreatedItems += $destPath
+            Print-Success "Installed .claude/rules/$relativePath"
         }
 
-        Copy-Item -Path $_.FullName -Destination $destPath -Force
-        $CreatedItems += $destPath
-        Print-Success "Installed .claude/rules/$relativePath"
+        # Copy project_instructions.md if it exists
+        $projectInstructions = Join-Path $rulesSource "project_instructions.md"
+        if (Test-Path $projectInstructions) {
+            Copy-Item -Path $projectInstructions -Destination ".claude/" -Force -ErrorAction Stop
+            $CreatedItems += ".claude/project_instructions.md"
+            Print-Success "Installed .claude/project_instructions.md"
+        }
     }
-
-    if (-not (Test-Path ".claude")) {
-        $CreatedItems += ".claude"
-    }
-    
-    # Copy project_instructions.md if it exists
-    $projectInstructions = Join-Path $rulesSource "project_instructions.md"
-    if (Test-Path $projectInstructions) {
-        Copy-Item -Path $projectInstructions -Destination ".claude/" -Force
-        Print-Success "Installed .claude/project_instructions.md"
+    catch {
+        Rollback-Installation "Failed to copy AI rules: $($_.Exception.Message)"
     }
 }
 
@@ -371,7 +394,7 @@ Write-Host "   Installation Complete!" -ForegroundColor Green
 Write-Host "===================================" -ForegroundColor Green
 Write-Host ""
 Print-Success "Log files installed to: logs/"
-Print-Success "AI rules installed to: .$AiAssistant/"
+Print-Success "AI rules installed to: .$AiAssistant/rules/"
 Print-Success "Config file: .logfile-config.yml"
 Write-Host ""
 Write-Host "-----------------------------------" -ForegroundColor Cyan

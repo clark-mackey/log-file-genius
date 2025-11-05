@@ -200,7 +200,7 @@ function Load-ProfileConfig {
 
         if ($configVersion -ne $latestVersion) {
             Write-Host ""
-            Write-Host "⚠️  Log File Genius update available: v$latestVersion (you have v$configVersion)" -ForegroundColor Yellow
+            Write-Host "[!] Log File Genius update available: v$latestVersion (you have v$configVersion)" -ForegroundColor Yellow
             Write-Host "    See: https://github.com/clark-mackey/log-file-genius/releases" -ForegroundColor Yellow
             Write-Host ""
         }
@@ -219,6 +219,7 @@ function Test-Changelog {
     # Check file exists
     if (-not (Test-Path $CHANGELOG_PATH)) {
         Write-ValidationResult "CHANGELOG" "ERROR" "File not found: $CHANGELOG_PATH"
+        Write-Host "  Hint: Run installer first: .log-file-genius/product/scripts/install.ps1" -ForegroundColor $COLOR_INFO
         return $EXIT_ERROR
     }
     
@@ -287,6 +288,7 @@ function Test-Devlog {
     # Check file exists
     if (-not (Test-Path $DEVLOG_PATH)) {
         Write-ValidationResult "DEVLOG" "ERROR" "File not found: $DEVLOG_PATH"
+        Write-Host "  Hint: Run installer first: .log-file-genius/product/scripts/install.ps1" -ForegroundColor $COLOR_INFO
         return $EXIT_ERROR
     }
     
