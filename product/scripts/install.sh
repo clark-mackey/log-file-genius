@@ -204,21 +204,37 @@ print_success "Created logs/incidents/"
 
 print_info "Copying log file templates..."
 
-cp "$SOURCE_ROOT/templates/CHANGELOG_template.md" "logs/CHANGELOG.md"
-CREATED_ITEMS+=("logs/CHANGELOG.md")
-print_success "Copied logs/CHANGELOG.md"
+# Template mappings (source -> destination)
+declare -A TEMPLATE_MAPPINGS=(
+    ["templates/CHANGELOG_template.md"]="logs/CHANGELOG.md"
+    ["templates/DEVLOG_template.md"]="logs/DEVLOG.md"
+    ["templates/STATE_template.md"]="logs/STATE.md"
+    ["templates/ADR_template.md"]="logs/adr/TEMPLATE.md"
+)
 
-cp "$SOURCE_ROOT/templates/DEVLOG_template.md" "logs/DEVLOG.md"
-CREATED_ITEMS+=("logs/DEVLOG.md")
-print_success "Copied logs/DEVLOG.md"
+TEMPLATE_ERRORS=()
 
-cp "$SOURCE_ROOT/templates/STATE_template.md" "logs/STATE.md"
-CREATED_ITEMS+=("logs/STATE.md")
-print_success "Copied logs/STATE.md"
+for source_rel in "${!TEMPLATE_MAPPINGS[@]}"; do
+    source="$SOURCE_ROOT/$source_rel"
+    dest="${TEMPLATE_MAPPINGS[$source_rel]}"
 
-cp "$SOURCE_ROOT/templates/ADR_template.md" "logs/adr/TEMPLATE.md"
-CREATED_ITEMS+=("logs/adr/TEMPLATE.md")
-print_success "Copied logs/adr/TEMPLATE.md"
+    if [ -f "$source" ]; then
+        if cp "$source" "$dest" 2>/dev/null; then
+            CREATED_ITEMS+=("$dest")
+            print_success "Copied $dest"
+        else
+            print_error "Failed to copy: $source"
+            TEMPLATE_ERRORS+=("$source")
+        fi
+    else
+        print_error "Template not found: $source"
+        TEMPLATE_ERRORS+=("$source")
+    fi
+done
+
+if [ ${#TEMPLATE_ERRORS[@]} -gt 0 ]; then
+    rollback_installation "Missing template files"
+fi
 
 # ============================================================================
 # INSTALL AI RULES
@@ -227,19 +243,37 @@ print_success "Copied logs/adr/TEMPLATE.md"
 print_info "Installing AI assistant rules..."
 
 if [ "$AI_ASSISTANT" = "augment" ]; then
+    # Track if .augment existed before we started
+    AUGMENT_EXISTED=false
+    [ -d ".augment" ] && AUGMENT_EXISTED=true
+
     mkdir -p .augment/rules
-    CREATED_ITEMS+=(".augment")
+
+    # Track directory creation for rollback
+    if [ "$AUGMENT_EXISTED" = false ]; then
+        CREATED_ITEMS+=(".augment")
+    else
+        CREATED_ITEMS+=(".augment/rules")
+    fi
 
     if [ -d "$SOURCE_ROOT/ai-rules/augment" ]; then
         # Copy all .md files recursively, preserving directory structure
-        if find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" | grep -q .; then
-            cd "$SOURCE_ROOT/ai-rules/augment"
-            find . -name "*.md" -type f | while read -r file; do
-                dest_dir=".augment/rules/$(dirname "$file")"
-                mkdir -p "$PROJECT_ROOT/$dest_dir"
-                cp "$file" "$PROJECT_ROOT/$dest_dir/"
-            done
-            cd "$PROJECT_ROOT"
+        if find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" -print -quit | grep -q .; then
+            # Use process substitution to avoid subshell issues with CREATED_ITEMS
+            while IFS= read -r -d '' file; do
+                rel_path="${file#$SOURCE_ROOT/ai-rules/augment/}"
+                dest_dir=".augment/rules/$(dirname "$rel_path")"
+                dest_file=".augment/rules/$rel_path"
+
+                mkdir -p "$dest_dir"
+
+                if cp "$file" "$dest_file" 2>/dev/null; then
+                    CREATED_ITEMS+=("$dest_file")
+                else
+                    rollback_installation "Failed to copy AI rule: $file"
+                fi
+            done < <(find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" -type f -print0)
+
             print_success "Installed .augment/rules/"
         else
             rollback_installation "No .md files found in ai-rules/augment/"
@@ -249,19 +283,37 @@ if [ "$AI_ASSISTANT" = "augment" ]; then
     fi
 
 elif [ "$AI_ASSISTANT" = "claude-code" ]; then
+    # Track if .claude existed before we started
+    CLAUDE_EXISTED=false
+    [ -d ".claude" ] && CLAUDE_EXISTED=true
+
     mkdir -p .claude/rules
-    CREATED_ITEMS+=(".claude")
+
+    # Track directory creation for rollback
+    if [ "$CLAUDE_EXISTED" = false ]; then
+        CREATED_ITEMS+=(".claude")
+    else
+        CREATED_ITEMS+=(".claude/rules")
+    fi
 
     if [ -d "$SOURCE_ROOT/ai-rules/claude-code" ]; then
         # Copy all .md files recursively, preserving directory structure
-        if find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" | grep -q .; then
-            cd "$SOURCE_ROOT/ai-rules/claude-code"
-            find . -name "*.md" -type f | while read -r file; do
-                dest_dir=".claude/rules/$(dirname "$file")"
-                mkdir -p "$PROJECT_ROOT/$dest_dir"
-                cp "$file" "$PROJECT_ROOT/$dest_dir/"
-            done
-            cd "$PROJECT_ROOT"
+        if find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" -print -quit | grep -q .; then
+            # Use process substitution to avoid subshell issues with CREATED_ITEMS
+            while IFS= read -r -d '' file; do
+                rel_path="${file#$SOURCE_ROOT/ai-rules/claude-code/}"
+                dest_dir=".claude/rules/$(dirname "$rel_path")"
+                dest_file=".claude/rules/$rel_path"
+
+                mkdir -p "$dest_dir"
+
+                if cp "$file" "$dest_file" 2>/dev/null; then
+                    CREATED_ITEMS+=("$dest_file")
+                else
+                    rollback_installation "Failed to copy AI rule: $file"
+                fi
+            done < <(find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" -type f -print0)
+
             print_success "Installed .claude/rules/"
         else
             rollback_installation "No .md files found in ai-rules/claude-code/"
@@ -270,9 +322,14 @@ elif [ "$AI_ASSISTANT" = "claude-code" ]; then
         rollback_installation "ai-rules/claude-code/ directory not found"
     fi
 
+    # Copy project_instructions.md if it exists
     if [ -f "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" ]; then
-        cp "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" .claude/
-        print_success "Installed .claude/project_instructions.md"
+        if cp "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" .claude/ 2>/dev/null; then
+            CREATED_ITEMS+=(".claude/project_instructions.md")
+            print_success "Installed .claude/project_instructions.md"
+        else
+            rollback_installation "Failed to copy project_instructions.md"
+        fi
     fi
 fi
 
@@ -330,7 +387,7 @@ if [ ${#ERRORS[@]} -gt 0 ]; then
     for error in "${ERRORS[@]}"; do
         print_error "  - $error"
     done
-    exit 1
+    rollback_installation "Validation failed"
 fi
 
 print_success "Installation validated successfully!"
@@ -345,7 +402,7 @@ echo "   Installation Complete!"
 echo "==================================="
 echo ""
 print_success "Log files installed to: logs/"
-print_success "AI rules installed to: .$AI_ASSISTANT/"
+print_success "AI rules installed to: .$AI_ASSISTANT/rules/"
 print_success "Config file: .logfile-config.yml"
 echo ""
 echo "-----------------------------------"

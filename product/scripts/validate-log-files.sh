@@ -185,7 +185,7 @@ load_profile_config() {
 
         if [ "$config_version" != "$latest_version" ]; then
             echo ""
-            echo -e "\033[33m⚠️  Log File Genius update available: v$latest_version (you have v$config_version)\033[0m"
+            echo -e "\033[33m[!] Log File Genius update available: v$latest_version (you have v$config_version)\033[0m"
             echo -e "\033[33m    See: https://github.com/clark-mackey/log-file-genius/releases\033[0m"
             echo ""
         fi
@@ -201,6 +201,7 @@ validate_changelog() {
     # Check file exists
     if [ ! -f "$CHANGELOG_PATH" ]; then
         write_validation_result "CHANGELOG" "ERROR" "File not found: $CHANGELOG_PATH"
+        echo -e "\033[36m  Hint: Run installer first: .log-file-genius/product/scripts/install.sh\033[0m"
         return
     fi
     
@@ -259,6 +260,7 @@ validate_devlog() {
     # Check file exists
     if [ ! -f "$DEVLOG_PATH" ]; then
         write_validation_result "DEVLOG" "ERROR" "File not found: $DEVLOG_PATH"
+        echo -e "\033[36m  Hint: Run installer first: .log-file-genius/product/scripts/install.sh\033[0m"
         return
     fi
     
