@@ -115,6 +115,23 @@ The installer will:
 **What stays hidden:**
 - `.log-file-genius/` - Source repository (templates, scripts, docs - for updates)
 
+### ✅ Post-Installation Verification
+
+After installation, your project root should contain **ONLY** these files/folders:
+
+**Visible:**
+- `logs/` folder (contains CHANGELOG.md, DEVLOG.md, STATE.md, adr/)
+- `.logfile-config.yml` file (your profile configuration)
+
+**Hidden (may not show in file explorer by default):**
+- `.log-file-genius/` folder (git submodule - the source repository)
+- `.augment/` or `.claude/` folder (AI assistant rules)
+- `.git/` folder (your project's git repository)
+
+**❌ If you see a visible `log-file-genius/` folder (without the dot), something went wrong.** This means a full clone was created instead of a submodule. Delete it and re-run the installation command.
+
+**Total visible items added to your project root: 2** (logs/ folder + .logfile-config.yml file)
+
 ---
 
 ### Alternative: GitHub Template (For New Projects)
