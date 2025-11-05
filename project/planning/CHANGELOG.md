@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - v0.1.0-dev
 
 ### Added
+- Installation guide (INSTALL.md) - Created dedicated root-level installation guide with one-command installation, troubleshooting, verification steps, and post-installation AI prompt. Makes installation discoverable for both humans and AI assistants. Linked from README for visibility. Files: `INSTALL.md`, `README.md`. Commit: `pending`
 - Installer testing guide - Created comprehensive manual and automated testing documentation for both installers covering greenfield/brownfield scenarios, force flags, profile selection, rollback testing, recursive AI rules, validation, and future CI/CD integration with Docker and GitHub Actions. Files: `product/docs/installer-testing-guide.md`. Commit: `pending`
 - AI rules for product distribution - Created product/ai-rules/ directory with Augment and Claude Code subdirectories containing AI assistant rules for distribution. These will be copied during installation to user projects. Files: `product/ai-rules/augment/`, `product/ai-rules/claude-code/`. Commit: `pending`
 - ADR 012 (Single logs folder) - Documented architectural decision to consolidate all log files (CHANGELOG, DEVLOG, STATE, ADRs) into single `logs/` folder instead of scattered locations. Simplifies structure, improves discoverability, reduces cognitive load. Files: `project/adr/012-single-logs-folder.md`. Commit: `pending`

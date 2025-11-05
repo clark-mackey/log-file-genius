@@ -8,7 +8,7 @@
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
 [![License: MIT](https://img.shields.io/github/license/clark-mackey/log-file-genius)](LICENSE)
 
-[Quick Start](#-quick-start) • [Migration Guide](docs/MIGRATION_GUIDE.md) • [The Methodology](docs/log_file_how_to.md) • [Examples](examples/) • [Why It's Genius](#-why-its-genius)
+[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](docs/MIGRATION_GUIDE.md) • [The Methodology](docs/log_file_how_to.md) • [Examples](examples/) • [Why It's Genius](#-why-its-genius)
 
 ---
 
@@ -76,9 +76,11 @@ See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation 
 
 ---
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### One-Command Installation (30 Seconds)
+
+**For detailed installation instructions, troubleshooting, and next steps, see [INSTALL.md](INSTALL.md).**
 
 Install Log File Genius in your existing project with a single command:
 
