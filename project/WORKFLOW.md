@@ -9,7 +9,12 @@
 
 **NEVER** use `git merge development` when on main branch!
 
-**ALWAYS** use selective merge: `git checkout development -- product/`
+**ALWAYS** use selective merge to copy ONLY distributable files:
+```bash
+git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
+```
 
 Violating this rule will copy `/project` files to main branch, breaking the distribution model.
 
@@ -94,8 +99,10 @@ git push origin development
 # 2. Switch to main branch
 git checkout main
 
-# 3. SELECTIVE MERGE - Copy ONLY product/ directory from development
+# 3. SELECTIVE MERGE - Copy ONLY distributable files from development
 git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
 
 # 4. Verify what changed
 git status
@@ -159,7 +166,9 @@ git push origin development
 
 # When ready to release
 git checkout main
-git checkout development -- product/templates/new-template.md
+git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
 git commit -m "Release: Add new template for X"
 git push origin main
 ```
@@ -198,7 +207,9 @@ git push origin development
 
 # When ready to release product changes
 git checkout main
-git checkout development -- product/docs/log_file_how_to.md
+git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
 git commit -m "Release: Update log file documentation"
 git push origin main
 ```
@@ -325,7 +336,12 @@ git checkout development
 # Then commit and push development
 ```
 
-**Prevention:** Always use `git checkout development -- product/` instead of `git merge development`
+**Prevention:** Always use selective checkout instead of `git merge development`:
+```bash
+git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
+```
 
 ### "I'm on main branch and can't see project/ files"
 
@@ -391,8 +407,10 @@ git push origin development
 # 2. Switch to main
 git checkout main
 
-# 3. SELECTIVE MERGE - Copy ONLY product/ directory
+# 3. SELECTIVE MERGE - Copy ONLY distributable files
 git checkout development -- product/
+git checkout development -- .augment/rules/
+git checkout development -- .claude/
 
 # 4. Commit and push
 git commit -m "Release: [description]"
