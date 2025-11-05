@@ -366,29 +366,31 @@ Print-Success "Installation validated successfully!"
 # ============================================================================
 
 Write-Host ""
-Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║   Installation Complete!               ║" -ForegroundColor Green
-Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "===================================" -ForegroundColor Green
+Write-Host "   Installation Complete!" -ForegroundColor Green
+Write-Host "===================================" -ForegroundColor Green
 Write-Host ""
 Print-Success "Log files installed to: logs/"
 Print-Success "AI rules installed to: .$AiAssistant/"
 Print-Success "Config file: .logfile-config.yml"
 Write-Host ""
-Write-Host "🤖 NEXT: Ask your AI assistant to document this installation!" -ForegroundColor Cyan
+Write-Host "-----------------------------------" -ForegroundColor Cyan
+Write-Host "NEXT STEP: Document this installation" -ForegroundColor Cyan
+Write-Host "-----------------------------------" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "   Copy and paste this prompt:" -ForegroundColor Yellow
+Write-Host "Copy and paste this prompt to your AI assistant:" -ForegroundColor Yellow
 Write-Host ""
-Write-Host '   "I just installed Log File Genius. Please:' -ForegroundColor White
-Write-Host '    1. Update CHANGELOG.md with what was installed' -ForegroundColor White
-Write-Host '    2. Update DEVLOG.md with why we installed it' -ForegroundColor White
-Write-Host '    3. Create an ADR documenting the architectural decision' -ForegroundColor White
-Write-Host '       to adopt Log File Genius for project documentation"' -ForegroundColor White
+Write-Host '"I just installed Log File Genius. Please:' -ForegroundColor White
+Write-Host ' 1. Update CHANGELOG.md with what was installed' -ForegroundColor White
+Write-Host ' 2. Update DEVLOG.md with why we installed it' -ForegroundColor White
+Write-Host ' 3. Create an ADR documenting the architectural decision' -ForegroundColor White
+Write-Host '    to adopt Log File Genius for project documentation"' -ForegroundColor White
 Write-Host ""
-Print-Info "This will:"
-Print-Info "  • Show you how the system works"
-Print-Info "  • Create your first log entries"
-Print-Info "  • Document the architectural decision"
-Print-Info "  • Validate that AI rules are working"
+Write-Host "This will:" -ForegroundColor Gray
+Write-Host "  - Show you how the system works" -ForegroundColor Gray
+Write-Host "  - Create your first log entries" -ForegroundColor Gray
+Write-Host "  - Document the architectural decision" -ForegroundColor Gray
+Write-Host "  - Validate that AI rules are working" -ForegroundColor Gray
 Write-Host ""
 Print-Info "Documentation: .log-file-genius/docs/log_file_how_to.md"
 Write-Host ""
