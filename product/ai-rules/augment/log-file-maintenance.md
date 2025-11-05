@@ -110,9 +110,56 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ---
 
+## 📝 TEMPLATES ARE READ-ONLY
+
+**CRITICAL:** Templates in `.log-file-genius/templates/` are **REFERENCE ONLY**
+
+**When creating initial log files:**
+1. ✅ **READ** the template to understand structure
+2. ✅ **CREATE** a new empty file in `logs/`
+3. ✅ **WRITE** minimal structure (headers, sections) WITHOUT example content
+4. ❌ **NEVER** copy example entries from templates
+5. ❌ **NEVER** edit template files
+
+**Example - Creating DEVLOG.md:**
+```markdown
+# Development Log
+
+## Related Documents
+📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes
+📈 **[STATE](./STATE.md)** - Current project state
+
+---
+
+## Current Context (Source of Truth)
+
+**Last Updated:** 2025-11-05
+
+### Project State
+- **Project:** My Project
+- **Current Version:** v0.1.0-dev
+- **Active Branch:** `main`
+- **Phase:** Initial setup
+
+### Current Objectives
+- [ ] Set up project structure
+
+---
+
+## Daily Log - Newest First
+
+(Entries will be added here as work progresses)
+```
+
+**Templates contain example entries to show format - DO NOT copy them to actual log files.**
+
+---
+
 ## 🚫 KEY RULES
 
 - ✅ All log files live in `logs/` folder (CHANGELOG, DEVLOG, STATE, adr/, incidents/)
+- ✅ Templates are READ-ONLY reference - never edit them
+- ✅ Create new empty files, mimic structure, skip example content
 - ✅ Update CHANGELOG BEFORE every commit (not after)
 - ✅ Include log files IN same commit as code
 - ✅ Write specific entries (not "Updated files")
