@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - v0.1.0-dev
 
+### Fixed
+- macOS Bash 3.2 compatibility - Replaced associative arrays (Bash 4.0+ feature) with indexed arrays using colon-delimited strings in install.sh. macOS ships with Bash 3.2 which doesn't support `declare -A`. Error manifested as "invalid arithmetic operator" when copying templates. Files: `product/scripts/install.sh`. Commit: `pending`
+
 ### Added
 - Installation guide (INSTALL.md) - Created dedicated root-level installation guide with one-command installation, troubleshooting, verification steps, and post-installation AI prompt. Makes installation discoverable for both humans and AI assistants. Linked from README for visibility. Files: `INSTALL.md`, `README.md`. Commit: `pending`
 - Installer testing guide - Created comprehensive manual and automated testing documentation for both installers covering greenfield/brownfield scenarios, force flags, profile selection, rollback testing, recursive AI rules, validation, and future CI/CD integration with Docker and GitHub Actions. Files: `product/docs/installer-testing-guide.md`. Commit: `pending`
