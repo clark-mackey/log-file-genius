@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # check-for-updates.ps1
 # Check for Log File Genius updates from GitHub releases
 

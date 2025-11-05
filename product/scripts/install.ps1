@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Log File Genius Installer (PowerShell)
 # Installs Log File Genius to your project with standard /logs/ structure
 #

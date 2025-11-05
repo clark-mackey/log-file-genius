@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Log File Genius Update Script (PowerShell)
 # Updates Log File Genius files while preserving user customizations
 

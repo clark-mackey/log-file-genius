@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Log File Genius Cleanup Script (PowerShell)
 # Removes incorrectly installed /product and /project folders
 
