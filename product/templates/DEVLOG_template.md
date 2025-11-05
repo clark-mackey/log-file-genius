@@ -7,158 +7,81 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ## Related Documents
 
 📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
-⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 📈 **[STATE](./STATE.md)** - Current project state and metrics
 
-> **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** and **Decisions (ADR)** sections. For technical details of *what* changed, see CHANGELOG.md.
+> **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** section. For technical details of *what* changed, see CHANGELOG.md.
 
 ---
 
 ## Current Context (Source of Truth)
 
-**Last Updated:** 2025-10-29
+**Last Updated:** [Current Date]
 
 ### Project State
 - **Project:** [Your Project Name]
-- **Current Version:** v0.7.0-dev
-- **Active Branch:** `feature/analytics-dashboard`
-- **Phase:** Pre-launch (pilot testing)
+- **Current Version:** v0.1.0-dev
+- **Active Branch:** `main`
+- **Phase:** Initial setup
 
-### Stack & Tools
-- **Backend:** Python 3.11, FastAPI, Uvicorn
-- **Database:** Supabase (Postgres 15)
-- **Frontend:** React 18, TypeScript, Tailwind CSS
-- **Deployment:** Railway (staging), TBD (production)
-- **Testing:** pytest, coverage >90% required
-
-### Standards & Conventions
-- **Code Style:** `black` (Python), `prettier` (JS/TS)
-- **Commits:** Conventional Commits format
-- **Decisions:** ADRs required for architectural choices
-- **Testing:** All new features require tests before merge
-- **API:** RESTful, versioned (`/v1/`), follows ADR-002 error model
-
-### Key Architectural Decisions
-- **ADR-003 (2025-10-29):** Conservative Metadata Management [→ Full ADR](../docs/adr/003-conservative-metadata-management.md)
-- **ADR-002 (2025-10-25):** Unified API Error Model [→ Full ADR](../docs/adr/002-unified-error-model.md)
-- **ADR-001 (2025-10-18):** PKCE Auth Flow [→ Full ADR](../docs/adr/001-pkce-auth-flow.md)
-
-### Constraints & Requirements
-- **Performance:** P95 latency < 250ms for all API endpoints
-- **Security:** All endpoints require authentication except `/health`
-- **Data:** Never delete user data without explicit consent
-- **Compatibility:** Support Claude Desktop 1.2024.10.29+
-
-### Current Objectives (Week of Oct 27)
-- [x] Ship v0.6.4 with metadata fallback parsing
-- [ ] Complete analytics dashboard UI foundation
-- [ ] Draft ADR for feature flag service architecture
-- [ ] Onboard 5 pilot customers with existing skills
+### Current Objectives
+- [ ] Set up initial project structure
+- [ ] Configure development environment
+- [ ] Document architectural decisions
 
 ### Known Risks & Blockers
-- **Blocker:** The `chart.js` library integration is proving difficult with our reactive state management. Investigating alternatives (Recharts, Victory).
-- **Risk:** Railway deployment may hit memory limits at scale. Monitoring usage patterns in pilot.
-- **Risk:** Feedback sampling (20%) may not capture enough data for rare edge cases.
-
-### Entry Points (For Code Navigation)
-- **Backend Main:** `core/mcp-server/src/main.py`
-- **API Routes:** `core/mcp-server/src/routes/`
-- **Database Schema:** `core/database/schema.sql`
-- **Frontend App:** `web/src/App.tsx`
-
----
-
-## Decisions (ADR Index) - Newest First
-
-- **ADR-003 (2025-10-29):** Conservative Metadata Management - Only manage CSF fields; preserve unknown metadata [→ Full ADR](../docs/adr/003-conservative-metadata-management.md)
-- **ADR-002 (2025-10-25):** Unified API Error Model - Standardize error responses across all v1 endpoints [→ Full ADR](../docs/adr/002-unified-error-model.md)
-- **ADR-001 (2025-10-18):** PKCE Auth Flow - Use PKCE + token rotation for security [→ Full ADR](../docs/adr/001-pkce-auth-flow.md)
+- None yet
 
 ---
 
 ## Daily Log - Newest First
 
-### 2025-10-29: Shipping v0.6.4 - The Onboarding Challenge
+### 2025-11-05: Setting Up Log File Genius
 
-**The Situation:** We had our first customer sign up with 15 existing Claude Skills created with other tools. These skills worked, but didn't follow CSF conventions - fields were in metadata instead of the body, missing our tracking fields, non-compliant YAML structure.
+**The Situation:** Starting a new project and needed a structured way to document decisions, track changes, and maintain context for AI assistants.
 
-**The Challenge:** How do we onboard these customers without breaking their existing skills or forcing manual edits of 15+ files?
+**The Challenge:** How do we keep development history organized without creating overhead that slows down progress?
 
-**The Decision:** We built conservative metadata fallback parsing. The `enhance_skill` tool now reads from body content (our standard) OR metadata (fallback for compatibility). Critically, we only manage our own fields (`alias`, `version`, `id`) and never delete metadata we don't own. This is codified in ADR-003.
+**The Decision:** Adopted Log File Genius methodology with CHANGELOG for technical changes, DEVLOG for decision narratives, and STATE for current project status.
 
-**Why This Matters:** If we had taken the aggressive approach (delete unknown metadata), we'd become a hidden cause of breakage for customers using other tools on the same skill files. The conservative approach enables ecosystem compatibility.
+**Why This Matters:** Having structured logs means AI assistants can understand project context without lengthy explanations. It also creates a searchable history of why decisions were made.
 
-**The Implementation:** Enhanced `_parse_skill_md` with fallback logic, added 3 new tests for metadata scenarios, created comprehensive onboarding documentation for customers with existing skills.
+**The Implementation:** Ran the installer, configured for solo-developer profile, set up initial log files.
 
-**The Result:** Smooth onboarding flow - customers can bulk register all skills with `register_all_skills`, then optionally migrate to CSF standards with `enhance_skill`. No data loss, no manual editing required.
+**The Result:** Clear structure for documenting work. AI assistants can now read context from logs instead of asking repetitive questions.
 
-**Files Changed:** `enhance_skill.py`, `test_frontmatter_compliance.py`, `docs/pilot/onboarding-existing-skills.md`
-
-**Shipped:** v0.6.4
+**Files Changed:** `logs/CHANGELOG.md`, `logs/DEVLOG.md`, `logs/STATE.md`, `.logfile-config.yml`
 
 ---
 
-### 2025-10-28: The Feedback Loop That Actually Works
+### [Date]: [Brief Title - What You Accomplished]
 
-**The Problem:** We had built the entire feedback infrastructure - database, `rate_skill` tool, authentication - but Claude never asked for feedback when testing skills.
+**The Situation:** [What was happening? What context led to this work?]
 
-**The Investigation:** Downloaded a packaged skill and examined the SKILL.md file. The feedback instructions were there, but buried at the very end after a horizontal rule. Claude was treating it as optional supplementary information, not part of the core workflow.
+**The Challenge:** [What problem needed solving? What question needed answering?]
 
-**The Realization:** Feedback collection needs to be **the final step in the workflow itself**, not an afterthought in a separate section.
+**The Decision:** [What did you decide to do? What approach did you take?]
 
-**The Fix:** Integrated feedback as step 4 in the workflow: "Get rating: Ask 'Rate this 1-5?' → When user responds, IMMEDIATELY call `rate_skill`..."
+**Why This Matters:** [Why was this important? What would have happened if you chose differently?]
 
-**The Second Problem:** When users typed "5", Claude took 5-7 seconds to respond. It was overthinking a simple rating! The instruction said "When user responds" but didn't say "immediately" or "don't overthink."
+**The Implementation:** [How did you implement it? What were the key steps?]
 
-**The Second Fix:** Added explicit instruction: "IMMEDIATELY call `rate_skill`... Don't overthink - just capture and call."
+**The Result:** [What was the outcome? Did it work as expected?]
 
-**The Result:** Instant feedback collection, no delay. The word "IMMEDIATELY" cut response time from 5-7 seconds to <1 second.
-
-**The Insight:** When working with AI agents, explicit instructions about timing and simplicity matter. "When user responds" ≠ "immediately when user responds."
-
-**Files Changed:** `create_skill.py`, `templates/feedback-section-template.md`
+**Files Changed:** [List the main files that were modified]
 
 ---
 
-### 2025-10-27: Roadmap Pivot - Railway First
+### [Date]: [Another Entry Title]
 
-**The Context:** Original roadmap had Railway deployment in "post-launch V3" phase. Current tester onboarding required Python install, venv setup, Supabase credentials, environment variables.
+**The Problem:** [Describe the problem you encountered]
 
-**The Realization:** Hosted onboarding is 10x easier - just add one URL to Claude Desktop config. More testers = better feedback before we build the analytics dashboard.
+**The Investigation:** [What did you try? What did you discover?]
 
-**The Decision:** Move Railway deployment from post-launch to v0.6.0 (next priority after v0.6.4).
+**The Solution:** [How did you solve it?]
 
-**The Tradeoff:** Delays analytics dashboard by ~1 week, but the feedback we'll get from easier onboarding is more valuable than early analytics.
+**The Lesson:** [What did you learn? What would you do differently next time?]
 
-**Updated Roadmap:**
-- v0.5.0 - Feedback Loop ✅
-- v0.6.0 - Railway Deployment 🚀 (moved up)
-- v0.7.0 - Analytics Dashboard
-- v0.8.0 - Web Interface
-- v0.9.0 - Public Marketplace
-- v1.0.0 - Production Launch
-
-**Documents Updated:** PRD roadmap, progress report timeline, created `V0.6.0-Railway-Deployment-Plan.md`
-
----
-
-### 2025-10-26: YAML Frontmatter Compliance Crisis
-
-**The Crisis:** Skills were failing to upload to Claude Desktop with cryptic YAML parsing errors.
-
-**The Investigation:** Claude's Agent Skills spec only allows specific top-level YAML keys: `name`, `description`, `license`, `allowed-tools`, `metadata`. We were adding `alias`, `version`, and `id` as top-level keys.
-
-**The Root Cause:** We had assumed YAML frontmatter was flexible, but Claude has a strict schema for skill files.
-
-**The Fix:** Moved our fields into the `metadata` block where custom fields belong. Updated all tools to read/write from `metadata.alias`, `metadata.version`, `metadata.id`.
-
-**The Verification:** Created test skills, uploaded to Claude Desktop - all successful.
-
-**The Lesson:** Always validate against the official spec, even when something "should" work. YAML flexibility doesn't mean arbitrary schemas are accepted.
-
-**Files Changed:** `create_skill.py`, `enhance_skill.py`, `package_skill.py`, all tests
-
-**Shipped:** v0.6.3 (hotfix)
+**Files Changed:** [List the files]
 
 ---
 
