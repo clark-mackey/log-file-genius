@@ -1,7 +1,17 @@
 # Development Workflow Guide
 
-**Last Updated:** 2025-11-02  
+**Last Updated:** 2025-11-05
 **Related:** ADR-009 (Two-Branch Strategy)
+
+---
+
+## ⚠️ CRITICAL: Two-Branch Strategy Rules
+
+**NEVER** use `git merge development` when on main branch!
+
+**ALWAYS** use selective merge: `git checkout development -- product/`
+
+Violating this rule will copy `/project` files to main branch, breaking the distribution model.
 
 ---
 
@@ -9,15 +19,17 @@
 
 ### `main` branch (Distribution)
 - **Purpose:** Clean template for end users
-- **Contains:** Only `product/` directory
-- **Used by:** GitHub Template button
-- **Updates:** Merge from `development` when ready to release
+- **Contains:** **ONLY** `product/` directory (no `/project`)
+- **Used by:** GitHub Template button, git submodule installations
+- **Updates:** Selective merge from `development` when ready to release
+- **`.gitignore`:** Contains `/project/` to prevent accidental inclusion
 
 ### `development` branch (Development)
 - **Purpose:** Active development work
 - **Contains:** Both `product/` and `project/` directories
 - **Used by:** Daily development work
 - **Updates:** All commits go here first
+- **`.gitignore`:** Does NOT exclude `/project/` (tracked in git)
 
 ---
 
@@ -61,42 +73,71 @@ git push origin development
 
 ## Release Workflow
 
-### When Ready to Release Product Changes
+### ⚠️ CRITICAL: Selective Merge Only!
 
-**Only merge `product/` changes to `main` when:**
+**When Ready to Release Product Changes:**
+
+**Prerequisites:**
 - New features are complete and tested
 - Documentation is updated
+- CHANGELOG.md updated on development branch
 - Ready for users to access via template
 
+**Step-by-Step Release Process:**
+
 ```bash
-# Switch to main branch
+# 1. Make sure development is clean and pushed
+git checkout development
+git status  # Should be clean
+git push origin development
+
+# 2. Switch to main branch
 git checkout main
 
-# Merge only product/ directory from development
+# 3. SELECTIVE MERGE - Copy ONLY product/ directory from development
 git checkout development -- product/
 
-# Commit the merge
-git commit -m "Release: [describe changes]"
+# 4. Verify what changed
+git status
+git diff --cached
 
-# Tag the release (optional)
+# 5. Commit the release
+git commit -m "Release: [describe changes]
+
+- Feature 1
+- Feature 2
+- Bug fix 3"
+
+# 6. Tag the release (optional but recommended)
 git tag -a v0.2.0 -m "Release v0.2.0: [description]"
 
-# Push to GitHub
+# 7. Push to GitHub
 git push origin main
 git push origin --tags
+
+# 8. Switch back to development
+git checkout development
 ```
 
-### Alternative: Merge Entire Development Branch
+### ❌ NEVER DO THIS
 
-If you want to merge everything (not recommended, keeps main clean):
+**DO NOT use `git merge development` on main branch!**
 
 ```bash
+# ❌ WRONG - This will copy /project to main!
 git checkout main
-git merge development
-git push origin main
+git merge development  # ❌ DON'T DO THIS!
 ```
 
-**Note:** This would add `project/` to main branch, which defeats the purpose of the two-branch strategy.
+**Why this is wrong:**
+- Copies `/project` directory to main branch
+- Breaks the two-branch strategy (ADR-009)
+- Users get development files when installing via git submodule
+- Defeats the purpose of clean distribution
+
+**If you accidentally did this:**
+1. See "Troubleshooting" section below for recovery steps
+2. You'll need to remove `/project` from main and force-push
 
 ---
 
@@ -250,12 +291,50 @@ To verify template works correctly:
 
 ## Troubleshooting
 
+### "I accidentally merged development into main" (CRITICAL)
+
+**Problem:** You ran `git merge development` on main branch, now `/project` is in main.
+
+**Solution:** Remove `/project` from main and force-push
+
+```bash
+# 1. Make sure you're on main
+git checkout main
+
+# 2. Remove all /project files
+git rm -r project/
+
+# 3. Update .gitignore to exclude /project
+# Edit .gitignore and add: /project/
+
+# 4. Commit the fix
+git add .gitignore
+git commit -m "fix: Remove /project directory from main branch per ADR-009
+
+- Removed all /project files from main branch (development files only)
+- Added /project/ to .gitignore on main branch
+- Main branch now contains ONLY /product directory for distribution"
+
+# 5. Force-push to GitHub (this rewrites history)
+git push origin main --force-with-lease
+
+# 6. Switch back to development
+git checkout development
+
+# 7. Update CHANGELOG.md on development to document the fix
+# Then commit and push development
+```
+
+**Prevention:** Always use `git checkout development -- product/` instead of `git merge development`
+
 ### "I'm on main branch and can't see project/ files"
 
 **Solution:** Switch to `development` branch
 ```bash
 git checkout development
 ```
+
+**Note:** This is expected! Main branch should NOT have `/project` files.
 
 ### "I accidentally committed to main"
 
@@ -286,9 +365,50 @@ git diff main..development --name-only
 git diff main..development
 ```
 
+### "How do I verify main branch is clean?"
+
+**Solution:** Check that main has NO /project files
+```bash
+# List all files in main branch
+git ls-tree -r --name-only main | grep "^project/"
+
+# Should return NOTHING (empty output)
+# If it returns files, you need to clean main branch (see above)
+```
+
 ---
 
 ## Quick Reference
+
+### ✅ Correct Release Process (Copy This!)
+
+```bash
+# 1. Make sure development is clean
+git checkout development
+git status
+git push origin development
+
+# 2. Switch to main
+git checkout main
+
+# 3. SELECTIVE MERGE - Copy ONLY product/ directory
+git checkout development -- product/
+
+# 4. Commit and push
+git commit -m "Release: [description]"
+git push origin main
+
+# 5. Switch back to development
+git checkout development
+```
+
+### ❌ Wrong Release Process (Never Do This!)
+
+```bash
+# ❌ WRONG - Don't use git merge!
+git checkout main
+git merge development  # ❌ This copies /project to main!
+```
 
 ### Common Commands
 
@@ -305,11 +425,8 @@ git branch
 # See all branches (local and remote)
 git branch -a
 
-# Merge product/ from development to main
-git checkout main
-git checkout development -- product/
-git commit -m "Release: [description]"
-git push origin main
+# Verify main is clean (should return nothing)
+git ls-tree -r --name-only main | grep "^project/"
 ```
 
 ---
@@ -320,4 +437,3 @@ git push origin main
 - **ADR-008:** Product/Project Directory Separation
 - **DEVLOG:** Current Context section (always on development branch)
 - **CHANGELOG:** Version history (always on development branch)
-
