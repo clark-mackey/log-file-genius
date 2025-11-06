@@ -1,0 +1,27 @@
+# Log File Genius - Git Attributes
+# Ensures consistent line endings across platforms
+
+# Force LF line endings for all shell scripts (critical for Mac/Linux compatibility)
+*.sh text eol=lf
+
+# Let Git handle line endings automatically for other text files
+* text=auto
+
+# Explicitly set line endings for specific file types
+*.md text
+*.yml text
+*.yaml text
+*.json text
+*.xml text
+
+# PowerShell scripts should use CRLF on Windows (Git will handle this with text=auto)
+*.ps1 text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
