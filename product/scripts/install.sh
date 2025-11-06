@@ -32,6 +32,22 @@ FORCE=false
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --help|-h)
+            echo "Log File Genius Installer v$VERSION"
+            echo ""
+            echo "Usage: install.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --profile <name>       Profile to use (solo-developer, team, open-source, startup)"
+            echo "  --ai-assistant <name>  AI assistant (augment, claude-code)"
+            echo "  --force                Skip confirmation prompts"
+            echo "  --help, -h             Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  install.sh --profile solo-developer --force"
+            echo "  install.sh --ai-assistant augment"
+            exit 0
+            ;;
         --profile)
             PROFILE="$2"
             shift 2
@@ -46,6 +62,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
+            echo "Use --help for usage information"
             exit 1
             ;;
     esac
