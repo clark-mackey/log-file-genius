@@ -204,19 +204,24 @@ print_success "Created logs/incidents/"
 
 print_info "Copying log file templates..."
 
-# Template mappings (source -> destination)
-declare -A TEMPLATE_MAPPINGS=(
-    ["templates/CHANGELOG_template.md"]="logs/CHANGELOG.md"
-    ["templates/DEVLOG_template.md"]="logs/DEVLOG.md"
-    ["templates/STATE_template.md"]="logs/STATE.md"
-    ["templates/ADR_template.md"]="logs/adr/TEMPLATE.md"
+# Template mappings (Bash 3.2 compatible - no associative arrays)
+# Format: "source_path:destination_path"
+TEMPLATE_MAPPINGS=(
+    "templates/CHANGELOG_template.md:logs/CHANGELOG.md"
+    "templates/DEVLOG_template.md:logs/DEVLOG.md"
+    "templates/STATE_template.md:logs/STATE.md"
+    "templates/ADR_template.md:logs/adr/TEMPLATE.md"
 )
 
 TEMPLATE_ERRORS=()
 
-for source_rel in "${!TEMPLATE_MAPPINGS[@]}"; do
+for mapping in "${TEMPLATE_MAPPINGS[@]}"; do
+    # Split "source:dest" using parameter expansion (Bash 3.2+ compatible)
+    # ${var%%:*} = everything before first ':'
+    # ${var##*:} = everything after last ':'
+    source_rel="${mapping%%:*}"
+    dest="${mapping##*:}"
     source="$SOURCE_ROOT/$source_rel"
-    dest="${TEMPLATE_MAPPINGS[$source_rel]}"
 
     if [ -f "$source" ]; then
         if cp "$source" "$dest" 2>/dev/null; then
