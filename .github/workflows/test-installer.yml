@@ -79,9 +79,9 @@ jobs:
       - name: Run validation script
         run: |
           cd /tmp/test-project
-          
+
           # Run validation (should pass on fresh installation)
-          bash .log-file-genius/product/scripts/validate-log-files.sh
+          bash .log-file-genius/product/scripts/validate-log-files.sh --verbose
           
       - name: Test installer (Claude Code profile)
         run: |
@@ -109,9 +109,9 @@ jobs:
           test -f .claude/rules/log-file-maintenance.md || { echo "ERROR: Claude AI rules not installed"; exit 1; }
           
           echo "✓ Claude Code installation successful"
-          
+
           # Run validation
-          bash .log-file-genius/product/scripts/validate-log-files.sh
+          bash .log-file-genius/product/scripts/validate-log-files.sh --verbose
 
   test-powershell-installer:
     name: Test PowerShell Installer on Windows
@@ -170,9 +170,9 @@ jobs:
       - name: Run validation script
         run: |
           Set-Location C:\temp\test-project
-          
+
           # Run validation (should pass on fresh installation)
-          powershell -File .log-file-genius\product\scripts\validate-log-files.ps1
+          powershell -File .log-file-genius\product\scripts\validate-log-files.ps1 -Verbose
 
   check-line-endings:
     name: Verify Line Endings
