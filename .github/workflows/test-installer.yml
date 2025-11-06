@@ -1,0 +1,213 @@
+name: Test Installers
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  test-bash-installer:
+    name: Test Bash Installer on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # Continue testing other OS even if one fails
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-13]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check Bash version
+        run: |
+          echo "Testing on: ${{ matrix.os }}"
+          bash --version
+          echo "Bash major version: ${BASH_VERSINFO[0]}"
+          echo "Bash minor version: ${BASH_VERSINFO[1]}"
+        
+      - name: Check line endings in shell scripts
+        run: |
+          echo "Checking for CRLF line endings in shell scripts..."
+          if file product/scripts/*.sh | grep -q CRLF; then
+            echo "ERROR: Found CRLF line endings in shell scripts!"
+            file product/scripts/*.sh
+            exit 1
+          else
+            echo "✓ All shell scripts have LF line endings"
+          fi
+        
+      - name: Test installer help
+        run: |
+          bash product/scripts/install.sh --help
+        
+      - name: Create test project directory
+        run: |
+          mkdir -p /tmp/test-project
+          cd /tmp/test-project
+          
+          # Simulate git submodule installation
+          mkdir -p .log-file-genius
+          cp -r ${{ github.workspace }}/product .log-file-genius/
+          cp -r ${{ github.workspace }}/ai-rules .log-file-genius/ 2>/dev/null || true
+          
+      - name: Test installer (Augment profile)
+        run: |
+          cd /tmp/test-project
+          
+          # Create .augment directory to trigger auto-detection
+          mkdir -p .augment
+          
+          # Run installer with force flag (no prompts)
+          bash .log-file-genius/product/scripts/install.sh --force --profile solo-developer
+          
+      - name: Validate installation
+        run: |
+          cd /tmp/test-project
+          
+          # Check that files were created
+          echo "Checking installed files..."
+          test -f logs/CHANGELOG.md || { echo "ERROR: CHANGELOG.md not created"; exit 1; }
+          test -f logs/DEVLOG.md || { echo "ERROR: DEVLOG.md not created"; exit 1; }
+          test -f logs/STATE.md || { echo "ERROR: STATE.md not created"; exit 1; }
+          test -f logs/adr/TEMPLATE.md || { echo "ERROR: ADR template not created"; exit 1; }
+          test -f .logfile-config.yml || { echo "ERROR: Config file not created"; exit 1; }
+          test -f .augment/rules/log-file-maintenance.md || { echo "ERROR: AI rules not installed"; exit 1; }
+          
+          echo "✓ All expected files created"
+          
+      - name: Run validation script
+        run: |
+          cd /tmp/test-project
+          
+          # Run validation (should pass on fresh installation)
+          bash .log-file-genius/product/scripts/validate-log-files.sh
+          
+      - name: Test installer (Claude Code profile)
+        run: |
+          # Clean up previous test
+          rm -rf /tmp/test-project-claude
+          mkdir -p /tmp/test-project-claude
+          cd /tmp/test-project-claude
+          
+          # Simulate git submodule installation
+          mkdir -p .log-file-genius
+          cp -r ${{ github.workspace }}/product .log-file-genius/
+          cp -r ${{ github.workspace }}/ai-rules .log-file-genius/ 2>/dev/null || true
+          
+          # Create .claude directory to trigger auto-detection
+          mkdir -p .claude
+          
+          # Run installer
+          bash .log-file-genius/product/scripts/install.sh --force --profile solo-developer
+          
+      - name: Validate Claude Code installation
+        run: |
+          cd /tmp/test-project-claude
+          
+          # Check Claude-specific files
+          test -f .claude/rules/log-file-maintenance.md || { echo "ERROR: Claude AI rules not installed"; exit 1; }
+          
+          echo "✓ Claude Code installation successful"
+          
+          # Run validation
+          bash .log-file-genius/product/scripts/validate-log-files.sh
+
+  test-powershell-installer:
+    name: Test PowerShell Installer on Windows
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check PowerShell version
+        run: |
+          Write-Host "Testing on: Windows"
+          $PSVersionTable.PSVersion
+        
+      - name: Test installer help
+        run: |
+          powershell -File product/scripts/install.ps1 -Help
+        
+      - name: Create test project directory
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\temp\test-project
+          Set-Location C:\temp\test-project
+          
+          # Simulate git submodule installation
+          New-Item -ItemType Directory -Force -Path .log-file-genius
+          Copy-Item -Recurse -Force ${{ github.workspace }}\product .log-file-genius\
+          if (Test-Path ${{ github.workspace }}\ai-rules) {
+            Copy-Item -Recurse -Force ${{ github.workspace }}\ai-rules .log-file-genius\
+          }
+        
+      - name: Test installer (Augment profile)
+        run: |
+          Set-Location C:\temp\test-project
+          
+          # Create .augment directory to trigger auto-detection
+          New-Item -ItemType Directory -Force -Path .augment
+          
+          # Run installer with force flag
+          powershell -File .log-file-genius\product\scripts\install.ps1 -Force -Profile solo-developer
+        
+      - name: Validate installation
+        run: |
+          Set-Location C:\temp\test-project
+          
+          # Check that files were created
+          Write-Host "Checking installed files..."
+          if (-not (Test-Path logs\CHANGELOG.md)) { throw "CHANGELOG.md not created" }
+          if (-not (Test-Path logs\DEVLOG.md)) { throw "DEVLOG.md not created" }
+          if (-not (Test-Path logs\STATE.md)) { throw "STATE.md not created" }
+          if (-not (Test-Path logs\adr\TEMPLATE.md)) { throw "ADR template not created" }
+          if (-not (Test-Path .logfile-config.yml)) { throw "Config file not created" }
+          if (-not (Test-Path .augment\rules\log-file-maintenance.md)) { throw "AI rules not installed" }
+          
+          Write-Host "✓ All expected files created"
+        
+      - name: Run validation script
+        run: |
+          Set-Location C:\temp\test-project
+          
+          # Run validation (should pass on fresh installation)
+          powershell -File .log-file-genius\product\scripts\validate-log-files.ps1
+
+  check-line-endings:
+    name: Verify Line Endings
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check .gitattributes exists
+        run: |
+          if [ ! -f .gitattributes ]; then
+            echo "ERROR: .gitattributes file missing!"
+            exit 1
+          fi
+          echo "✓ .gitattributes exists"
+          
+      - name: Verify shell scripts have LF line endings
+        run: |
+          echo "Checking line endings in shell scripts..."
+          
+          # Check for CRLF in shell scripts
+          if grep -r $'\r' product/scripts/*.sh; then
+            echo "ERROR: Found CRLF (\\r\\n) line endings in shell scripts!"
+            echo "Shell scripts must use LF (\\n) line endings for Mac/Linux compatibility."
+            exit 1
+          fi
+          
+          echo "✓ All shell scripts have LF line endings"
+          
+      - name: Verify .gitattributes enforces LF for shell scripts
+        run: |
+          if ! grep -q "*.sh text eol=lf" .gitattributes; then
+            echo "ERROR: .gitattributes doesn't enforce LF for shell scripts!"
+            exit 1
+          fi
+          echo "✓ .gitattributes correctly enforces LF for *.sh files"
+
