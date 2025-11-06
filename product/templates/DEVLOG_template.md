@@ -19,7 +19,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ### Project State
 - **Project:** [Your Project Name]
-- **Current Version:** v0.1.0-dev
+- **Version:** v0.1.0-dev
 - **Active Branch:** `main`
 - **Phase:** Initial setup
 
