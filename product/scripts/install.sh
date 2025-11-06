@@ -97,9 +97,9 @@ rollback_installation() {
 # ============================================================================
 
 echo ""
-echo "╔════════════════════════════════════════╗"
-echo "║   Log File Genius Installer v$VERSION      ║"
-echo "╚════════════════════════════════════════╝"
+echo "â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—"
+echo "â•‘   Log File Genius Installer v$VERSION      â•‘"
+echo "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•"
 echo ""
 
 # ============================================================================
@@ -407,7 +407,14 @@ echo "   Installation Complete!"
 echo "==================================="
 echo ""
 print_success "Log files installed to: logs/"
-print_success "AI rules installed to: .$AI_ASSISTANT/rules/"
+
+# Display correct AI rules path based on assistant
+if [ "$AI_ASSISTANT" = "augment" ]; then
+    print_success "AI rules installed to: .augment/rules/"
+elif [ "$AI_ASSISTANT" = "claude-code" ]; then
+    print_success "AI rules installed to: .claude/rules/"
+fi
+
 print_success "Config file: .logfile-config.yml"
 echo ""
 echo "-----------------------------------"

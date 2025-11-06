@@ -22,7 +22,7 @@ if [ "$1" = "-v" ] || [ "$1" = "--verbose" ]; then
 fi
 
 echo ""
-echo -e "${COLOR_INFO}🔍 Checking for Log File Genius updates...${COLOR_RESET}"
+echo -e "${COLOR_INFO}ðŸ” Checking for Log File Genius updates...${COLOR_RESET}"
 echo ""
 
 # Read current version from config file
@@ -40,11 +40,11 @@ for path in ".logfile-config.yml" "config/logfile.yml" ".config/logfile.yml"; do
 done
 
 if [ -z "$CURRENT_VERSION" ]; then
-    echo -e "${COLOR_WARNING}⚠️  No .logfile-config.yml found or version not specified${COLOR_RESET}"
+    echo -e "${COLOR_WARNING}âš ï¸  No .logfile-config.yml found or version not specified${COLOR_RESET}"
     echo -e "${COLOR_WARNING}   Current version: Unknown${COLOR_RESET}"
     echo ""
 else
-    echo -e "${COLOR_INFO}📦 Current version: v$CURRENT_VERSION${COLOR_RESET}"
+    echo -e "${COLOR_INFO}ðŸ“¦ Current version: v$CURRENT_VERSION${COLOR_RESET}"
     echo ""
 fi
 
@@ -55,7 +55,7 @@ fi
 
 # Check if curl is available
 if ! command -v curl &> /dev/null; then
-    echo -e "${COLOR_ERROR}❌ curl is required but not installed${COLOR_RESET}"
+    echo -e "${COLOR_ERROR}âŒ curl is required but not installed${COLOR_RESET}"
     echo ""
     exit 1
 fi
@@ -63,7 +63,7 @@ fi
 # Fetch release data
 RESPONSE=$(curl -s "$RELEASES_URL" 2>&1)
 if [ $? -ne 0 ]; then
-    echo -e "${COLOR_ERROR}❌ Failed to check for updates${COLOR_RESET}"
+    echo -e "${COLOR_ERROR}âŒ Failed to check for updates${COLOR_RESET}"
     echo -e "${COLOR_ERROR}   Error: Could not connect to GitHub${COLOR_RESET}"
     echo ""
     echo -e "${COLOR_INFO}   You can manually check for updates at:${COLOR_RESET}"
@@ -79,7 +79,7 @@ RELEASE_URL=$(echo "$RESPONSE" | grep '"html_url"' | head -1 | sed 's/.*"html_ur
 PUBLISHED_AT=$(echo "$RESPONSE" | grep '"published_at"' | head -1 | sed 's/.*"published_at": "\([^"]*\)".*/\1/' | cut -d'T' -f1)
 
 if [ -z "$LATEST_VERSION" ]; then
-    echo -e "${COLOR_ERROR}❌ Failed to parse release information${COLOR_RESET}"
+    echo -e "${COLOR_ERROR}âŒ Failed to parse release information${COLOR_RESET}"
     echo ""
     echo -e "${COLOR_INFO}   You can manually check for updates at:${COLOR_RESET}"
     echo -e "${COLOR_INFO}   https://github.com/$REPO_OWNER/$REPO_NAME/releases${COLOR_RESET}"
@@ -87,19 +87,19 @@ if [ -z "$LATEST_VERSION" ]; then
     exit 1
 fi
 
-echo -e "${COLOR_SUCCESS}🌟 Latest version: v$LATEST_VERSION${COLOR_RESET}"
+echo -e "${COLOR_SUCCESS}ðŸŒŸ Latest version: v$LATEST_VERSION${COLOR_RESET}"
 echo -e "${COLOR_INFO}   Release: $RELEASE_NAME${COLOR_RESET}"
 echo -e "${COLOR_INFO}   Published: $PUBLISHED_AT${COLOR_RESET}"
 echo ""
 
 # Compare versions
 if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
-    echo -e "${COLOR_SUCCESS}✅ You're up to date!${COLOR_RESET}"
+    echo -e "${COLOR_SUCCESS}âœ… You're up to date!${COLOR_RESET}"
     echo ""
 elif [ -n "$CURRENT_VERSION" ]; then
-    echo -e "${COLOR_WARNING}🔔 Update available: v$CURRENT_VERSION → v$LATEST_VERSION${COLOR_RESET}"
+    echo -e "${COLOR_WARNING}ðŸ”” Update available: v$CURRENT_VERSION â†’ v$LATEST_VERSION${COLOR_RESET}"
     echo ""
-    echo -e "${COLOR_INFO}📝 Release notes:${COLOR_RESET}"
+    echo -e "${COLOR_INFO}ðŸ“ Release notes:${COLOR_RESET}"
     echo -e "${COLOR_INFO}   $RELEASE_URL${COLOR_RESET}"
     echo ""
     
@@ -118,7 +118,7 @@ elif [ -n "$CURRENT_VERSION" ]; then
     echo -e "${COLOR_INFO}4. Pull updated files from the repository${COLOR_RESET}"
     echo ""
 else
-    echo -e "${COLOR_INFO}📝 Latest release:${COLOR_RESET}"
+    echo -e "${COLOR_INFO}ðŸ“ Latest release:${COLOR_RESET}"
     echo -e "${COLOR_INFO}   $RELEASE_URL${COLOR_RESET}"
     echo ""
 fi

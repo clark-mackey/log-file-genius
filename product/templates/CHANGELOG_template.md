@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - v0.7.0-dev
+## [Unreleased]
 
 ### Added
 - Feature name - Brief description. Files: `path/to/file.py`. PR: [#1234](link)

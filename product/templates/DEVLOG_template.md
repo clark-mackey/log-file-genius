@@ -13,7 +13,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ---
 
-## Current Context (Source of Truth)
+## Current Context
 
 **Last Updated:** [Current Date]
 
