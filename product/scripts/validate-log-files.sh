@@ -227,7 +227,8 @@ validate_changelog() {
     fi
     
     # Check date format (YYYY-MM-DD)
-    local invalid_dates=$(grep -E "^## \[[0-9]" "$CHANGELOG_PATH" | grep -v -E "\[[0-9]{4}-[0-9]{2}-[0-9]{2}\]" || true)
+    # Format is: ## [version] - YYYY-MM-DD
+    local invalid_dates=$(grep -E "^## \[[0-9]" "$CHANGELOG_PATH" | grep -v -E "^## \[[^]]+\] - [0-9]{4}-[0-9]{2}-[0-9]{2}" || true)
     if [ -n "$invalid_dates" ]; then
         errors+=("Invalid date format (expected YYYY-MM-DD)")
         if [ "$VERBOSE" = true ]; then
