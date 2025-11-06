@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - v0.1.0-dev
 
 ### Fixed
-- macOS Bash 3.2 compatibility - Replaced associative arrays (Bash 4.0+ feature) with indexed arrays using colon-delimited strings in install.sh. macOS ships with Bash 3.2 which doesn't support `declare -A`. Error manifested as "invalid arithmetic operator" when copying templates. Files: `product/scripts/install.sh`. Commit: `pending`
+- Mac/Linux cross-platform compatibility - Fixed three critical bugs preventing Mac/Linux installations: (1) Converted all shell scripts from CRLF to LF line endings (fixes "command not found" errors), (2) Fixed template/validator mismatch where CHANGELOG template had `## [Unreleased] - v0.7.0-dev` but validator expected exact `## [Unreleased]` match, (3) Fixed misleading success message showing `.claude-code/rules/` instead of correct `.claude/rules/` path. Added `.gitattributes` to enforce LF line endings for shell scripts across all platforms. Files: `.gitattributes`, `product/scripts/*.sh`, `product/templates/CHANGELOG_template.md`, `product/templates/DEVLOG_template.md`. Commit: `9be8f72`
+- macOS Bash 3.2 compatibility - Replaced associative arrays (Bash 4.0+ feature) with indexed arrays using colon-delimited strings in install.sh. macOS ships with Bash 3.2 which doesn't support `declare -A`. Error manifested as "invalid arithmetic operator" when copying templates. Files: `product/scripts/install.sh`. Commit: `5f6565c`
 
 ### Added
 - Installation guide (INSTALL.md) - Created dedicated root-level installation guide with one-command installation, troubleshooting, verification steps, and post-installation AI prompt. Makes installation discoverable for both humans and AI assistants. Linked from README for visibility. Files: `INSTALL.md`, `README.md`. Commit: `pending`
