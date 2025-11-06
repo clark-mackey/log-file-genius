@@ -13,8 +13,27 @@
 param(
     [string]$Profile = "",
     [string]$AiAssistant = "",
-    [switch]$Force = $false
+    [switch]$Force = $false,
+    [switch]$Help = $false
 )
+
+# Show help if requested
+if ($Help) {
+    Write-Host "Log File Genius Installer v0.2.0"
+    Write-Host ""
+    Write-Host "Usage: install.ps1 [OPTIONS]"
+    Write-Host ""
+    Write-Host "Options:"
+    Write-Host "  -Profile <name>       Profile to use (solo-developer, team, open-source, startup)"
+    Write-Host "  -AiAssistant <name>   AI assistant (augment, claude-code)"
+    Write-Host "  -Force                Skip confirmation prompts"
+    Write-Host "  -Help                 Show this help message"
+    Write-Host ""
+    Write-Host "Examples:"
+    Write-Host "  install.ps1 -Profile solo-developer -Force"
+    Write-Host "  install.ps1 -AiAssistant augment"
+    exit 0
+}
 
 $ErrorActionPreference = "Stop"
 
