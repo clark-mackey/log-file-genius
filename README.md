@@ -71,8 +71,7 @@ This isn't just another documentation template. It's a complete system designed 
 
 ## � Repository Structure
 
-
-See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation of this structure and why it exists.
+This repository uses a two-branch strategy: `main` contains only the `product/` directory for distribution, while `development` contains both `product/` and `project/` directories for development work.
 
 ---
 
