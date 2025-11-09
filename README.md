@@ -8,7 +8,7 @@
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
 [![License: MIT](https://img.shields.io/github/license/clark-mackey/log-file-genius)](LICENSE)
 
-[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](product/docs/MIGRATION_GUIDE.md) • [The Methodology](product/docs/log_file_how_to.md) • [Examples](product/examples/) • [Why It's Genius](#-why-its-genius)
+[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](product/docs/MIGRATION_GUIDE.md) • [The Methodology](product/docs/log_file_how_to.md) • [Examples](product/examples) • [Why It's Genius](#-why-its-genius)
 
 ---
 
