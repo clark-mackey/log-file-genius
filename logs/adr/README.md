@@ -56,9 +56,9 @@ Examples:
 
 ## Related Documents
 
-📋 **[PRD](../prd.md)** - Product requirements and specifications (in BMAD context)
-📖 **[DEVLOG](../planning/DEVLOG.md)** - Development narrative and decision rationale
-📊 **[CHANGELOG](../planning/CHANGELOG.md)** - Technical changes and version history
+📋 **[PRD](../../project/specs/prd.md)** - Product requirements and specifications
+📖 **[DEVLOG](../DEVLOG.md)** - Development narrative and decision rationale
+📊 **[CHANGELOG](../CHANGELOG.md)** - Technical changes and version history
 
 ---
 
