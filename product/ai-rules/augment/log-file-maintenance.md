@@ -106,7 +106,7 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 - `open-source` - Strict formatting, public-facing docs
 - `startup` - Minimal overhead, DEVLOG optional
 
-**See:** `product/docs/profile-selection-guide.md` for details
+**See:** `.log-file-genius/docs/profile-selection-guide.md` for details
 
 ---
 
