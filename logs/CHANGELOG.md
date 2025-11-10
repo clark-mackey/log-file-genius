@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Archived October 2025 DEVLOG entries to reduce token count from 22,537 to 12,059 tokens (46% reduction). Files: `logs/DEVLOG.md`, `logs/archive/DEVLOG-2025-10.md`. Commit: `PENDING`
+- Archived October 2025 DEVLOG entries to reduce token count from 22,537 to 12,059 tokens (46% reduction). Files: `logs/DEVLOG.md`, `logs/archive/DEVLOG-2025-10.md`. Commit: `a628c34`
 
 ### Fixed
 - Frontmatter path fixes - Fixed incorrect relative paths in log file frontmatter that were wasting tokens by pointing to non-existent files. Updated CHANGELOG.md, DEVLOG.md, and adr/README.md to use correct paths: PRD now points to `../project/specs/prd.md` (not `../prd.md`), ADRs now point to `adr/README.md` (not `../adr/README.md`), removed non-existent Architecture references. Validation scripts don't currently check frontmatter links, which allowed these broken paths to persist after Epic 19 migration. Files: `logs/CHANGELOG.md`, `logs/DEVLOG.md`, `logs/adr/README.md`. Commit: `5a13533`
