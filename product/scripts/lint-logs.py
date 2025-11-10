@@ -77,13 +77,42 @@ class LogLinter:
         """Load configuration from .logfile-config.yml"""
         if not os.path.exists(config_path):
             return {}
-        
+
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f) or {}
         except Exception as e:
             print(f"Warning: Could not load config: {e}", file=sys.stderr)
             return {}
+
+    def _validate_frontmatter_links(self, file_path: str, lines: List[str], result: ValidationResult):
+        """Validate frontmatter links point to existing files"""
+        in_frontmatter = False
+
+        for i, line in enumerate(lines, 1):
+            # Detect frontmatter section
+            if '## Related Documents' in line:
+                in_frontmatter = True
+                continue
+            if in_frontmatter and line.startswith('##') and '## Related Documents' not in line:
+                break  # End of frontmatter
+
+            # Check markdown links: [text](path)
+            if in_frontmatter:
+                matches = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', line)
+                for link_text, link_path in matches:
+                    # Skip external URLs
+                    if link_path.startswith('http://') or link_path.startswith('https://'):
+                        continue
+
+                    # Resolve relative path from file location
+                    file_dir = os.path.dirname(file_path)
+                    full_path = os.path.normpath(os.path.join(file_dir, link_path))
+
+                    if not os.path.exists(full_path):
+                        result.add_issue('warning', i,
+                                       f"Broken frontmatter link: [{link_text}]({link_path})",
+                                       f"File not found: {full_path}")
     
     def validate_changelog(self) -> ValidationResult:
         """Validate CHANGELOG.md format and content"""
@@ -126,14 +155,17 @@ class LogLinter:
         # Token count validation
         token_count = self._estimate_tokens('\n'.join(lines))
         if token_count > self.changelog_target:
-            result.add_issue('error', None, 
+            result.add_issue('error', None,
                            f"CHANGELOG exceeds token target ({token_count} > {self.changelog_target})",
                            "Archive old entries to logs/archive/CHANGELOG-YYYY-MM.md")
         elif token_count > self.changelog_target * 0.8:
             result.add_issue('warning', None,
                            f"CHANGELOG approaching token target ({token_count}/{self.changelog_target})",
                            "Consider archiving entries older than 2 weeks")
-        
+
+        # Validate frontmatter links
+        self._validate_frontmatter_links(self.changelog_path, lines, result)
+
         return result
     
     def _validate_changelog_entry(self, line: str, line_num: int, result: ValidationResult) -> bool:
@@ -210,7 +242,10 @@ class LogLinter:
             result.add_issue('warning', None,
                            f"DEVLOG approaching token target ({token_count}/{self.devlog_target})",
                            "Consider archiving entries older than 2 weeks")
-        
+
+        # Validate frontmatter links
+        self._validate_frontmatter_links(self.devlog_path, lines, result)
+
         return result
     
     def validate_combined_tokens(self) -> ValidationResult:
