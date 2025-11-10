@@ -56,14 +56,43 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ---
 
-## 📋 AFTER EVERY COMMIT - VERIFICATION
+## 📋 AFTER EVERY COMMIT - VERIFICATION (REQUIRED)
 
-**Confirm to user:**
+**You MUST verify your work after EVERY commit:**
+
+### Step 1: Self-Assessment Checklist
+**Answer these questions honestly:**
+1. ✅ Did I update CHANGELOG.md? (yes/no)
+2. ✅ Does the CHANGELOG entry match the actual code changes? (yes/no/unsure)
+3. ✅ Did I include log files in the commit? (yes/no)
+4. ✅ Are the file paths in the CHANGELOG entry correct? (yes/no)
+5. ✅ Did I update DEVLOG if this was a milestone? (yes/no/not-applicable)
+6. ✅ Did I run validation (if available)? (yes/no)
+
+**If any answer is "no" or "unsure", you MUST fix it immediately before proceeding.**
+
+### Step 2: Verify CHANGELOG Entry Accuracy
+1. Run `git diff HEAD~1 logs/CHANGELOG.md` to see what you added
+2. Run `git show --name-only HEAD` to see files changed in commit
+3. Verify the CHANGELOG entry matches the actual changes
+4. Self-assess accuracy: "Entry is accurate" or "Entry needs correction"
+
+### Step 3: Confirm to User
+**Display this verification report:**
 ```
+✅ Post-Commit Verification:
 ✅ Commit: [hash]
-✅ CHANGELOG: [entry added]
-✅ DEVLOG: [yes/no - reason]
+✅ CHANGELOG entry: "[quote the entry you added]"
+✅ Files changed: [list actual files from git show]
+✅ Entry accuracy: [accurate/needs-correction]
+✅ DEVLOG updated: [yes/no - reason]
+✅ Validation: [passed/warnings/not-run]
 ```
+
+**If entry is inaccurate, immediately:**
+1. Amend the commit with corrected CHANGELOG
+2. Re-run verification
+3. Apologize to user and explain what was wrong
 
 ---
 

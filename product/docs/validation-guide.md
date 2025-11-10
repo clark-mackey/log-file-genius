@@ -15,6 +15,15 @@ The Log File Genius validation system automatically checks your CHANGELOG and DE
 
 ### Running Validation Manually
 
+**Python Linter (Recommended - Cross-platform):**
+```bash
+python product/scripts/lint-logs.py              # Validate all files
+python product/scripts/lint-logs.py --changelog  # Validate only CHANGELOG
+python product/scripts/lint-logs.py --devlog     # Validate only DEVLOG
+python product/scripts/lint-logs.py --strict     # Fail on warnings
+python product/scripts/lint-logs.py --json       # Output as JSON
+```
+
 **Windows (PowerShell):**
 ```powershell
 .\scripts\validate-log-files.ps1
@@ -24,6 +33,22 @@ The Log File Genius validation system automatically checks your CHANGELOG and DE
 ```bash
 ./product/scripts/validate-log-files.sh
 ```
+
+### Generating Validation Reports
+
+**Create comprehensive validation report:**
+```bash
+python product/scripts/validation-report.py              # Markdown report
+python product/scripts/validation-report.py --html       # HTML report
+python product/scripts/validation-report.py --json       # JSON output
+python product/scripts/validation-report.py --output report.md  # Save to file
+```
+
+The validation report includes:
+- Overall health score (0-100)
+- Token budget status with progress bars
+- Actionable recommendations
+- Detailed validation results
 
 ### Installing Git Pre-Commit Hook
 
@@ -326,6 +351,43 @@ cannot be loaded because running scripts is disabled
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### Python linter: ModuleNotFoundError
+
+**Error:**
+```
+ModuleNotFoundError: No module named 'yaml'
+```
+
+**Fix:** Install required dependencies:
+```bash
+pip install pyyaml
+```
+
+### Python linter: Files not found
+
+**Error:**
+```
+❌ CHANGELOG not found at logs/CHANGELOG.md
+❌ DEVLOG not found at logs/DEVLOG.md
+```
+
+**Fix:** This means your log files are not in the expected `/logs/` folder. Either:
+1. Run the installer to create the proper structure
+2. Migrate existing files to `/logs/` folder (see migration guide)
+3. Update `.logfile-config.yml` to point to your custom paths
+
+### Validation passes but GitHub Actions fails
+
+**Possible causes:**
+1. Different Python versions (local vs CI)
+2. Missing dependencies in CI
+3. Different file paths in CI environment
+
+**Fix:** Check GitHub Actions logs and ensure:
+- Python 3.11+ is used
+- All dependencies are installed
+- File paths match your configuration
 
 ---
 
