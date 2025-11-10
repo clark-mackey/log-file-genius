@@ -104,6 +104,48 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2025-11-10: Epic 20 - AI Context Optimization Research
+
+**The Situation:** After completing Epic 19 (dogfooding migration), user asked a profound question: "For small personal projects of a solo dev, doesn't Keep a Changelog format create a problem? Solo devs remember work calendar-like, not feature-like." This led to deeper question: **Is CHANGELOG providing the best AI context per token spent?**
+
+**The Challenge:**
+Current state: CHANGELOG ~8k tokens, DEVLOG ~21k tokens, combined 29k (exceeds 25k target by 16%). But we don't actually know which files AI reads or finds useful. We're spending tokens on CHANGELOG based on convention, not data. Key questions:
+1. How often does AI actually read CHANGELOG vs DEVLOG?
+2. When AI reads CHANGELOG, is it actually useful?
+3. Can we reduce token budget by minimizing/archiving CHANGELOG?
+4. Should solo-developer profile have different log structure than team profile?
+
+**The Decision:**
+Launch 2-week research project (Epic 20) to measure actual AI usage:
+1. **Self-reported tracking:** AI logs which files it reads and finds useful at end of each session
+2. **Usage log:** Created `logs/ai-usage-log.md` with simple format: `YYYY-MM-DD | Task | Read: [C/D/A/N] | Useful: [C/D/A/N]`
+3. **AI rule:** Created `.augment/rules/usage-tracking.md` to instruct AI to log usage (temporary, expires Nov 24)
+4. **Analysis script:** Created `product/scripts/analyze-ai-usage.py` to calculate usage frequency, usefulness ratio, and token efficiency
+5. **Methodology doc:** Created `project/research/ai-context-optimization-methodology.md` documenting research design, hypothesis, metrics, and decision thresholds
+
+**Hypothesis:**
+- DEVLOG provides higher value per token than CHANGELOG for AI assistants
+- CHANGELOG is rarely consulted after initial commit
+- Current Context section in DEVLOG is read most frequently
+- Solo developers may benefit from minimal CHANGELOG (~1k tokens) + rich DEVLOG instead of equal investment
+
+**Why This Matters:**
+- **Token efficiency:** If CHANGELOG is low-value, we can save ~7k tokens by aggressive archival
+- **Data-driven design:** Make decisions based on actual AI behavior, not assumptions
+- **Profile optimization:** Solo-developer profile may need different structure than team profile
+- **Reusable methodology:** Can apply this research approach to other LFG questions
+
+**The Result:**
+- ✅ Research infrastructure created (usage log, tracking rule, analysis script, methodology)
+- ✅ 2-week data collection begins (Nov 10-24)
+- ✅ Development branch only (not distributed to users)
+- ✅ After 2 weeks: Analyze data, make recommendation for LFG v0.2.0
+- ✅ Potential outcome: Minimize CHANGELOG for solo-developer profile, focus tokens on DEVLOG
+
+**Files Created:** `logs/ai-usage-log.md`, `.augment/rules/usage-tracking.md`, `product/scripts/analyze-ai-usage.py`, `project/research/ai-context-optimization-methodology.md`
+
+---
+
 ### 2025-11-10: Epic 19 - Dogfooding Migration to /logs/ Structure
 
 **The Situation:** After completing Epic 13 (Validation & Reliability System), user noticed this project was NOT using the `/logs/` folder structure required by ADR-012. Instead, it was using `project/planning/CHANGELOG.md` and `project/planning/DEVLOG.md` - the exact structure we tell users NOT to use. This was a critical dogfooding failure documented in ADR-014.
