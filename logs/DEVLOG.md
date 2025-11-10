@@ -104,6 +104,48 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2025-11-10: Epic 19 - Dogfooding Migration to /logs/ Structure
+
+**The Situation:** After completing Epic 13 (Validation & Reliability System), user noticed this project was NOT using the `/logs/` folder structure required by ADR-012. Instead, it was using `project/planning/CHANGELOG.md` and `project/planning/DEVLOG.md` - the exact structure we tell users NOT to use. This was a critical dogfooding failure documented in ADR-014.
+
+**The Challenge:**
+How do we migrate the development branch to use `/logs/` structure without losing git history or breaking validation scripts? The migration needed to:
+1. Preserve git history for CHANGELOG, DEVLOG, and all ADRs
+2. Update all cross-references in specs, workflow docs, and AI rules
+3. Create `.logfile-config.yml` for update tracking
+4. Verify validation scripts work with new structure
+5. Not break any existing functionality
+
+**The Decision:**
+Execute Epic 19 systematically with 8 tasks:
+1. **File migration:** Used `git mv` to preserve history when moving `project/planning/CHANGELOG.md` → `logs/CHANGELOG.md`, `project/planning/DEVLOG.md` → `logs/DEVLOG.md`, and `project/adr/` → `logs/adr/`
+2. **Config creation:** Created `.logfile-config.yml` with version tracking (v0.1.0-dev), solo-developer profile, and paths pointing to `logs/`
+3. **Cross-references:** Updated `project/WORKFLOW.md`, `project/docs/incident-report-how-to.md`, and other docs to reference `logs/` instead of `project/planning/`
+4. **AI rules:** Updated `.augment/rules/log-file-maintenance.md` to reference `logs/` paths throughout
+5. **Validation testing:** Ran `lint-logs.py` and `validation-report.py` - both worked perfectly with new structure
+6. **Update tracking:** Tested `check-for-updates.ps1` - successfully read `.logfile-config.yml` and checked for updates
+7. **Main branch cleanup:** Identified `project/docs/github-actions-ci.md` on main branch for future removal
+8. **Documentation:** Updated CHANGELOG and DEVLOG with migration details
+
+**Why This Matters:**
+- **Dogfooding integrity:** We must use the same structure we distribute to users
+- **Validation accuracy:** Validation scripts now find files in correct locations
+- **Update tracking:** `.logfile-config.yml` enables automated update notifications
+- **Credibility:** Can't tell users to use `/logs/` if we don't use it ourselves
+- **Consistency:** Development branch now matches ADR-012 architecture
+
+**The Result:**
+- ✅ All files migrated to `/logs/` structure with git history preserved
+- ✅ `.logfile-config.yml` created with version tracking and profile configuration
+- ✅ All cross-references updated to point to `logs/` instead of `project/planning/`
+- ✅ Validation scripts working perfectly with new structure
+- ✅ Update tracking functional
+- ✅ Dogfooding failure resolved - we now practice what we preach
+
+**Files Changed:** `logs/CHANGELOG.md`, `logs/DEVLOG.md`, `logs/adr/*.md`, `.logfile-config.yml`, `.augment/rules/log-file-maintenance.md`, `project/WORKFLOW.md`, `project/docs/incident-report-how-to.md`
+
+---
+
 ### 2025-11-04: Installer Quality Hardening - TEA Agent Review
 
 **The Situation:** After implementing ADR-012 (single `/logs/` folder architecture) and completely rewriting both installers, user requested BMAD TEA (Test Architect) agent to perform comprehensive quality review of all changes made in the session. TEA agent (Murat) identified 10 issues across 4 severity levels: 3 critical (including 1 blocker), 2 high risk, 3 medium risk, and 2 low risk issues.

@@ -1,0 +1,46 @@
+# Log File Genius Configuration
+# This file configures the Log File Genius system for your project
+
+# Version tracking - DO NOT EDIT MANUALLY
+# Updated automatically by update scripts
+version: "0.1.0-dev"
+last_updated: "2025-11-10"
+
+# Profile selection - determines token targets and validation strictness
+# Options: solo-developer, team, open-source, startup
+# See: .log-file-genius/docs/profile-selection-guide.md
+profile: "solo-developer"
+
+# File paths - customize if using non-standard locations
+paths:
+  changelog: "logs/CHANGELOG.md"
+  devlog: "logs/DEVLOG.md"
+  adr: "logs/adr"
+  # state: "logs/STATE.md"  # Optional - uncomment if using STATE.md
+
+# Token targets (from solo-developer profile)
+# Adjust these if you need custom limits
+token_targets:
+  changelog: 10000
+  devlog: 15000
+  combined: 25000
+  # state: 500  # Optional - uncomment if using STATE.md
+
+# Validation settings
+validation:
+  strictness: "errors"  # Options: strict, errors, warnings-only, disabled
+  fail_on_warnings: false
+  
+# Update notifications
+updates:
+  check_on_validation: true
+  notify_on_new_version: true
+
+# Related documents
+# These links help AI assistants find relevant documentation
+related_docs:
+  prd: "project/prd.md"
+  architecture: "project/architecture.md"
+  workflow: "project/WORKFLOW.md"
+  roadmap: "project/specs/ROADMAP-REVISED-2025-11.md"
+

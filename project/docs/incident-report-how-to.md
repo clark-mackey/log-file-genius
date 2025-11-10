@@ -319,7 +319,7 @@ See `product/examples/incidents/` for sample incident reports:
 
 - **Template:** [INCIDENT_REPORT_template.md](../templates/INCIDENT_REPORT_template.md)
 - **Examples:** `product/examples/incidents/`
-- **CHANGELOG:** [../../project/planning/CHANGELOG.md](../../project/planning/CHANGELOG.md)
-- **DEVLOG:** [../../project/planning/DEVLOG.md](../../project/planning/DEVLOG.md)
+- **CHANGELOG:** [../../logs/CHANGELOG.md](../../logs/CHANGELOG.md)
+- **DEVLOG:** [../../logs/DEVLOG.md](../../logs/DEVLOG.md)
 - **ADR How-To:** [ADR_how_to.md](ADR_how_to.md)
 
