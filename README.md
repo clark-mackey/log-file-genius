@@ -8,7 +8,7 @@
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
 [![License: MIT](https://img.shields.io/github/license/clark-mackey/log-file-genius)](LICENSE)
 
-[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](docs/MIGRATION_GUIDE.md) • [The Methodology](docs/log_file_how_to.md) • [Examples](examples/) • [Why It's Genius](#-why-its-genius)
+[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](product/docs/MIGRATION_GUIDE.md) • [The Methodology](product/docs/log_file_how_to.md) • [Examples](product/examples) • [Why It's Genius](#-why-its-genius)
 
 ---
 
@@ -47,7 +47,7 @@ Log File Genius is a five-document system that gives your AI a an improved long-
 | **ADRs** | The Rules 🏛️ | How we made significant decisions | On-demand |
 | **STATE** | The Current State | What agent on what task? | <500 tokens |
 
-[Dive into the full methodology →](docs/log_file_how_to.md)
+[Dive into the full methodology →](product/docs/log_file_how_to.md)
 
 ---
 
@@ -71,8 +71,7 @@ This isn't just another documentation template. It's a complete system designed 
 
 ## � Repository Structure
 
-
-See [`.project-identity.yaml`](.project-identity.yaml) for the full explanation of this structure and why it exists.
+This repository uses a two-branch strategy: `main` contains only the `product/` directory for distribution, while `development` contains both `product/` and `project/` directories for development work.
 
 ---
 
@@ -146,7 +145,7 @@ Starting a brand new project? Use the GitHub template:
     Give it a name. You now have the complete structure.
 
 3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](.log-file-genius/docs/log_file_how_to.md) guide to start using the system.
+    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start using the system.
 
 ---
 
@@ -171,7 +170,7 @@ Already have documentation? The installer creates a clean `/logs/` structure. Yo
 - **Brownfield:** Keep your existing docs where they are and use Log File Genius alongside them
 - **Full migration:** Copy your existing CHANGELOG/DEVLOG content into the new `/logs/` files
 
-For detailed migration strategies, see [**Migration Guide**](.log-file-genius/docs/MIGRATION_GUIDE.md).
+For detailed migration strategies, see [**Migration Guide**](product/docs/MIGRATION_GUIDE.md).
 
 ---
 
