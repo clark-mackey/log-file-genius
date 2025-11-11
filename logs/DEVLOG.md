@@ -159,7 +159,7 @@ How do we migrate the development branch to use `/logs/` structure without losin
 
 **The Decision:**
 Execute Epic 19 systematically with 8 tasks:
-1. **File migration:** Used `git mv` to preserve history when moving `project/planning/CHANGELOG.md` â†’ `logs/CHANGELOG.md`, `project/planning/DEVLOG.md` â†’ `logs/DEVLOG.md`, and `project/adr/` â†’ `logs/adr/`
+1. **File migration:** Used `git mv` to preserve history when moving `project/planning/CHANGELOG.md` -> `logs/CHANGELOG.md`, `project/planning/DEVLOG.md` -> `logs/DEVLOG.md`, and `project/adr/` -> `logs/adr/`
 2. **Config creation:** Created `.logfile-config.yml` with version tracking (v0.1.0-dev), solo-developer profile, and paths pointing to `logs/`
 3. **Cross-references:** Updated `project/WORKFLOW.md`, `project/docs/incident-report-how-to.md`, and other docs to reference `logs/` instead of `project/planning/`
 4. **AI rules:** Updated `.augment/rules/log-file-maintenance.md` to reference `logs/` paths throughout
@@ -210,7 +210,7 @@ Fix ALL issues systematically before shipping to GitHub:
 1. **README paths:** Updated all installation commands to include `product/` directory
 2. **Bash wildcard:** Added directory existence checks and `find` with `grep -q` to safely detect .md files
 3. **PowerShell templates:** Collect errors and fail immediately with rollback if any templates missing
-4. **ADR template:** Added `ADR_template.md` to installation mappings â†’ `logs/adr/TEMPLATE.md`
+4. **ADR template:** Added `ADR_template.md` to installation mappings -> `logs/adr/TEMPLATE.md`
 5. **Validation cleanup:** Removed unused variables, added clarifying comments about future STATE/ADR validation
 6. **Rollback system:** Implemented `$CreatedItems` array tracking all created files/folders, rollback function removes them on any failure
 7. **Force flag docs:** Added header documentation to both installers explaining all flags
@@ -232,7 +232,7 @@ Fix ALL issues systematically before shipping to GitHub:
 - âœ… Comprehensive rollback functionality
 - âœ… Production-ready installers
 - âœ… Testing documentation for future releases
-- **Risk reduction:** Critical bugs: 3â†’0, High risk: 2â†’0, Medium: 3â†’0, Low: 2â†’0
+- **Risk reduction:** Critical bugs: 3->0, High risk: 2->0, Medium: 3->0, Low: 2->0
 
 **Files Changed:**
 - `README.md` - Fixed installation paths
@@ -361,7 +361,7 @@ How do we create the cleanest possible installation while supporting both greenf
 **Brownfield support:**
 - Installer prompts for log file locations during installation
 - Defaults: `docs/planning/CHANGELOG.md`, `docs/planning/DEVLOG.md`, `docs/adr`, `docs/STATE.md`
-- Paths stored in `.logfile-config.yml` â†’ `paths` section
+- Paths stored in `.logfile-config.yml` -> `paths` section
 - AI rules read config to find files (no hardcoded paths)
 
 **PowerShell fixes:**
@@ -377,7 +377,7 @@ How do we create the cleanest possible installation while supporting both greenf
 - Easier updates (one folder to replace)
 
 **The Result:**
-- âœ… Root items reduced: 5-6 â†’ 3 (50% reduction)
+- âœ… Root items reduced: 5-6 -> 3 (50% reduction)
 - âœ… Brownfield support: Interactive path prompts + config storage
 - âœ… PowerShell compatibility: Works on Windows PowerShell + PowerShell Core
 - âœ… AI rules updated: Read config for paths (Augment + Claude Code)
@@ -485,7 +485,7 @@ Should research documents be version controlled? They're not part of the product
 - âœ… Complete intellectual history preserved
 
 **Files Changed:**
-- Moved: `context/research/*` â†’ `project/research/` (5 files, ~80KB)
+- Moved: `context/research/*` -> `project/research/` (5 files, ~80KB)
 - Updated: `.gitignore` (exclude only original-method-v3 and handoff-notes)
 
 ---
@@ -597,7 +597,7 @@ The target market is solo developers and teams, not enterprises. The goal is to 
    - Validation dashboard
 
 3. Created Epic 15 spec: Governance & Review (8 tasks, 1 week, simplified)
-   - ADR lifecycle (Proposed â†’ Accepted)
+   - ADR lifecycle (Proposed -> Accepted)
    - Human-in-the-loop rules
    - PR review checklist
    - Rollback procedures
@@ -804,4 +804,4 @@ Implemented ADR-008: Separate `product/` and `project/` directories with physica
 ## Archive
 
 **Entries older than current development cycle** are archived for token efficiency:
-- **October 2025:** Foundation work, Epic 7 (Validation System), initial implementation â†’ `logs/archive/DEVLOG-2025-10.md`
+- **October 2025:** Foundation work, Epic 7 (Validation System), initial implementation -> `logs/archive/DEVLOG-2025-10.md`
