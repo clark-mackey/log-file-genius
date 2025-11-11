@@ -44,7 +44,9 @@ jobs:
         id: lint
         run: |
           python product/scripts/lint-logs.py --json > validation-results.json
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit $EXIT_CODE
         continue-on-error: true
       
       - name: Parse validation results
