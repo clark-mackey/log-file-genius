@@ -16,12 +16,12 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Current Context (Source of Truth)
 
-**Last Updated:** 2025-11-02
+**Last Updated:** 2025-11-11
 
 ### Project State
 - **Project:** Log File Genius
 - **Current Version:** v0.1.0-dev (pre-release)
-- **Active Branch:** `main`
+- **Active Branch:** `development`
 - **Phase:** Security & Validation - Preparing for external validation
 - **Repository:** https://github.com/clark-mackey/log-file-genius
 
@@ -49,9 +49,9 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Safety:** Brownfield installation must preserve existing documentation
 - **Accessibility:** Clear documentation for both greenfield and brownfield use cases
 
-### Current Objectives (Week of Nov 2-8)
+### Current Objectives (Week of Nov 10-16)
 
-ðŸ“ **Full Strategic Plan:** See [ROADMAP-REVISED-2025-11.md](../specs/ROADMAP-REVISED-2025-11.md) for detailed 6-week roadmap, success metrics, and risk assessment.
+ðŸ“ **Full Strategic Plan:** See [ROADMAP-REVISED-2025-11.md](../project/specs/ROADMAP-REVISED-2025-11.md) for detailed 6-week roadmap, success metrics, and risk assessment.
 
 - [x] Execute product/project directory separation (ADR-008)
 - [x] Update all cross-references to new structure
@@ -67,6 +67,11 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - [x] Analyze Red Team and Competing Repos research
 - [x] Create revised roadmap (security-first approach)
 - [x] Implement automated installation system (ADR-010)
+- [x] Complete Epic 19 (Dogfooding /logs/ migration) - Migrated to logs/ structure
+- [x] Complete Epic 20 (AI Context Optimization Research) - 2-week tracking study
+- [x] Archive October 2025 DEVLOG entries (reduced tokens 46%)
+- [x] Fix Unicode encoding bug (double-encoded arrows) + create prevention tools
+- [x] Fix GitHub Actions workflow (exit code capture + pip caching bugs)
 - [ ] Begin Epic 12 (Security & Secrets Detection)
 - [ ] Begin Epic 13 (Validation & Reliability)
 - [ ] Dogfood system on real project before sharing with experienced devs

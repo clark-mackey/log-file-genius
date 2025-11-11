@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- DEVLOG Current Context update - Updated "Last Updated" date to 2025-11-11, changed Active Branch from "main" to "development", updated Current Objectives week reference from "Nov 2-8" to "Nov 10-16", added completed items for Epic 19 (Dogfooding /logs/ migration), Epic 20 (AI Context Optimization Research), October 2025 archival, Unicode encoding bug fix, and GitHub Actions workflow fixes. Fixed frontmatter path to ROADMAP (now points to `../project/specs/` instead of `../specs/`). Files: `logs/DEVLOG.md`. Commit: `pending`
 - Archived October 2025 DEVLOG entries to reduce token count from 22,537 to 12,059 tokens (46% reduction). Files: `logs/DEVLOG.md`, `logs/archive/DEVLOG-2025-10.md`. Commit: `a628c34`
 
 ### Fixed
