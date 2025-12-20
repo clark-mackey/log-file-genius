@@ -14,11 +14,38 @@
 
 AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasingly used in software development, but they struggle when project context grows large. Traditional documentation approaches consume too much of the AI's context window, leaving less room for actual coding work. Clark Mackey developed a 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) that provides complete project context while consuming less than 5% of an AI's context window. The system has proven effective in his own projects, reducing token usage by 93% (from ~90-110k to ~7-10k tokens) while maintaining full project history, current state, and decision rationale. This PRD defines a project to package this method into an installable GitHub repository with clear documentation and AI assistant rules, making it accessible to the broader developer community.
 
+### Current State (As of December 2025)
+
+**Repository Status:** ✅ Live on GitHub - 8 stars, public repository
+
+**What's Working:**
+- ✅ Augment starter pack complete (`.augment/rules/`, config, validation)
+- ✅ Claude Code starter pack complete (`.claude/`, project instructions, rules)
+- ✅ Working installer scripts (`install.ps1`, `install.sh`) - cross-platform
+- ✅ Profile system (`.logfile-config.yml`) with 4 profiles (solo-developer, team, open-source, startup)
+- ✅ Validation scripts (profile-aware, token counting)
+- ✅ Core templates (CHANGELOG, DEVLOG, STATE, ADR)
+- ✅ Git hooks for automated validation
+
+**Known Issues (Priority Order):**
+1. **Archival logic broken** - Uses date-based rules ("older than 2 weeks") instead of token/size-based limits
+2. **Rule adherence inconsistent** - Augment Code doesn't consistently follow the maintenance rules
+3. **Claude Code parity incomplete** - Needs to be as reliable as Augment (when Augment works)
+4. **Documentation gaps** - Missing brownfield migration guides, troubleshooting, real-world examples
+
+**What's Deferred:**
+- ❌ Cursor support (deferred to post-MVP)
+- ❌ Advanced features from context (hooks, slash commands) - alternative approach for future consideration
+
+**Real-World Usage Insights:**
+After several weeks of production use, the core methodology works but automation reliability needs improvement. The biggest pain points are archival automation and ensuring AI agents consistently follow the rules.
+
 ### Change Log
 
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
 | 2025-10-30 | 0.1 | Initial PRD draft | John (PM Agent) |
+| 2025-12-20 | 0.2 | Updated with current state, known issues, and real-world usage insights | John (PM Agent) |
 
 ---
 
@@ -83,23 +110,33 @@ Not applicable - this is a static documentation/template repository with no runt
 
 ## Epic List
 
-### Epic 1: Repository Foundation & Core Templates
+### Epic 1: Repository Foundation & Core Templates ✅ MOSTLY COMPLETE
 **Goal:** Establish the GitHub repository with all core template files, proper structure, and basic documentation so users can clone and start using the system.
+**Status:** Core templates, installer, and starter packs complete. Some documentation gaps remain.
 
-### Epic 2: Brownfield Installation Guide
+### Epic 2: Brownfield Installation Guide ⚠️ IN PROGRESS
 **Goal:** Provide comprehensive guidance for adding the log file system to existing projects with existing documentation, enabling developers to migrate or integrate without starting from scratch.
+**Status:** Basic guidance exists, but comprehensive migration strategies and content conversion guides are incomplete.
 
-### Epic 3: Multi-Platform AI Assistant Support
-**Goal:** Extend the system to work seamlessly with Claude Code's standing instructions format and other AI coding assistants, ensuring the log file method is tool-agnostic and widely accessible.
+### Epic 3: Augment & Claude Code Platform Support ✅ MOSTLY COMPLETE
+**Goal:** Deliver production-ready starter packs for Augment and Claude Code with feature parity and equal reliability.
+**Status:** Both starter packs exist and work, but reliability issues (rule adherence, archival) need fixing. Cursor support deferred.
 
-### Epic 4: Documentation & Usage Guides
-**Goal:** Provide comprehensive documentation including installation guides, usage examples, and the complete log_file_how_to.md so users understand how to implement and maintain the system across different AI assistants.
+### Epic 4: Documentation & Usage Guides ⚠️ IN PROGRESS
+**Goal:** Provide comprehensive documentation including installation guides, usage examples, and the complete log_file_how_to.md so users understand how to implement and maintain the system.
+**Status:** Basic documentation exists, but troubleshooting, best practices, and real-world examples are incomplete.
 
-### Epic 5: Augment Rules & AI Assistant Integration
-**Goal:** Deliver ready-to-use configuration files for Augment, Claude Code, and other AI coding assistants so users can automate log file maintenance regardless of their tool choice.
+### Epic 5: AI Assistant Integration & Automation ✅ COMPLETE
+**Goal:** Deliver ready-to-use configuration files for Augment and Claude Code so users can automate log file maintenance.
+**Status:** Starter packs complete with rules, validation scripts, and git hooks.
 
-### Epic 6: Examples & Community Resources
+### Epic 6: Examples & Community Resources ⚠️ NOT STARTED
 **Goal:** Provide real-world examples, sample projects, and community contribution guidelines so users can see the system in action and contribute improvements.
+**Status:** Minimal examples exist. Need before/after comparisons, success stories, and community guidelines.
+
+### Epic 7: Core Reliability & Bug Fixes 🔴 HIGH PRIORITY
+**Goal:** Fix critical reliability issues discovered through real-world usage to make the system dependable for daily use.
+**Status:** New epic based on production experience. Addresses archival logic, rule adherence, and platform parity.
 
 ---
 
@@ -107,34 +144,38 @@ Not applicable - this is a static documentation/template repository with no runt
 
 **Epic Goal:** Establish the GitHub repository with all core template files, proper structure, and basic documentation so users can clone and start using the system immediately.
 
-### Story 1.1: Initialize Repository Structure
+### Story 1.1: Initialize Repository Structure ✅ COMPLETE
 
-**As a** developer wanting to share the log file system,  
-**I want** a well-organized GitHub repository with clear folder structure,  
+**As a** developer wanting to share the log file system,
+**I want** a well-organized GitHub repository with clear folder structure,
 **so that** users can easily navigate and understand where each component belongs.
 
 #### Acceptance Criteria
-1. Repository created with MIT License
-2. Root README.md exists with project overview and quick-start instructions
-3. Folder structure created: `/templates`, `/examples`, `/docs`, `/augment-rules`
-4. .gitignore file configured appropriately
-5. Repository includes a CONTRIBUTING.md file for future contributors
+1. ✅ Repository created with MIT License
+2. ✅ Root README.md exists with project overview and quick-start instructions
+3. ✅ Folder structure created: `/product/templates`, `/product/starter-packs`, `/product/docs`, `/product/scripts`
+4. ✅ .gitignore file configured appropriately
+5. ⚠️ Repository includes a CONTRIBUTING.md file for future contributors (PARTIAL - needs expansion)
 
-### Story 1.2: Create Core Template Files
+**Status:** Complete. Repository is live on GitHub with 8 stars.
+
+### Story 1.2: Create Core Template Files ✅ COMPLETE
 
 **As a** developer adopting the log file system,
 **I want** all five core template files (CHANGELOG, DEVLOG, STATE, ADR, PRD) with proper formatting,
 **so that** I can copy them into my project and start using them immediately.
 
 #### Acceptance Criteria
-1. `CHANGELOG_template.md` created with proper Keep a Changelog format and cross-links
-2. `DEVLOG_template.md` created with Current Context section and decision tracking structure
-3. `STATE_template.md` created with active work, blockers, and priorities sections (<500 tokens)
-4. `ADR_template.md` created with standard ADR format (Context, Decision, Consequences)
-5. `PRD_template.md` created (or reference to external PRD template if using BMad)
-6. All templates include placeholder cross-reference links using relative paths
-7. Each template includes inline comments explaining how to customize it
-8. Templates stored in `/templates` folder
+1. ✅ `CHANGELOG_template.md` created with proper Keep a Changelog format and cross-links
+2. ✅ `DEVLOG_template.md` created with Current Context section and decision tracking structure
+3. ✅ `STATE_template.md` created with active work, blockers, and priorities sections (<500 tokens)
+4. ✅ `ADR_template.md` created with standard ADR format (Context, Decision, Consequences)
+5. ✅ `PRD_template.md` created (or reference to external PRD template if using BMad)
+6. ✅ All templates include placeholder cross-reference links using relative paths
+7. ✅ Each template includes inline comments explaining how to customize it
+8. ✅ Templates stored in `/product/templates` folder
+
+**Status:** Complete. All core templates exist and are in use.
 
 ### Story 1.3: Create ADR How-To Documentation
 
@@ -272,78 +313,76 @@ Not applicable - this is a static documentation/template repository with no runt
 
 ---
 
-## Epic 3: Multi-Platform AI Assistant Support
+## Epic 3: Augment & Claude Code Platform Support
 
-**Epic Goal:** Extend the system to work seamlessly with Claude Code's standing instructions format and other AI coding assistants, ensuring the log file method is tool-agnostic and widely accessible.
+**Epic Goal:** Deliver production-ready starter packs for Augment and Claude Code with feature parity and equal reliability.
 
-### Story 3.1: Research AI Assistant Instruction Formats
+**Note:** Cursor support deferred to post-MVP. Focus on making Augment and Claude Code work reliably.
 
-**As a** developer creating a cross-platform log file system,
-**I want** to understand how different AI coding assistants handle custom instructions and rules,
-**so that** I can design adapters that work with each platform's native format.
+### Story 3.1: Augment Starter Pack ✅ COMPLETE
+
+**As an** Augment user,
+**I want** a complete starter pack with rules, validation, and configuration,
+**so that** I can use Log File Genius with Augment immediately.
 
 #### Acceptance Criteria
-1. Research document created in `/docs/ai-assistant-research.md`
-2. Document includes findings for: Augment (rules), Claude Code (standing instructions), Cursor (rules), GitHub Copilot (instructions)
-3. For each platform, document: file format, file location, syntax requirements, limitations
-4. Document identifies commonalities across platforms that can be abstracted
-5. Document includes links to official documentation for each platform
-6. Document recommends an adapter strategy (separate files vs. conversion script vs. unified format)
+1. ✅ `.augment/rules/` directory with log-file-maintenance, status-update, update-planning-docs
+2. ✅ `.logfile-config.yml` profile configuration
+3. ✅ Validation scripts (PowerShell and Bash)
+4. ✅ Git hooks for automated validation
+5. ✅ README with installation and usage instructions
+6. ✅ Profile-aware rules that read `.logfile-config.yml`
 
-### Story 3.2: Create Claude Code Standing Instructions
+**Status:** Complete. Augment starter pack exists in `product/starter-packs/augment/`.
+
+### Story 3.2: Claude Code Starter Pack ✅ COMPLETE
 
 **As a** Claude Code user,
-**I want** standing instructions formatted for Claude Code's system,
-**so that** I can use the log file maintenance automation in my preferred AI assistant.
+**I want** a complete starter pack with project instructions, rules, and configuration,
+**so that** I can use Log File Genius with Claude Code immediately.
 
 #### Acceptance Criteria
-1. Claude Code standing instructions created for: update-planning-docs, status-update, log-file-maintenance
-2. Instructions stored in `/claude-code-instructions` folder with appropriate naming convention
-3. Instructions include same functionality as Augment rules but adapted to Claude Code's format
-4. Instructions reference the correct file paths for CHANGELOG, DEVLOG, PRD, ADRs
-5. README in the folder explains how to install standing instructions in Claude Code
-6. Instructions tested with Claude Code to verify they work correctly
+1. ✅ `.claude/project_instructions.md` with core principles and commands
+2. ✅ `.claude/rules/` directory with log-file-maintenance, status-update, update-planning-docs
+3. ✅ `.logfile-config.yml` profile configuration
+4. ✅ Validation scripts (PowerShell and Bash)
+5. ✅ Git hooks for automated validation
+6. ✅ README with installation and usage instructions
+7. ✅ Profile-aware rules that read `.logfile-config.yml`
 
-### Story 3.3: Create Cursor Rules Configuration
+**Status:** Complete. Claude Code starter pack exists in `product/starter-packs/claude-code/`.
 
-**As a** Cursor user,
-**I want** rules formatted for Cursor's .cursorrules system,
-**so that** I can use the log file maintenance automation in my preferred AI assistant.
+### Story 3.3: Platform Comparison Guide ⚠️ INCOMPLETE
 
-#### Acceptance Criteria
-1. Cursor rules created for log file maintenance in `.cursorrules` format
-2. Rules stored in `/cursor-rules` folder
-3. Rules include same functionality as Augment rules but adapted to Cursor's format
-4. README in the folder explains how to install rules in Cursor
-5. Rules tested with Cursor to verify they work correctly
-
-### Story 3.4: Create Platform Comparison Guide
-
-**As a** developer choosing an AI coding assistant,
-**I want** a comparison of how the log file system works across different platforms,
+**As a** developer choosing between Augment and Claude Code,
+**I want** a comparison of how the log file system works on each platform,
 **so that** I can understand what features are available in my chosen tool.
 
 #### Acceptance Criteria
-1. Platform comparison guide created in `/docs/platform-comparison.md`
-2. Guide includes comparison table showing feature support across Augment, Claude Code, Cursor, and GitHub Copilot
+1. Platform comparison guide created in `/product/docs/platform-comparison.md`
+2. Guide includes comparison table showing feature support for Augment and Claude Code
 3. Guide explains any platform-specific limitations or differences
 4. Guide provides recommendations for which platform to use based on user needs
 5. Guide includes installation difficulty ratings for each platform
 6. Root README.md updated to link to platform comparison guide
 
-### Story 3.5: Update Templates with Platform-Agnostic Guidance
+**Status:** Not started. Need to document Augment vs Claude Code differences.
 
-**As a** developer using any AI coding assistant,
-**I want** templates that include guidance for multiple platforms,
-**so that** I can use the system regardless of my tool choice.
+### Story 3.4: Installer Integration ✅ COMPLETE
+
+**As a** user installing Log File Genius,
+**I want** the installer to detect my AI assistant and install the correct starter pack,
+**so that** I don't have to manually choose or configure files.
 
 #### Acceptance Criteria
-1. `CHANGELOG_template.md` updated with platform-agnostic maintenance instructions
-2. `DEVLOG_template.md` updated with platform-agnostic maintenance instructions
-3. Templates include notes about which AI assistant features enhance the workflow
-4. Templates avoid platform-specific terminology where possible
-5. Templates include references to platform-specific instruction files in the repo
-6. All cross-references in templates remain valid after updates
+1. ✅ Installer detects Augment (checks for `.augment/` or Augment CLI)
+2. ✅ Installer detects Claude Code (checks for `.claude/` or Claude CLI)
+3. ✅ Installer prompts user to select if both detected
+4. ✅ Installer copies correct starter pack files
+5. ✅ Installer works on Windows (PowerShell) and Mac/Linux (Bash)
+6. ✅ Installer handles errors gracefully
+
+**Status:** Complete. `install.ps1` and `install.sh` work reliably (after significant debugging).
 
 ---
 
@@ -433,53 +472,46 @@ Not applicable - this is a static documentation/template repository with no runt
 
 ---
 
-## Epic 5: Augment Rules & AI Assistant Integration
+## Epic 5: AI Assistant Integration & Automation
 
-**Epic Goal:** Deliver ready-to-use configuration files for Augment, Claude Code, and other AI coding assistants so users can automate log file maintenance regardless of their tool choice.
+**Epic Goal:** Deliver ready-to-use configuration files for Augment and Claude Code so users can automate log file maintenance.
 
-### Story 5.1: Create Augment Rules Package
+**Status:** ✅ COMPLETE - Both Augment and Claude Code starter packs are production-ready.
+
+### Story 5.1: Create Augment Rules Package ✅ COMPLETE
 
 **As an** Augment user,
 **I want** ready-to-use Augment rules for log file maintenance,
 **so that** I can automate CHANGELOG, DEVLOG, and ADR updates without manual effort.
 
 #### Acceptance Criteria
-1. `update-planning-docs.md` rule created in `/augment-rules` folder
-2. `status-update.md` rule created in `/augment-rules` folder
-3. `log-file-maintenance-rule.md` rule created in `/augment-rules` folder
-4. Each rule includes clear description of when and how to use it
-5. Rules include placeholder paths that users customize for their project
-6. Rules reference the correct template files and documentation
-7. README in `/augment-rules` folder explains how to install and customize rules
-8. Rules tested with Augment to verify functionality
+1. ✅ `update-planning-docs.md` rule created in `.augment/rules/` folder
+2. ✅ `status-update.md` rule created in `.augment/rules/` folder
+3. ✅ `log-file-maintenance.md` rule created in `.augment/rules/` folder
+4. ✅ Each rule includes clear description of when and how to use it
+5. ✅ Rules include placeholder paths that users customize for their project
+6. ✅ Rules reference the correct template files and documentation
+7. ✅ README in starter pack explains how to install and customize rules
+8. ✅ Rules tested with Augment to verify functionality
 
-### Story 5.2: Create Claude Code Standing Instructions Package
+**Status:** Complete. Rules exist in `product/starter-packs/augment/.augment/rules/`.
+
+### Story 5.2: Create Claude Code Instructions Package ✅ COMPLETE
 
 **As a** Claude Code user,
-**I want** ready-to-use standing instructions for log file maintenance,
+**I want** ready-to-use project instructions and rules for log file maintenance,
 **so that** Claude Code automatically maintains my documentation files.
 
 #### Acceptance Criteria
-1. All standing instructions from Story 3.2 finalized and polished
-2. Instructions include examples showing expected behavior
-3. Instructions include customization guide for different project structures
-4. Installation README includes verification steps to confirm instructions are working
-5. Instructions include guidance on when to manually override automated behavior
-6. Instructions tested with multiple project structures to ensure portability
+1. ✅ Project instructions created in `.claude/project_instructions.md`
+2. ✅ Rules created in `.claude/rules/` (log-file-maintenance, status-update, update-planning-docs)
+3. ✅ Instructions include examples showing expected behavior
+4. ✅ Instructions include customization guide for different project structures
+5. ✅ Installation README includes verification steps to confirm instructions are working
+6. ✅ Instructions include guidance on when to manually override automated behavior
+7. ✅ Instructions tested with multiple project structures to ensure portability
 
-### Story 5.3: Create Cursor Rules Package
-
-**As a** Cursor user,
-**I want** ready-to-use Cursor rules for log file maintenance,
-**so that** Cursor automatically maintains my documentation files.
-
-#### Acceptance Criteria
-1. All Cursor rules from Story 3.3 finalized and polished
-2. Rules include examples showing expected behavior
-3. Rules include customization guide for different project structures
-4. Installation README includes verification steps to confirm rules are working
-5. Rules include guidance on when to manually override automated behavior
-6. Rules tested with multiple project structures to ensure portability
+**Status:** Complete. Instructions exist in `product/starter-packs/claude-code/.claude/`.
 
 ### Story 5.4: Create Integration Testing Guide
 
@@ -628,15 +660,29 @@ Not applicable - this is a static documentation/template repository with no runt
    - `/starter-packs/claude-code/` - Ready-to-use Claude Code rules
    - Copy-paste and go, no configuration needed
 
-### 6-Month Success Targets
+### Current State (December 2024)
+
+**Actual Metrics:**
+- **8 GitHub stars** (live on GitHub, public repository)
+- **0 forks** (early stage)
+- **0 issues/discussions** (no community engagement yet)
+- **Unknown unique visitors** (GitHub Analytics not yet reviewed)
+- **0 blog posts/articles** (no external mentions)
+- **0 community PRs** (no external contributions)
+
+**Key Insight:** Repository is live but not yet promoted. Focus needed on reliability before marketing.
+
+### 6-Month Success Targets (From Current State)
 
 **Quantitative Metrics:**
-- **500 GitHub stars** (demonstrates market validation)
-- **150 forks** (3:1 star-to-fork ratio typical)
-- **50 issues/discussions** (community engagement)
-- **5,000 unique visitors** (GitHub Analytics)
-- **10 blog posts/articles** mentioning the project
-- **3 community PRs merged** (community contribution)
+- **500 GitHub stars** (demonstrates market validation) - **Current: 8**
+- **150 forks** (3:1 star-to-fork ratio typical) - **Current: 0**
+- **50 issues/discussions** (community engagement) - **Current: 0**
+- **5,000 unique visitors** (GitHub Analytics) - **Current: Unknown**
+- **10 blog posts/articles** mentioning the project - **Current: 0**
+- **3 community PRs merged** (community contribution) - **Current: 0**
+
+**Prerequisite for Growth:** Fix reliability issues (Epic 7) before promoting to wider audience.
 
 **Qualitative Metrics:**
 - ✅ Featured in **2 AI coding newsletters** (e.g., TLDR AI, AI Breakfast)
@@ -864,6 +910,139 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 4. **Next:** Proceed to architecture phase or begin Epic 1 execution
 5. Address MEDIUM priority items during Epic 1 execution
 6. Iterate based on user feedback after MVP launch
+
+---
+
+## Epic 7: Core Reliability & Bug Fixes 🔴 HIGH PRIORITY
+
+**Epic Goal:** Fix critical reliability issues discovered through real-world usage to make the system dependable for daily use.
+
+**Priority:** HIGHEST - These issues block effective daily usage and user adoption.
+
+### Story 7.1: Fix Archival Logic (Token-Based, Not Date-Based)
+
+**As a** developer using the log file system daily,
+**I want** archival to trigger based on token count and file size (not dates),
+**so that** my log files stay within token budgets regardless of how frequently I update them.
+
+#### Acceptance Criteria
+1. Remove all date-based archival logic ("older than 2 weeks") from rules
+2. Update `log-file-maintenance.md` (Augment) to use token/size-based triggers only
+3. Update `.claude/rules/log-file-maintenance.md` (Claude Code) to use token/size-based triggers only
+4. Archival triggers when:
+   - CHANGELOG exceeds 10,000 tokens (or profile-specific limit)
+   - DEVLOG exceeds 15,000 tokens (or profile-specific limit)
+   - Combined logs exceed 25,000 tokens (or profile-specific limit)
+5. Archive oldest entries first (regardless of date) until under token budget
+6. Update validation scripts to check token counts and recommend archival
+7. Test with real-world log files to verify token-based archival works
+8. Update documentation to explain token-based archival strategy
+9. Add examples showing before/after archival with token counts
+
+#### Technical Notes
+- Use existing token counting logic from validation scripts
+- Profile-aware: Read `.logfile-config.yml` for custom token targets
+- Archive to `logs/archive/CHANGELOG-YYYY-MM.md` and `logs/archive/DEVLOG-YYYY-MM.md`
+- Maintain cross-references after archival
+
+### Story 7.2: Improve Rule Adherence (Make AI Agents Follow Rules Consistently)
+
+**As a** developer relying on automated log maintenance,
+**I want** AI agents to consistently follow the log file maintenance rules,
+**so that** I don't have to manually fix missed updates or incorrect entries.
+
+#### Acceptance Criteria
+1. Analyze why Augment Code fails to follow rules (rule complexity? unclear instructions? token budget?)
+2. Simplify rule language to be more explicit and actionable
+3. Add pre-commit checklist that AI MUST display before committing
+4. Add post-commit verification that AI MUST confirm
+5. Test rule improvements with both Augment and Claude Code
+6. Add "Critical" or "Mandatory" markers to non-negotiable steps
+7. Break complex rules into smaller, sequential steps
+8. Add examples within rules showing correct behavior
+9. Update both Augment and Claude Code rules with improvements
+10. Document known limitations and workarounds
+
+#### Technical Notes
+- Focus on clarity over brevity in rule instructions
+- Use numbered steps, not paragraphs
+- Add visual markers (🔴, ✅, ⚠️) for emphasis
+- Test with real commits to verify adherence improves
+
+### Story 7.3: Achieve Augment/Claude Code Parity
+
+**As a** user of either Augment or Claude Code,
+**I want** both platforms to work equally well with Log File Genius,
+**so that** I can choose my AI assistant based on preference, not reliability.
+
+#### Acceptance Criteria
+1. Audit feature differences between Augment and Claude Code starter packs
+2. Ensure both have identical core functionality:
+   - CHANGELOG maintenance
+   - DEVLOG maintenance
+   - Token-based archival
+   - Pre-commit checklist
+   - Post-commit verification
+   - Session start context reading
+3. Test both platforms with identical workflows
+4. Document any platform-specific limitations
+5. Update README to clearly state parity status
+6. Create comparison table showing feature support across platforms
+7. Ensure validation scripts work identically for both platforms
+
+#### Technical Notes
+- Augment uses `.augment/rules/`, Claude Code uses `.claude/rules/`
+- Both should reference `.logfile-config.yml` for configuration
+- Both should use identical token budgets and archival logic
+- Platform-specific features (if any) should be clearly documented as optional
+
+### Story 7.4: Validation Script Improvements
+
+**As a** developer using the validation scripts,
+**I want** validation to catch common errors and provide actionable feedback,
+**so that** I can fix issues before they cause problems.
+
+#### Acceptance Criteria
+1. Validation checks token counts and warns when approaching limits
+2. Validation detects missing CHANGELOG entries for recent commits
+3. Validation detects broken cross-references between log files
+4. Validation checks DEVLOG "Current Context" is up-to-date (updated within last 7 days)
+5. Validation provides specific, actionable error messages (not generic warnings)
+6. Validation script returns non-zero exit code on errors (for CI/CD integration)
+7. Validation respects `.logfile-config.yml` profile settings
+8. Add `--fix` flag to auto-fix common issues (e.g., formatting)
+9. Add `--verbose` flag for detailed output
+10. Test validation scripts on real-world log files with known issues
+
+#### Technical Notes
+- Enhance existing `validate-log-files.ps1` and `validate-log-files.sh`
+- Use token counting from existing scripts
+- Profile-aware: Read `.logfile-config.yml` for thresholds
+- Exit codes: 0 = pass, 1 = warnings, 2 = errors
+
+### Story 7.5: Git Hook Reliability
+
+**As a** developer using git hooks for automated validation,
+**I want** hooks to work reliably across platforms (Windows, Mac, Linux),
+**so that** validation runs automatically without manual intervention.
+
+#### Acceptance Criteria
+1. Test git hooks on Windows (PowerShell, Git Bash)
+2. Test git hooks on Mac (bash, zsh)
+3. Test git hooks on Linux (bash)
+4. Hooks detect and use correct validation script (`.ps1` vs `.sh`)
+5. Hooks provide clear error messages if validation fails
+6. Hooks allow bypass with `--no-verify` flag (documented)
+7. Hooks work with both Augment and Claude Code starter packs
+8. Update installation scripts to correctly install hooks on all platforms
+9. Document hook installation and troubleshooting
+10. Add hook testing to validation suite
+
+#### Technical Notes
+- Hooks located in `.git-hooks/pre-commit` (template)
+- Installer copies to `.git/hooks/pre-commit`
+- Must handle Windows line endings (CRLF vs LF)
+- Must be executable on Unix systems (`chmod +x`)
 
 ---
 

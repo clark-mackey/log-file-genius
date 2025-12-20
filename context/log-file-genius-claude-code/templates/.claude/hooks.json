@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": {
+          "toolName": "write_file|edit_file|create_file"
+        },
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "File modified. Consider: Does this need a CHANGELOG entry? Use /project:changelog-entry if so."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": {
+          "toolName": "write_file|edit_file"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat logs/STATE.md 2>/dev/null || echo 'No STATE.md found'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command", 
+        "command": "echo '=== Current Project State ===' && cat logs/STATE.md 2>/dev/null || echo 'No STATE.md - consider creating one'"
+      }
+    ],
+    "SessionEnd": [
+      {
+        "type": "prompt",
+        "prompt": "Session ending. Please update logs/STATE.md with current status and any handoff notes."
+      }
+    ]
+  }
+}
