@@ -113,11 +113,20 @@ This rule is ALWAYS active. You MUST follow these guidelines without exception.
 
 ## 🗄️ ARCHIVAL
 
-**Trigger:** CHANGELOG or DEVLOG >10,000 tokens
-**Action:** Archive entries >2 weeks old to `logs/archive/[FILENAME]-YYYY-MM.md`
-**Targets:** CHANGELOG <10k, DEVLOG <15k, Combined <25k tokens
+**Trigger:** Token count exceeds limits (run validation to check)
+- CHANGELOG > 10,000 tokens
+- DEVLOG > 15,000 tokens
+- Combined > 25,000 tokens
 
-**Note:** If `.logfile-config.yml` exists, use profile-specific token targets and archival thresholds instead of defaults above.
+**Action:** Archive OLDEST entries first (regardless of date) until under budget
+1. Run validation to check current token counts
+2. Note which file exceeds limit and by how much
+3. Move oldest version section (CHANGELOG) or oldest entries (DEVLOG) to `logs/archive/[FILENAME]-YYYY-MM.md`
+4. Re-run validation to confirm under budget
+
+**Important:** Archive by TOKEN COUNT, not by date. A 2-week-old entry should stay if under budget. A 3-day-old entry may need archiving if over budget.
+
+**Note:** If `.logfile-config.yml` exists, use profile-specific token targets instead of defaults above.
 
 ---
 

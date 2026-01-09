@@ -387,6 +387,9 @@ function Test-TokenCounts {
         $warnings += "Combined at $combinedTokens tokens ($pct% of $COMBINED_TOKEN_ERROR target)"
     }
     
+    # Calculate tokens to reclaim
+    $tokensOverBudget = $combinedTokens - $COMBINED_TOKEN_ERROR
+
     # Report results
     if ($errors.Count -gt 0) {
         Write-ValidationResult "Token count" "ERROR" "$($errors.Count) limit(s) exceeded"
@@ -394,7 +397,13 @@ function Test-TokenCounts {
             foreach ($error in $errors) {
                 Write-Host "  - $error" -ForegroundColor $COLOR_ERROR
             }
-            Write-Host "  Recommendation: Archive entries older than 30 days" -ForegroundColor $COLOR_INFO
+            Write-Host "" -ForegroundColor $COLOR_INFO
+            Write-Host "  [!] ARCHIVAL REQUIRED" -ForegroundColor $COLOR_ERROR
+            Write-Host "  Archive OLDEST entries first until under budget:" -ForegroundColor $COLOR_INFO
+            Write-Host "  1. Move oldest version section(s) from CHANGELOG to logs/archive/" -ForegroundColor $COLOR_INFO
+            Write-Host "  2. Move oldest DEVLOG entries to logs/archive/" -ForegroundColor $COLOR_INFO
+            Write-Host "  3. Target: Remove ~$tokensOverBudget tokens to get under budget" -ForegroundColor $COLOR_INFO
+            Write-Host "  4. Re-run validation to confirm" -ForegroundColor $COLOR_INFO
         }
         return $EXIT_ERROR
     } elseif ($warnings.Count -gt 0) {
@@ -403,7 +412,8 @@ function Test-TokenCounts {
             foreach ($warning in $warnings) {
                 Write-Host "  - $warning" -ForegroundColor $COLOR_WARNING
             }
-            Write-Host "  Recommendation: Consider archiving entries older than 30 days" -ForegroundColor $COLOR_INFO
+            Write-Host "" -ForegroundColor $COLOR_INFO
+            Write-Host "  [!] Consider archiving OLDEST entries to stay under budget" -ForegroundColor $COLOR_WARNING
         }
         return $EXIT_WARNING
     } else {

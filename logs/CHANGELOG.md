@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - v0.1.0-dev
 
+### Fixed
+
+- Archival logic changed from date-based to token-based (Story 7.1). Removed all "archive entries older than X days" logic from AI rules, profile configs, and validation scripts. Archival now triggers when token limits exceeded (CHANGELOG >10k, DEVLOG >15k, Combined >25k) and archives OLDEST entries first regardless of date. Updated 5 AI rules files, 4 profile configs, 6 validation scripts, and 2 documentation files. Validation scripts now show specific archival guidance: which file exceeded, how many tokens to reclaim, and step-by-step instructions. Files: `.augment/rules/log-file-maintenance.md`, `product/ai-rules/*/log-file-maintenance.md`, `product/starter-packs/*/.augment/rules/log-file-maintenance.md`, `product/starter-packs/*/.claude/rules/log-file-maintenance.md`, `product/profiles/*.yml`, `product/scripts/validate-log-files.*`, `product/starter-packs/*/scripts/validate-log-files.*`, `product/docs/validation-guide.md`, `product/docs/profile-schema.md`. Commit: `pending`
+
 ### Changed
 
 - PRD updated with current state, known issues, and Epic 7 (Core Reliability & Bug Fixes). Added "Current State" section documenting 8 GitHub stars, working components (Augment/Claude Code starter packs, installer, validation), and known issues in priority order (archival logic, rule adherence, Claude Code parity, documentation gaps). Created new Epic 7 with 5 stories addressing reliability issues discovered through real-world usage. Updated Epic statuses to reflect completed work (Epic 1, 3, 5 mostly complete). Renamed Epic 3 to "Augment & Claude Code Platform Support" (Cursor deferred). Updated success metrics showing current baseline (8 stars) vs 6-month targets (500 stars). Added context/log-file-genius-claude-code directory with alternative Claude Code approach for future consideration (hooks, slash commands, progressive disclosure). Files: `project/specs/prd.md`, `context/log-file-genius-claude-code/`. Commit: `8bbaf48`

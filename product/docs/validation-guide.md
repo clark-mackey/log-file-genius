@@ -199,24 +199,32 @@ git commit --no-verify
 ```
 ⚠️  Token Warning: CHANGELOG approaching limit
    Current: 8,500 tokens (85% of 10,000 target)
-   Recommendation: Consider archiving entries older than 30 days
+   [!] Consider archiving OLDEST entries to stay under budget
 ```
 
-**Fix:** Archive old entries to reduce token count:
+**Fix:** Archive the OLDEST entries (not by date, by position):
 
-1. Create archive file: `docs/planning/archive/CHANGELOG-2025-10.md`
-2. Move entries older than 30 days to archive
-3. Update main CHANGELOG to reference archive
+1. Identify oldest version sections in CHANGELOG or oldest entries in DEVLOG
+2. Create archive file: `logs/archive/CHANGELOG-2025-10.md`
+3. Move oldest entries to archive until under token budget
+4. Re-run validation to confirm
 
 See [Archival Strategy](#archival-strategy) below for details.
 
 #### Error: Token limit exceeded
 ```
 ❌ Token Error: Combined at 26,000 tokens (104% of 25,000 target)
-   Recommendation: Archive entries immediately
+   [!] ARCHIVAL REQUIRED
+   Archive OLDEST entries first until under budget:
+   1. Move oldest version section(s) from CHANGELOG to logs/archive/
+   2. Move oldest DEVLOG entries to logs/archive/
+   3. Target: Remove ~1,000 tokens to get under budget
+   4. Re-run validation to confirm
 ```
 
-**Fix:** Archive old entries immediately (required before commit).
+**Fix:** Archive OLDEST entries immediately (required before commit).
+
+**Important:** Archive by TOKEN COUNT, not by date. Keep recent entries even if they're large. Archive oldest entries first regardless of their age.
 
 ---
 
@@ -280,9 +288,9 @@ mkdir -p docs/planning/archive
 touch docs/planning/archive/CHANGELOG-2025-10.md
 ```
 
-### Step 2: Move Old Entries
+### Step 2: Move OLDEST Entries
 
-Move entries older than 30 days from main file to archive:
+Move the OLDEST entries (by position, not date) from main file to archive until under token budget:
 
 **From `docs/planning/CHANGELOG.md`:**
 ```markdown

@@ -60,13 +60,17 @@ validation:
   crosslink_validation: false  # Skip cross-link validation (future feature)
   fail_on_warnings: true       # Fail on warnings (maintain high quality)
 
-# Archival - Longer retention for public history
+# Archival - Token-based triggers with higher limits for public history
 archival:
-  changelog_age_days: 90       # Archive CHANGELOG entries older than 90 days
-  devlog_age_days: 60          # Archive DEVLOG entries older than 60 days
-  auto_archive_on_warning: false  # Don't auto-archive (manual control)
-  auto_archive_on_error: false    # Don't auto-archive (manual control)
-  archive_directory: project/planning/archive  # Archive location
+  # Token-based triggers (archive oldest entries when exceeded)
+  changelog_token_limit: 15000   # Archive when CHANGELOG exceeds 15k tokens (higher for public)
+  devlog_token_limit: 20000      # Archive when DEVLOG exceeds 20k tokens (higher for public)
+  combined_token_limit: 35000    # Archive when combined exceeds 35k tokens (higher for public)
+
+  # Archival strategy
+  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
+  auto_archive_on_error: false   # Don't auto-prompt (manual control for public repos)
+  archive_directory: logs/archive  # Archive location
 
 # AI assistant behavior - Careful and visible
 ai_assistant:
