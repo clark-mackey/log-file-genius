@@ -2,7 +2,7 @@
 
 **Stop the context rot. Give your AI a genius-level memory.**
 
-> A token-efficient documentation system that reduces AI context bloat by 93% while maintaining near perfect project memory.
+> A token-efficient documentation system that reduces AI context bloat by 93% while improving project memory.
 
 [![GitHub stars](https://img.shields.io/github/stars/clark-mackey/log-file-genius?style=social)](https://github.com/clark-mackey/log-file-genius/stargazers)
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
