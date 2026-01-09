@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - v0.1.0-dev
 
+### Changed
+
+- AI rule adherence improvements (Story 7.2). Simplified log-file-maintenance.md from 216→115 lines. Added ⛔ STOP conditions before commits, 🚨 Failure Detection & Self-Correction section, explicit success criteria. Removed verbose sections (profile awareness, daily updates, key rules). Focus: numbered steps, STOP markers, self-correction when violations detected. Updated all 6 rule file locations. Files: `.augment/rules/log-file-maintenance.md`, `.claude/rules/log-file-maintenance.md`, `product/ai-rules/augment/log-file-maintenance.md`, `product/ai-rules/claude-code/log-file-maintenance.md`, `product/starter-packs/augment/.augment/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/rules/log-file-maintenance.md`. Commit: `pending`
+
 ### Fixed
 
 - Archival logic changed from date-based to token-based (Story 7.1). Removed all "archive entries older than X days" logic from AI rules, profile configs, and validation scripts. Archival now triggers when token limits exceeded (CHANGELOG >10k, DEVLOG >15k, Combined >25k) and archives OLDEST entries first regardless of date. Updated 5 AI rules files, 4 profile configs, 6 validation scripts, and 2 documentation files. Validation scripts now show specific archival guidance: which file exceeded, how many tokens to reclaim, and step-by-step instructions. Files: `.augment/rules/log-file-maintenance.md`, `product/ai-rules/*/log-file-maintenance.md`, `product/starter-packs/*/.augment/rules/log-file-maintenance.md`, `product/starter-packs/*/.claude/rules/log-file-maintenance.md`, `product/profiles/*.yml`, `product/scripts/validate-log-files.*`, `product/starter-packs/*/scripts/validate-log-files.*`, `product/docs/validation-guide.md`, `product/docs/profile-schema.md`. Commit: `7d1bc2d`
