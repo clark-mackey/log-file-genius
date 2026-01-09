@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- AI rule adherence improvements (Story 7.2). Simplified log-file-maintenance.md from 216→115 lines. Added ⛔ STOP conditions before commits, 🚨 Failure Detection & Self-Correction section, explicit success criteria. Removed verbose sections (profile awareness, daily updates, key rules). Focus: numbered steps, STOP markers, self-correction when violations detected. Updated all 6 rule file locations. Files: `.augment/rules/log-file-maintenance.md`, `.claude/rules/log-file-maintenance.md`, `product/ai-rules/augment/log-file-maintenance.md`, `product/ai-rules/claude-code/log-file-maintenance.md`, `product/starter-packs/augment/.augment/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/rules/log-file-maintenance.md`. Commit: `pending`
+- AI rule adherence improvements (Story 7.2). Simplified log-file-maintenance.md from 216→115 lines. Added ⛔ STOP conditions before commits, 🚨 Failure Detection & Self-Correction section, explicit success criteria. Removed verbose sections (profile awareness, daily updates, key rules). Focus: numbered steps, STOP markers, self-correction when violations detected. Updated all 6 rule file locations. Files: `.augment/rules/log-file-maintenance.md`, `.claude/rules/log-file-maintenance.md`, `product/ai-rules/augment/log-file-maintenance.md`, `product/ai-rules/claude-code/log-file-maintenance.md`, `product/starter-packs/augment/.augment/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/rules/log-file-maintenance.md`. Commit: `e703a0d`
 
 ### Fixed
 
