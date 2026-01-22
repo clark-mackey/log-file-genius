@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Code-police analysis report documenting architecture evolution from MCP proposal through git-native simplification to final pragmatic approach. Includes original 10 recommendations with implementation status. Files: `context/code-police-analysis-2026-01.md`. Commit: `d20f1fe`
 
+### Changed
+
+- Dogfooding version sync - Updated project's own LFG configuration from v0.1.0-dev to v0.2.0 to match current release. Updated DEVLOG Current Context with current phase (Log Automation & Reliability). Files: `.logfile-config.yml`, `logs/DEVLOG.md`. Commit: `f6145b5`
+
 ---
 
 ## [0.2.0] - 2025-01-22

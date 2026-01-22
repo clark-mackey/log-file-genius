@@ -3,8 +3,8 @@
 
 # Version tracking - DO NOT EDIT MANUALLY
 # Updated automatically by update scripts
-version: "0.1.0-dev"
-last_updated: "2025-11-10"
+version: "0.2.0"
+last_updated: "2026-01-22"
 
 # Profile selection - determines token targets and validation strictness
 # Options: solo-developer, team, open-source, startup
