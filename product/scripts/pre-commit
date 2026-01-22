@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Log File Genius - Pre-commit Hook
+#
+# Runs validation and secret detection before each commit.
+# All checks are warn-only by default (won't block commits).
+# Use LFG_STRICT=1 to block on errors.
+#
+# Installation:
+#   cp .log-file-genius/scripts/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# Or use the installer:
+#   .log-file-genius/scripts/install.sh --with-hooks
+#
+
+set -e
+
+# Find the LFG scripts directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$SCRIPT_DIR/../../.log-file-genius/scripts/lfg.py" ]; then
+    LFG_DIR="$SCRIPT_DIR/../../.log-file-genius/scripts"
+elif [ -f "$SCRIPT_DIR/lfg.py" ]; then
+    LFG_DIR="$SCRIPT_DIR"
+else
+    # Hook installed in .git/hooks, find LFG relative to repo root
+    REPO_ROOT="$(git rev-parse --show-toplevel)"
+    LFG_DIR="$REPO_ROOT/.log-file-genius/scripts"
+fi
+
+LFG="$LFG_DIR/lfg.py"
+
+if [ ! -f "$LFG" ]; then
+    echo "[LFG] Warning: lfg.py not found, skipping pre-commit checks"
+    exit 0
+fi
+
+echo ""
+echo "========================================"
+echo "Log File Genius - Pre-commit Checks"
+echo "========================================"
+
+# Determine if strict mode
+STRICT_FLAG=""
+if [ "${LFG_STRICT:-0}" = "1" ]; then
+    STRICT_FLAG="--strict"
+    echo "[!] Running in STRICT mode (will block on errors)"
+fi
+
+# Run secret detection on staged files
+echo ""
+echo "Checking for secrets..."
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(md|txt|yml|yaml|json|py|sh|ps1)$' || true)
+
+if [ -n "$STAGED_FILES" ]; then
+    python3 "$LFG" secrets $STRICT_FLAG $STAGED_FILES
+else
+    echo "[OK] No relevant files staged"
+fi
+
+# Run validation on log files if they're being committed
+echo ""
+echo "Validating log files..."
+if git diff --cached --name-only | grep -q "^logs/"; then
+    python3 "$LFG" validate
+else
+    echo "[OK] No log files in this commit"
+fi
+
+echo ""
+echo "========================================"
+echo "[OK] Pre-commit checks complete"
+echo "========================================"
+echo ""
+
+exit 0
+

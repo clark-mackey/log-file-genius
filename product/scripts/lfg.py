@@ -112,16 +112,16 @@ def cmd_status(args):
     print("\n" + "="*60)
     print("Log File Genius - Status")
     print("="*60)
-    
+
     # Check for log files
     logs_dir = Path('logs')
     changelog = logs_dir / 'CHANGELOG.md'
     devlog = logs_dir / 'DEVLOG.md'
-    
+
     print(f"\nLog files:")
     print(f"  CHANGELOG: {'✓' if changelog.exists() else '✗'} {changelog}")
     print(f"  DEVLOG:    {'✓' if devlog.exists() else '✗'} {devlog}")
-    
+
     # Check for config
     config_paths = ['.logfile-config.yml', 'config/logfile.yml']
     config_found = None
@@ -130,7 +130,11 @@ def cmd_status(args):
             config_found = p
             break
     print(f"\nConfig: {config_found or 'Using defaults'}")
-    
+
+    # Check for pre-commit hook
+    hook_path = Path('.git/hooks/pre-commit')
+    print(f"Pre-commit hook: {'✓ installed' if hook_path.exists() else '✗ not installed'}")
+
     # Check for VERSION.json
     version_file = SCRIPT_DIR.parent / 'VERSION.json'
     if version_file.exists():
@@ -138,8 +142,48 @@ def cmd_status(args):
         with open(version_file) as f:
             version_data = json.load(f)
         print(f"Version: {version_data.get('version', 'unknown')}")
-    
+
     print("\n" + "="*60)
+    return 0
+
+
+def cmd_install_hooks(args):
+    """Install git pre-commit hooks"""
+    import shutil
+
+    hook_source = SCRIPT_DIR / 'pre-commit'
+    hook_dest = Path('.git/hooks/pre-commit')
+
+    if not Path('.git').exists():
+        print("[X] Error: Not a git repository")
+        return 2
+
+    if not hook_source.exists():
+        print(f"[X] Error: Hook source not found: {hook_source}")
+        return 2
+
+    # Check for existing hook
+    if hook_dest.exists() and not args.force:
+        print(f"[!] Pre-commit hook already exists: {hook_dest}")
+        print("    Use --force to overwrite")
+        return 1
+
+    # Create hooks directory if needed
+    hook_dest.parent.mkdir(parents=True, exist_ok=True)
+
+    # Copy hook
+    shutil.copy2(hook_source, hook_dest)
+
+    # Make executable (Unix only)
+    try:
+        import os
+        os.chmod(hook_dest, 0o755)
+    except:
+        pass  # Windows doesn't need this
+
+    print(f"[OK] Pre-commit hook installed: {hook_dest}")
+    print("     Runs: secret detection + log validation")
+    print("     Mode: warn-only (set LFG_STRICT=1 to block)")
     return 0
 
 
@@ -181,13 +225,17 @@ def main():
     
     # status command
     subparsers.add_parser('status', help='Show project status')
-    
+
+    # install-hooks command
+    p_hooks = subparsers.add_parser('install-hooks', help='Install git pre-commit hooks')
+    p_hooks.add_argument('--force', action='store_true', help='Overwrite existing hook')
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         return 0
-    
+
     # Dispatch to command handler
     handlers = {
         'validate': cmd_validate,
@@ -196,8 +244,9 @@ def main():
         'check-version': cmd_check_version,
         'check-rules': cmd_check_rules,
         'status': cmd_status,
+        'install-hooks': cmd_install_hooks,
     }
-    
+
     return handlers[args.command](args)
 
 
