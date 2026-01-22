@@ -1,13 +1,15 @@
 {
-  "version": "0.1.0",
-  "release_date": "2025-11-11",
+  "version": "0.2.0",
+  "release_date": "2025-01-22",
   "components": {
     "installer": "0.1.0",
-    "validator": "0.1.0",
-    "linter": "0.1.0",
+    "validator": "0.2.0",
+    "linter": "0.2.0",
     "ai-rules": "0.1.0",
     "templates": "0.1.0",
-    "profiles": "0.1.0"
+    "profiles": "0.1.0",
+    "secrets": "0.2.0",
+    "cli": "0.2.0"
   },
   "compatibility": {
     "min_python": "3.8",
