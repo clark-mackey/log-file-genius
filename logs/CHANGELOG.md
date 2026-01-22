@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - v0.1.0-dev
 
+### Added
+
+- Epic 13: Validation Foundation - Implemented Code-Police recommendations for robust validation. (1) Meta-validation in `lint-logs.py` with 6 self-tests that run before validation, solving "who watches the watchers" problem. Exit code 3 if self-tests fail. Flags: `--self-test`, `--skip-self-test`. (2) Version manifest system with `VERSION.json` tracking component versions + SHA256 checksums, and `check-version.py` validator with `--update` flag. (3) AI rule conflict detection via `check-ai-rules.py` with topic-based analysis, deduplication, and stop-condition filtering. Files: `product/scripts/lint-logs.py`, `product/VERSION.json`, `product/scripts/check-version.py`, `product/scripts/check-ai-rules.py`. Commit: `3a6bbd2`
+- Epic 12: Context-Aware Secret Detection - Created `detect-secrets.py` with multi-layer detection: entropy analysis (low randomness = placeholder), pattern matching (15+ secret types), context awareness (example/sample/demo indicators), documentation tolerance (.md files), allowlist support. Correctly identifies documentation examples vs real secrets. Flags: `--json`, `--strict`, `--allowlist`. Files: `product/scripts/detect-secrets.py`. Commit: `3a6bbd2`
+
 ### Changed
 
 - AI rule adherence improvements (Story 7.2). Simplified log-file-maintenance.md from 216→115 lines. Added ⛔ STOP conditions before commits, 🚨 Failure Detection & Self-Correction section, explicit success criteria. Removed verbose sections (profile awareness, daily updates, key rules). Focus: numbered steps, STOP markers, self-correction when violations detected. Updated all 6 rule file locations. Files: `.augment/rules/log-file-maintenance.md`, `.claude/rules/log-file-maintenance.md`, `product/ai-rules/augment/log-file-maintenance.md`, `product/ai-rules/claude-code/log-file-maintenance.md`, `product/starter-packs/augment/.augment/rules/log-file-maintenance.md`, `product/starter-packs/claude-code/.claude/rules/log-file-maintenance.md`. Commit: `e703a0d`

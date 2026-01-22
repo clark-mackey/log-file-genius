@@ -1,3 +1,9 @@
+# Secrets and API keys
+.env
+
+# AI Agent configuration (contains API keys/endpoints)
+AGENTS.md
+
 # Augment - internal guidance only (root level only, not starter packs)
 # Ignore the entire .augment directory
 /.augment/
