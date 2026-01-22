@@ -108,6 +108,36 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2026-01-22: Epic 8 Revision - MCP Deferred After Dogfooding Analysis
+
+**The Situation:** Code-police agent (Letta) reviewed LFG and recommended 10 improvements including an MCP Server for programmatic API access. Winston (Architect) initially designed elaborate TypeScript/npm architecture with 5 services.
+
+**The Challenge:** User challenged the complexity: "How can it be simpler, fewer dependencies, and still deliver the results we want?" This led to git-native alternatives, which then raised: "Who writes the words?" - git hooks can detect but not generate quality content.
+
+**The Decision:** Examined actual `logs/CHANGELOG.md` and `logs/DEVLOG.md` entries. Discovered entries are far richer than assumed:
+- CHANGELOG entries: 60-80 tokens each (not 10 from commit messages)
+- DEVLOG entries: 500-1000 tokens with narrative structure
+- Current rules-based approach already works (AI has context, hooks don't)
+
+Revised Epic 8 from "MCP Server" to "Log Automation & Reliability":
+- Story 8.1: Enhanced rule enforcement (⛔ STOP markers, self-correction)
+- Story 8.2: Git hook safety net (warn-only, not auto-generate)
+- Stories 8.3-8.5: CLI scaffolding (ADR, CHANGELOG, DEVLOG helpers)
+
+MCP deferred to Future Considerations with clear trigger conditions.
+
+**Why This Matters:** Avoided building complex infrastructure that would produce 90% quality loss. Recognized that LFG's value comes from rich contextual entries that only session-aware AI can write.
+
+**The Result:**
+- ✅ PRD Epic 8 completely revised (140 lines changed)
+- ✅ MCP added to Future Considerations with rationale
+- ✅ Analysis report created at `context/code-police-analysis-2026-01.md`
+- ✅ Architect Prompt updated (MCP spec preserved in report for future reference)
+
+**Files Changed:** `project/specs/prd.md`, `context/code-police-analysis-2026-01.md`
+
+---
+
 ### 2025-11-10: Epic 20 - AI Context Optimization Research
 
 **The Situation:** After completing Epic 19 (dogfooding migration), user asked a profound question: "For small personal projects of a solo dev, doesn't Keep a Changelog format create a problem? Solo devs remember work calendar-like, not feature-like." This led to deeper question: **Is CHANGELOG providing the best AI context per token spent?**

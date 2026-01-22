@@ -19,7 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-*No unreleased changes.*
+### Changed
+
+- Epic 8 revised from "MCP Server & Programmatic API" to "Log Automation & Reliability". Analysis of actual log files revealed entries are too detailed (60-80 tokens/CHANGELOG, 500-1000 tokens/DEVLOG) to auto-generate from commits. New focus: enhanced rules, git hook safety nets, CLI scaffolding. MCP deferred to Future Considerations. Files: `project/specs/prd.md`. Commit: `d20f1fe`
+
+### Added
+
+- Code-police analysis report documenting architecture evolution from MCP proposal through git-native simplification to final pragmatic approach. Includes original 10 recommendations with implementation status. Files: `context/code-police-analysis-2026-01.md`. Commit: `d20f1fe`
 
 ---
 
