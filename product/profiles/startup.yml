@@ -60,13 +60,18 @@ validation:
   crosslink_validation: false  # Skip cross-link validation
   fail_on_warnings: false      # Never fail on warnings (speed over perfection)
 
-# Archival - Aggressive archival for speed
+# Archival - Token-based triggers with aggressive limits for speed
 archival:
-  changelog_age_days: 14       # Archive CHANGELOG entries older than 14 days (aggressive)
-  devlog_age_days: 7           # Archive DEVLOG entries older than 7 days (aggressive)
-  auto_archive_on_warning: true   # Auto-archive on warnings (keep it lean)
-  auto_archive_on_error: true     # Auto-archive on errors (keep it lean)
-  archive_directory: project/planning/archive  # Archive location
+  # Token-based triggers (archive oldest entries when exceeded)
+  changelog_token_limit: 6000    # Archive when CHANGELOG exceeds 6k tokens (aggressive)
+  devlog_token_limit: 8000       # Archive when DEVLOG exceeds 8k tokens (aggressive)
+  combined_token_limit: 14000    # Archive when combined exceeds 14k tokens (aggressive)
+
+  # Archival strategy
+  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
+  auto_archive_on_warning: true  # Prompt for archival on warnings (keep it lean)
+  auto_archive_on_error: true    # Prompt for archival on errors (keep it lean)
+  archive_directory: logs/archive  # Archive location
 
 # AI assistant behavior - Maximum speed
 ai_assistant:

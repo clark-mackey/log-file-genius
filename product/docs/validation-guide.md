@@ -15,6 +15,15 @@ The Log File Genius validation system automatically checks your CHANGELOG and DE
 
 ### Running Validation Manually
 
+**Python Linter (Recommended - Cross-platform):**
+```bash
+python product/scripts/lint-logs.py              # Validate all files
+python product/scripts/lint-logs.py --changelog  # Validate only CHANGELOG
+python product/scripts/lint-logs.py --devlog     # Validate only DEVLOG
+python product/scripts/lint-logs.py --strict     # Fail on warnings
+python product/scripts/lint-logs.py --json       # Output as JSON
+```
+
 **Windows (PowerShell):**
 ```powershell
 .\scripts\validate-log-files.ps1
@@ -24,6 +33,22 @@ The Log File Genius validation system automatically checks your CHANGELOG and DE
 ```bash
 ./product/scripts/validate-log-files.sh
 ```
+
+### Generating Validation Reports
+
+**Create comprehensive validation report:**
+```bash
+python product/scripts/validation-report.py              # Markdown report
+python product/scripts/validation-report.py --html       # HTML report
+python product/scripts/validation-report.py --json       # JSON output
+python product/scripts/validation-report.py --output report.md  # Save to file
+```
+
+The validation report includes:
+- Overall health score (0-100)
+- Token budget status with progress bars
+- Actionable recommendations
+- Detailed validation results
 
 ### Installing Git Pre-Commit Hook
 
@@ -174,24 +199,32 @@ git commit --no-verify
 ```
 ⚠️  Token Warning: CHANGELOG approaching limit
    Current: 8,500 tokens (85% of 10,000 target)
-   Recommendation: Consider archiving entries older than 30 days
+   [!] Consider archiving OLDEST entries to stay under budget
 ```
 
-**Fix:** Archive old entries to reduce token count:
+**Fix:** Archive the OLDEST entries (not by date, by position):
 
-1. Create archive file: `docs/planning/archive/CHANGELOG-2025-10.md`
-2. Move entries older than 30 days to archive
-3. Update main CHANGELOG to reference archive
+1. Identify oldest version sections in CHANGELOG or oldest entries in DEVLOG
+2. Create archive file: `logs/archive/CHANGELOG-2025-10.md`
+3. Move oldest entries to archive until under token budget
+4. Re-run validation to confirm
 
 See [Archival Strategy](#archival-strategy) below for details.
 
 #### Error: Token limit exceeded
 ```
 ❌ Token Error: Combined at 26,000 tokens (104% of 25,000 target)
-   Recommendation: Archive entries immediately
+   [!] ARCHIVAL REQUIRED
+   Archive OLDEST entries first until under budget:
+   1. Move oldest version section(s) from CHANGELOG to logs/archive/
+   2. Move oldest DEVLOG entries to logs/archive/
+   3. Target: Remove ~1,000 tokens to get under budget
+   4. Re-run validation to confirm
 ```
 
-**Fix:** Archive old entries immediately (required before commit).
+**Fix:** Archive OLDEST entries immediately (required before commit).
+
+**Important:** Archive by TOKEN COUNT, not by date. Keep recent entries even if they're large. Archive oldest entries first regardless of their age.
 
 ---
 
@@ -255,9 +288,9 @@ mkdir -p docs/planning/archive
 touch docs/planning/archive/CHANGELOG-2025-10.md
 ```
 
-### Step 2: Move Old Entries
+### Step 2: Move OLDEST Entries
 
-Move entries older than 30 days from main file to archive:
+Move the OLDEST entries (by position, not date) from main file to archive until under token budget:
 
 **From `docs/planning/CHANGELOG.md`:**
 ```markdown
@@ -326,6 +359,43 @@ cannot be loaded because running scripts is disabled
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### Python linter: ModuleNotFoundError
+
+**Error:**
+```
+ModuleNotFoundError: No module named 'yaml'
+```
+
+**Fix:** Install required dependencies:
+```bash
+pip install pyyaml
+```
+
+### Python linter: Files not found
+
+**Error:**
+```
+❌ CHANGELOG not found at logs/CHANGELOG.md
+❌ DEVLOG not found at logs/DEVLOG.md
+```
+
+**Fix:** This means your log files are not in the expected `/logs/` folder. Either:
+1. Run the installer to create the proper structure
+2. Migrate existing files to `/logs/` folder (see migration guide)
+3. Update `.logfile-config.yml` to point to your custom paths
+
+### Validation passes but GitHub Actions fails
+
+**Possible causes:**
+1. Different Python versions (local vs CI)
+2. Missing dependencies in CI
+3. Different file paths in CI environment
+
+**Fix:** Check GitHub Actions logs and ensure:
+- Python 3.11+ is used
+- All dependencies are installed
+- File paths match your configuration
 
 ---
 

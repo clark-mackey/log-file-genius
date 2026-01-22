@@ -258,6 +258,9 @@ validate_tokens() {
         warnings+=("Combined: $combined_tokens tokens ($(get_percentage $combined_tokens $COMBINED_TOKEN_ERROR)% of $COMBINED_TOKEN_ERROR limit)")
     fi
     
+    # Calculate tokens over budget
+    local tokens_over_budget=$((combined_tokens - COMBINED_TOKEN_ERROR))
+
     # Report results
     if [ ${#errors[@]} -gt 0 ]; then
         write_validation_result "Token count" "ERROR" "${#errors[@]} limit(s) exceeded"
@@ -265,7 +268,13 @@ validate_tokens() {
             for error in "${errors[@]}"; do
                 echo -e "\033[31m  - $error\033[0m"
             done
-            echo -e "\033[36m  Recommendation: Archive entries older than 30 days\033[0m"
+            echo ""
+            echo -e "\033[31m  [!] ARCHIVAL REQUIRED\033[0m"
+            echo -e "\033[36m  Archive OLDEST entries first until under budget:\033[0m"
+            echo -e "\033[36m  1. Move oldest version section(s) from CHANGELOG to logs/archive/\033[0m"
+            echo -e "\033[36m  2. Move oldest DEVLOG entries to logs/archive/\033[0m"
+            echo -e "\033[36m  3. Target: Remove ~$tokens_over_budget tokens to get under budget\033[0m"
+            echo -e "\033[36m  4. Re-run validation to confirm\033[0m"
         fi
     elif [ ${#warnings[@]} -gt 0 ]; then
         write_validation_result "Token count" "WARNING" "${#warnings[@]} threshold(s) exceeded"
@@ -273,7 +282,8 @@ validate_tokens() {
             for warning in "${warnings[@]}"; do
                 echo -e "\033[33m  - $warning\033[0m"
             done
-            echo -e "\033[36m  Recommendation: Consider archiving entries older than 30 days\033[0m"
+            echo ""
+            echo -e "\033[33m  [!] Consider archiving OLDEST entries to stay under budget\033[0m"
         fi
     else
         local percentage=$(get_percentage $combined_tokens $COMBINED_TOKEN_ERROR)

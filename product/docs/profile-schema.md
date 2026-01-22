@@ -167,23 +167,26 @@ validation:
 
 ### 5. Archival Thresholds
 
-When to archive old entries to maintain token efficiency.
+When to archive entries to maintain token efficiency. **Archival is always token-based, never date-based.**
 
 ```yaml
 archival:
-  # Time-based archival
-  changelog_age_days: 30        # Archive CHANGELOG entries older than X days
-  devlog_age_days: 14           # Archive DEVLOG entries older than X days
-  
-  # Token-based archival
-  auto_archive_on_warning: false  # Automatically archive when hitting warning threshold
-  auto_archive_on_error: true     # Automatically archive when hitting error threshold
-  
+  # Token-based triggers (archive OLDEST entries when exceeded)
+  changelog_token_limit: 10000   # Archive when CHANGELOG exceeds this many tokens
+  devlog_token_limit: 15000      # Archive when DEVLOG exceeds this many tokens
+  combined_token_limit: 25000    # Archive when combined exceeds this many tokens
+
+  # Archival strategy
+  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
+  auto_archive_on_error: true    # Prompt for archival when hitting error threshold
+
   # Archive location
-  archive_directory: project/planning/archive  # Where to store archived entries
+  archive_directory: logs/archive  # Where to store archived entries
 ```
 
-**Rationale:** Different projects have different archival needs. Fast-moving startups archive more frequently, established projects keep longer history.
+**Important:** Archive by TOKEN COUNT, not by date. A 2-week-old entry should stay if under budget. A 3-day-old entry may need archiving if over budget.
+
+**Rationale:** Different projects have different token budgets. Startups use aggressive limits (6k/8k/14k) for speed, open-source uses higher limits (15k/20k/35k) for public history.
 
 ---
 
@@ -251,11 +254,12 @@ validation:
   fail_on_warnings: false
 
 archival:
-  changelog_age_days: 30
-  devlog_age_days: 14
-  auto_archive_on_warning: false
+  changelog_token_limit: 10000
+  devlog_token_limit: 15000
+  combined_token_limit: 25000
+  strategy: oldest-first
   auto_archive_on_error: true
-  archive_directory: project/planning/archive
+  archive_directory: logs/archive
 
 ai_assistant:
   proactive_updates: true
@@ -305,11 +309,12 @@ validation:
   fail_on_warnings: false
 
 archival:
-  changelog_age_days: 60
-  devlog_age_days: 30
-  auto_archive_on_warning: false
+  changelog_token_limit: 12000
+  devlog_token_limit: 18000
+  combined_token_limit: 30000
+  strategy: oldest-first
   auto_archive_on_error: true
-  archive_directory: project/planning/archive
+  archive_directory: logs/archive
 
 ai_assistant:
   proactive_updates: true

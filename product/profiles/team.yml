@@ -59,13 +59,17 @@ validation:
   crosslink_validation: false  # Skip cross-link validation (future feature)
   fail_on_warnings: false      # Allow warnings (don't block commits)
 
-# Archival - Longer retention for team history
+# Archival - Token-based triggers with higher limits for team history
 archival:
-  changelog_age_days: 60       # Archive CHANGELOG entries older than 60 days
-  devlog_age_days: 30          # Archive DEVLOG entries older than 30 days
-  auto_archive_on_warning: false  # Don't auto-archive on warnings
-  auto_archive_on_error: true     # Auto-archive when hitting error threshold
-  archive_directory: project/planning/archive  # Archive location
+  # Token-based triggers (archive oldest entries when exceeded)
+  changelog_token_limit: 12000   # Archive when CHANGELOG exceeds 12k tokens (higher for teams)
+  devlog_token_limit: 18000      # Archive when DEVLOG exceeds 18k tokens (higher for teams)
+  combined_token_limit: 30000    # Archive when combined exceeds 30k tokens (higher for teams)
+
+  # Archival strategy
+  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
+  auto_archive_on_error: true    # Prompt for archival when hitting error threshold
+  archive_directory: logs/archive  # Archive location
 
 # AI assistant behavior - Proactive but visible
 ai_assistant:

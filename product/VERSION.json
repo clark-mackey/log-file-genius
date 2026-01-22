@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "release_date": "2025-01-22",
+  "components": {
+    "installer": "0.1.0",
+    "validator": "0.2.0",
+    "linter": "0.2.0",
+    "ai-rules": "0.1.0",
+    "templates": "0.1.0",
+    "profiles": "0.1.0",
+    "secrets": "0.2.0",
+    "cli": "0.2.0"
+  },
+  "compatibility": {
+    "min_python": "3.8",
+    "min_powershell": "5.1",
+    "min_bash": "4.0"
+  },
+  "checksums": {
+    "install.ps1": "de07c9808fef32b1",
+    "install.sh": "603a3101e174506a",
+    "lint-logs.py": "0350e9020efb8acb",
+    "validate-log-files.ps1": "92ad0cba4e8ba2a5",
+    "validate-log-files.sh": "dc2bfc4fcd457c2b"
+  }
+}
