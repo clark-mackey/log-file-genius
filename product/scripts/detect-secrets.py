@@ -10,9 +10,9 @@ from documentation examples. Uses multiple detection strategies:
 - Allowlist support (user-defined exceptions)
 
 Exit codes:
-  0 - No secrets found
-  1 - Warnings only (low confidence findings)
-  2 - Errors (high confidence secrets detected)
+  0 - No secrets found (or warnings only - default is warn, not block)
+  1 - Warnings present (only with --strict)
+  2 - Errors present (only with --strict)
 """
 
 import argparse
@@ -290,13 +290,15 @@ def main():
     # Print results
     print_results(result, json_output=args.json)
 
-    # Exit code
-    if result.errors:
-        sys.exit(2)
-    elif result.warnings and args.strict:
-        sys.exit(1)
-    else:
-        sys.exit(0)
+    # Exit code: Default is warn-only (exit 0), --strict blocks on errors
+    if args.strict:
+        if result.errors:
+            sys.exit(2)
+        elif result.warnings:
+            sys.exit(1)
+
+    # Default: always exit 0 (warn, don't block)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
