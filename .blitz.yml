@@ -1,0 +1,14 @@
+# .blitz.yml
+# Repository configuration for Blitz agent
+
+default_branch: development
+
+protected_branches:
+  - main
+
+rules:
+  - "Never commit directly to main - always use PRs"
+  - "All feature branches should be based on development, not main"
+  - "logs/ directory changes only go to development branch"
+  - "PRs to main should only contain product/ directory changes"
+  - "This repo dogfoods Log File Genius - logs/ tracks project development"
