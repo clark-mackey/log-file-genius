@@ -63,17 +63,20 @@ The following were rejected for mission drift (serving developers, not AI agents
 
 See `project/specs/prd.md` → "Rejected Ideas" section for details.
 
-## 🔄 Active Epics (February 2026)
+## 🔄 Next Steps (February 2026)
 
-- **Epic 7:** Core Reliability & Bug Fixes (Stories 7.1-7.5)
-- **Epic 8:** AI Context Optimization (5 stories focused on AI agent benefits)
+**Priority order:**
+1. **Epic 7:** Core Reliability - Start with Story 7.2 (Rule Adherence)
+2. **Epic 8:** AI Context Optimization - After Epic 7
+
+**Then:** Epic 12 (Security), Epic 13 (Validation), Epic 17 (Incident Reports)
 
 ## 📋 File Quick Reference
 
 ### Active Specs
 - `project/specs/prd.md` - **START HERE** - All requirements
 - `project/specs/DEFINITION-OF-DONE.md` - Completion checklists
-- `project/specs/EPIC-12-*.md` through `EPIC-19-*.md` - Detailed epic specs
+- `project/specs/EPIC-12-*.md`, `EPIC-13-*.md`, `EPIC-15-*.md`, `EPIC-17-*.md` - Detailed epic specs
 
 ### Decision Records
 - `project/adr/` - Architecture Decision Records (ADR-001 through ADR-011)

@@ -53,23 +53,26 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 **Source of Truth:** See [prd.md](../project/specs/prd.md) for all epics, stories, and requirements.
 
-**Active Work:**
-- [ ] Epic 7: Core Reliability & Bug Fixes (Stories 7.1-7.5)
-- [ ] Epic 8: AI Context Optimization (NEW - 5 stories focused on AI agent benefits)
+**🎯 Mission:** Help AI agents not get lost, not waste tokens.
+
+**Next Steps (in priority order):**
+1. **Epic 7: Core Reliability** - Start with Story 7.2 (Rule Adherence), then 7.3, 7.1, 7.4, 7.5
+2. **Epic 8: AI Context Optimization** - After Epic 7 complete
+
+**Planned (P0-P1):**
+- [ ] Epic 12: Security & Secrets Detection (P0) - Spec: `project/specs/EPIC-12-security-secrets-detection.md`
+- [ ] Epic 13: Validation & Reliability (P0) - Spec: `project/specs/EPIC-13-validation-reliability.md`
+- [ ] Epic 17: Incident Reports & Learning (P1) - Spec: `project/specs/EPIC-17-incident-reports-learning.md`
 
 **Completed (Nov 2025 - Jan 2026):**
-- [x] Epic 8 (old): Profile System - All 10 tasks complete
-- [x] Epic 12: Security & Secrets Detection
-- [x] Epic 13: Validation & Reliability
+- [x] Epic 19: Dogfooding /logs/ migration
 - [x] Product/project directory separation (ADR-008)
 - [x] Two-branch strategy (ADR-009)
-- [x] Dogfooding /logs/ migration (Epic 19)
-- [x] PRD v0.5 refocus - rejected mission drift (Epics 9, 10, 11)
+- [x] PRD v0.5/v0.6 refocus - rejected mission drift (Epics 9, 10, 11, 18)
 - [x] Planning files cleanup - archived obsolete roadmaps and research
 
 **Deferred:**
-- Epic 15: Governance & Review (P1 - after core reliability)
-- Epic 17: Incident Reports & Learning
+- Epic 15: Governance & Review (team process, not AI benefit)
 
 
 ### Known Risks & Blockers
