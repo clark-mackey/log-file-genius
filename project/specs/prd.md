@@ -52,6 +52,7 @@ After several weeks of production use, the core methodology works but automation
 | 2026-01-22 | 0.3     | Added Epic 8 (MCP Server), Epic 9 (CLI Tooling), enhanced Epic 7, Future Considerations section             | John (PM Agent) |
 | 2026-02-01 | 0.4     | Added Epic 10 (Claude Code Subagent Integration), promoted from Future Considerations to HIGH VALUE priority | Augment Agent  |
 | 2026-02-01 | 0.5     | MAJOR REFOCUS: Rejected Epics 9/10/11 (mission drift). New Epic 8 for AI context optimization. Epic 7 refined. | Augment Agent  |
+| 2026-02-01 | 0.6     | Added Epics 12/13/17/19 to Epic List. Deferred Epic 15, rejected Epic 18. Aligned all epics with mission.   | Augment Agent  |
 
 ---
 
@@ -147,6 +148,30 @@ Not applicable - this is a static documentation/template repository with no runt
 ### Epic 8: AI Context Optimization 🧠 NEW - MISSION CRITICAL
 **Goal:** Build features that directly help AI agents not get lost and not waste tokens - smart summarization, token monitoring, AI-optimized formatting.
 **Status:** NEW - Refocused on core mission after code-police review identified 60% mission drift.
+
+### Epic 12: Security & Secrets Detection 🔒 P0
+**Goal:** Prevent AI agents from leaking secrets (passwords, API keys, PII) into logs. AI must learn what NOT to document.
+**Status:** Planned. Spec: `project/specs/EPIC-12-security-secrets-detection.md`
+
+### Epic 13: Validation & Reliability ✅ P0
+**Goal:** Verify AI agents maintain logs correctly with automated validation and self-assessment.
+**Status:** Planned. Spec: `project/specs/EPIC-13-validation-reliability.md`
+
+### Epic 17: Incident Reports & Learning 📋 P1
+**Goal:** Teach AI agents to create structured incident reports when failures occur - documenting what went wrong and how to prevent recurrence.
+**Status:** Planned. Template WIP in `project/templates/`. Spec: `project/specs/EPIC-17-incident-reports-learning.md`
+
+### ~~Epic 15: Governance & Review~~ ⏸️ DEFERRED
+**Goal:** ~~Human review workflows for AI-generated documentation.~~
+**Status:** DEFERRED - Team process feature, not direct AI benefit. Revisit after core epics complete.
+
+### ~~Epic 18: Modular Installer~~ ❌ REJECTED
+**Goal:** ~~Refactor installer to composable architecture.~~
+**Status:** REJECTED - Developer tooling, zero AI benefit. Same category as Epics 9-11.
+
+### Epic 19: Dogfooding Migration ✅ COMPLETE
+**Goal:** Migrate this project to use /logs/ structure we distribute to users.
+**Status:** COMPLETE - Migrated Nov 2025. Spec: `project/specs/EPIC-19-dogfooding-logs-migration.md`
 
 ### ~~Epic 9: CLI Tooling~~ ❌ REJECTED
 **Goal:** ~~Provide CLI tools for developer convenience.~~
