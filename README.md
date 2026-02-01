@@ -1,3 +1,4 @@
+
 # Log File Genius
 
 **Stop the context rot. Give your AI a genius-level memory.**
