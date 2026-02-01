@@ -259,10 +259,10 @@
 
 ## References
 
-- **Roadmap:** [ROADMAP-REVISED-2025-11.md](ROADMAP-REVISED-2025-11.md)
+- **PRD:** [prd.md](prd.md) - Source of truth for all epics and requirements
 - **Epic 12 Spec:** [EPIC-12-security-secrets-detection.md](EPIC-12-security-secrets-detection.md)
 - **Epic 13 Spec:** [EPIC-13-validation-reliability.md](EPIC-13-validation-reliability.md)
 - **Epic 15 Spec:** [EPIC-15-governance-review.md](EPIC-15-governance-review.md)
-- **DEVLOG:** [../planning/DEVLOG.md](../planning/DEVLOG.md)
-- **CHANGELOG:** [../planning/CHANGELOG.md](../planning/CHANGELOG.md)
+- **DEVLOG:** [../../logs/DEVLOG.md](../../logs/DEVLOG.md)
+- **CHANGELOG:** [../../logs/CHANGELOG.md](../../logs/CHANGELOG.md)
 
