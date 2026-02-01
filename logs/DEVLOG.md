@@ -16,13 +16,13 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Current Context (Source of Truth)
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-02-01
 
 ### Project State
 - **Project:** Log File Genius
 - **Current Version:** v0.2.0
 - **Active Branch:** `development`
-- **Phase:** Log Automation & Reliability - Epic 8 implementation
+- **Phase:** AI Context Optimization - Epic 8 (refocused after code-police review)
 - **Repository:** https://github.com/clark-mackey/log-file-genius
 
 ### Stack & Tools
@@ -107,6 +107,59 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ---
 
 ## Daily Log - Newest First
+
+### 2026-02-01: Code-Police Review - PRD v0.5 Major Refocus (60% Mission Drift Identified)
+
+**The Situation:** After creating Epic 10 (Claude Code Subagent Integration) and promoting it to HIGH VALUE, requested code-police-v2 to review entire PRD against GitHub README mission statement.
+
+**The Challenge:** Code-police identified **SEVERE MISSION DRIFT** - 60% of planned features (Epics 8, 9, 10, 11) served human developers instead of AI agents. Mission is "help AI agents not get lost, not waste tokens" but features focused on developer convenience (CLI tools, MCP servers, subagent automation).
+
+**Mission Alignment Scores:**
+- Epic 7: 8/10 (aligned, except Stories 7.6-7.7)
+- Epic 8 (MCP Server): 4/10 → REJECTED
+- Epic 9 (CLI Tooling): 3/10 → REJECTED
+- Epic 10 (Subagents): 2/10 → REJECTED
+- Epic 11 (Automation): 1/10 → REJECTED
+
+**The Decision:**
+1. **REJECT** Epics 9, 10, 11 entirely (move to Rejected Ideas section)
+2. **REPLACE** Epic 8 with AI Context Optimization (5 new stories):
+   - Story 8.1: Smart Context Summarization (<500 tokens)
+   - Story 8.2: Token Budget Dashboard
+   - Story 8.3: AI-Optimized Document Templates
+   - Story 8.4: Intelligent Archival Triggers
+   - Story 8.5: Context Relevance Scoring
+3. **REFINE** Epic 7: Reorder stories 7.2→7.3→7.1→7.4→7.5, add missing acceptance criteria
+
+**Why:** Every feature must answer: "Does this reduce tokens OR help AI agents navigate better?" If neither, reject it. Mission drift happens when we build what sounds cool instead of what serves the core mission.
+
+**The Result:** PRD v0.5 refocused on core mission. ~380 lines of rejected epic content removed, replaced with 150 lines of AI-focused features.
+
+**Files:** `project/specs/prd.md` (v0.5)
+
+---
+
+### 2026-02-01: Epic 10 Added - Claude Code Subagent Integration (HIGH VALUE) ❌ REVERSED
+
+**Note:** This decision was reversed same day after code-police review (see above). Epic 10 rejected due to mission drift and no proven Claude Code subagent architecture.
+
+**Original Decision:** Promoted "Claude Code Subagent Integration" from Future Considerations to Epic 10 with HIGH VALUE priority. Created 6 comprehensive stories:
+- Story 10.1: LFG Maintainer Subagent (CHANGELOG/DEVLOG updates)
+- Story 10.2: LFG Archivist Subagent (token budget monitoring, archival)
+- Story 10.3: LFG Context Curator Subagent (session handoffs, context summaries)
+- Story 10.4: LFG Validator Subagent (pre-commit validation)
+- Story 10.5: Subagent Coordination & Fallback (reliability, error handling)
+- Story 10.6: Subagent Installation & Setup (easy onboarding)
+
+**Why This Matters:**
+- **Solves rule-following failures by design** - Subagents have LFG rules pre-loaded, no reliance on main agent remembering
+- **Parallel execution** - Documentation happens while coding continues
+- **Context isolation** - LFG operations don't consume primary context window
+- **Better UX** - Main agent stays focused on coding task
+
+This is a game-changer for Claude Code users. Instead of fighting rule adherence issues, we leverage the platform's native architecture to make documentation automatic and reliable.
+
+**Files Changed:** `project/specs/prd.md` (added Epic 10, updated changelog to v0.4)
 
 ### 2026-01-22: Epic 8 Revision - MCP Deferred After Dogfooding Analysis
 

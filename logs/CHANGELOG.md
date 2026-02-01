@@ -19,17 +19,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Epic 8: AI Context Optimization (NEW) - Replaced old Epic 8 with 5 mission-aligned stories: Smart Context Summarization (<500 tokens), Token Budget Dashboard, AI-Optimized Document Templates, Intelligent Archival Triggers, Context Relevance Scoring. All features directly help AI agents not get lost and not waste tokens. Files: `project/specs/prd.md`. Commit: `b9a9a38`
+
 ### Changed
 
+- PRD v0.5 MAJOR REFOCUS - Code-police review identified 60% mission drift. Rejected Epics 9, 10, 11 (served developers, not AI agents). Epic 7 refined: reordered stories 7.2→7.3→7.1→7.4→7.5, added acceptance criteria for backup mechanisms and performance. Mission test: "Does this reduce tokens OR help AI navigate?" Files: `project/specs/prd.md`. Commit: `b9a9a38`
+
+### Removed
+
+- ~~Epic 10: Claude Code Subagents~~ (REJECTED) - No proven architecture, complexity explosion, 2/10 mission alignment
+- ~~Epic 9: CLI Tooling~~ (REJECTED) - Developer convenience, not AI benefit, 3/10 mission alignment
+- ~~Epic 11: Advanced Automation~~ (REJECTED) - Zero AI benefit, 1/10 mission alignment
+
 - Epic 8 revised from "MCP Server & Programmatic API" to "Log Automation & Reliability". Analysis of actual log files revealed entries are too detailed (60-80 tokens/CHANGELOG, 500-1000 tokens/DEVLOG) to auto-generate from commits. New focus: enhanced rules, git hook safety nets, CLI scaffolding. MCP deferred to Future Considerations. Files: `project/specs/prd.md`. Commit: `d20f1fe`
+- Dogfooding version sync - Updated project's own LFG configuration from v0.1.0-dev to v0.2.0 to match current release. Updated DEVLOG Current Context with current phase (Log Automation & Reliability). Files: `.logfile-config.yml`, `logs/DEVLOG.md`. Commit: `f6145b5`
 
 ### Added
 
 - Code-police analysis report documenting architecture evolution from MCP proposal through git-native simplification to final pragmatic approach. Includes original 10 recommendations with implementation status. Files: `context/code-police-analysis-2026-01.md`. Commit: `d20f1fe`
-
-### Changed
-
-- Dogfooding version sync - Updated project's own LFG configuration from v0.1.0-dev to v0.2.0 to match current release. Updated DEVLOG Current Context with current phase (Log Automation & Reliability). Files: `.logfile-config.yml`, `logs/DEVLOG.md`. Commit: `f6145b5`
 
 ---
 

@@ -4,11 +4,14 @@
 
 ### Goals
 
-- Enable developers to maintain comprehensive project context for AI coding assistants without exhausting token budgets
-- Provide a turnkey installation method for the 5-document log file system (PRD, CHANGELOG, DEVLOG, STATE, ADRs)
-- Reduce AI agent confusion and hallucination by providing structured, token-efficient context
-- Automate log file maintenance so developers don't need to manually update documentation
-- Create a public GitHub repository that anyone can install and use immediately
+**Primary Mission: Help AI agents not get lost, not waste tokens.**
+
+- **Stop context rot:** Reduce AI context bloat by 93% (90-110k → 7-10k tokens) so AI has room for actual code
+- **Give AI genius-level memory:** Structured 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) separates facts from narrative
+- **Zero-search navigation:** Bidirectional frontmatter linking so AI never wastes tokens searching for files
+- **Prevent AI confusion:** Token-based archival keeps logs lean, AI always has fresh relevant context
+- **Multi-agent coordination:** STATE.md prevents agent collisions and duplicated work
+- **Tool agnostic:** Works with any AI assistant (Augment, Claude Code, Cursor, Copilot)
 
 ### Background Context
 
@@ -42,11 +45,13 @@ After several weeks of production use, the core methodology works but automation
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-10-30 | 0.1 | Initial PRD draft | John (PM Agent) |
-| 2025-12-20 | 0.2 | Updated with current state, known issues, and real-world usage insights | John (PM Agent) |
-| 2026-01-22 | 0.3 | Added Epic 8 (MCP Server), Epic 9 (CLI Tooling), enhanced Epic 7, Future Considerations section | John (PM Agent) |
+| Date       | Version | Description                                                                                                  | Author         |
+|------------|---------|--------------------------------------------------------------------------------------------------------------|----------------|
+| 2025-10-30 | 0.1     | Initial PRD draft                                                                                            | John (PM Agent) |
+| 2025-12-20 | 0.2     | Updated with current state, known issues, and real-world usage insights                                      | John (PM Agent) |
+| 2026-01-22 | 0.3     | Added Epic 8 (MCP Server), Epic 9 (CLI Tooling), enhanced Epic 7, Future Considerations section             | John (PM Agent) |
+| 2026-02-01 | 0.4     | Added Epic 10 (Claude Code Subagent Integration), promoted from Future Considerations to HIGH VALUE priority | Augment Agent  |
+| 2026-02-01 | 0.5     | MAJOR REFOCUS: Rejected Epics 9/10/11 (mission drift). New Epic 8 for AI context optimization. Epic 7 refined. | Augment Agent  |
 
 ---
 
@@ -136,16 +141,24 @@ Not applicable - this is a static documentation/template repository with no runt
 **Status:** Minimal examples exist. Need before/after comparisons, success stories, and community guidelines.
 
 ### Epic 7: Core Reliability & Bug Fixes 🔴 HIGH PRIORITY
-**Goal:** Fix critical reliability issues discovered through real-world usage to make the system dependable for daily use.
-**Status:** New epic based on production experience. Addresses archival logic, rule adherence, platform parity, plus git hook auto-population and CI enforcement.
+**Goal:** Fix critical reliability issues to ensure AI agents get consistent, token-efficient context without confusion.
+**Status:** REFINED - Stories reordered: 7.2 (Rule Adherence) → 7.3 (Parity) → 7.1 (Archival) → 7.4 (Validation) → 7.5 (Git Hooks). Stories 7.1-7.5 only.
 
-### Epic 8: MCP Server & Programmatic API 🔥 HIGH VALUE
-**Goal:** Expose LFG as an MCP server so AI assistants can query and update context programmatically, eliminating reliance on rule-following.
-**Status:** NEW - Transforms LFG from rules-based to tool-based. Context-efficient design (3-5 tools, budget-aware responses).
+### Epic 8: AI Context Optimization 🧠 NEW - MISSION CRITICAL
+**Goal:** Build features that directly help AI agents not get lost and not waste tokens - smart summarization, token monitoring, AI-optimized formatting.
+**Status:** NEW - Refocused on core mission after code-police review identified 60% mission drift.
 
-### Epic 9: CLI Tooling & Developer Experience 🔧 QUICK WINS
-**Goal:** Provide CLI tools for context injection, session handoffs, status checks, and quick entries - making LFG effortless to use.
-**Status:** NEW - Low effort, high daily-use value. Includes `lfg context`, `lfg handoff`, `lfg status`, `lfg log`.
+### ~~Epic 9: CLI Tooling~~ ❌ REJECTED
+**Goal:** ~~Provide CLI tools for developer convenience.~~
+**Status:** REJECTED - Serves human developers, not AI agents. Does not reduce tokens or improve AI navigation. Moved to Rejected Ideas.
+
+### ~~Epic 10: Claude Code Subagents~~ ❌ REJECTED
+**Goal:** ~~Create subagents for autonomous documentation.~~
+**Status:** REJECTED - Adds complexity that confuses AI agents. No proven architecture. Moved to Rejected Ideas.
+
+### ~~Epic 11: Advanced Automation~~ ❌ REJECTED
+**Goal:** ~~Git hook auto-population, CI enforcement.~~
+**Status:** REJECTED - Serves development process, not AI memory. Zero AI benefit. Moved to Rejected Ideas.
 
 ---
 
@@ -928,31 +941,7 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 
 **Priority:** HIGHEST - These issues block effective daily usage and user adoption.
 
-### Story 7.1: Fix Archival Logic (Token-Based, Not Date-Based)
-
-**As a** developer using the log file system daily,
-**I want** archival to trigger based on token count and file size (not dates),
-**so that** my log files stay within token budgets regardless of how frequently I update them.
-
-#### Acceptance Criteria
-1. Remove all date-based archival logic ("older than 2 weeks") from rules
-2. Update `log-file-maintenance.md` (Augment) to use token/size-based triggers only
-3. Update `.claude/rules/log-file-maintenance.md` (Claude Code) to use token/size-based triggers only
-4. Archival triggers when:
-   - CHANGELOG exceeds 10,000 tokens (or profile-specific limit)
-   - DEVLOG exceeds 15,000 tokens (or profile-specific limit)
-   - Combined logs exceed 25,000 tokens (or profile-specific limit)
-5. Archive oldest entries first (regardless of date) until under token budget
-6. Update validation scripts to check token counts and recommend archival
-7. Test with real-world log files to verify token-based archival works
-8. Update documentation to explain token-based archival strategy
-9. Add examples showing before/after archival with token counts
-
-#### Technical Notes
-- Use existing token counting logic from validation scripts
-- Profile-aware: Read `.logfile-config.yml` for custom token targets
-- Archive to `logs/archive/CHANGELOG-YYYY-MM.md` and `logs/archive/DEVLOG-YYYY-MM.md`
-- Maintain cross-references after archival
+**Story Order Rationale:** Fix rule adherence first (7.2), achieve platform parity (7.3), then implement reliability features (7.1, 7.4, 7.5). Advanced automation (7.6-7.7) moved to Epic 11.
 
 ### Story 7.2: Improve Rule Adherence (Make AI Agents Follow Rules Consistently)
 
@@ -971,12 +960,17 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 8. Add examples within rules showing correct behavior
 9. Update both Augment and Claude Code rules with improvements
 10. Document known limitations and workarounds
+11. Define measurable success criteria: "AI follows rules in 95% of commits over 30-day period"
+12. Create rollback plan if simplified rules still fail (revert to previous version, add manual validation step)
+13. Document AI platform version compatibility matrix (Augment v1.x, Claude Code v2.x, etc.)
 
 #### Technical Notes
 - Focus on clarity over brevity in rule instructions
 - Use numbered steps, not paragraphs
 - Add visual markers (🔴, ✅, ⚠️) for emphasis
 - Test with real commits to verify adherence improves
+- Track adherence metrics: commits with CHANGELOG updates / total commits
+- Consider A/B testing rule variations
 
 ### Story 7.3: Achieve Augment/Claude Code Parity
 
@@ -1005,6 +999,37 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 - Both should use identical token budgets and archival logic
 - Platform-specific features (if any) should be clearly documented as optional
 
+### Story 7.1: Fix Archival Logic (Token-Based, Not Date-Based)
+
+**As a** developer using the log file system daily,
+**I want** archival to trigger based on token count and file size (not dates),
+**so that** my log files stay within token budgets regardless of how frequently I update them.
+
+#### Acceptance Criteria
+1. Remove all date-based archival logic ("older than 2 weeks") from rules
+2. Update `log-file-maintenance.md` (Augment) to use token/size-based triggers only
+3. Update `.claude/rules/log-file-maintenance.md` (Claude Code) to use token/size-based triggers only
+4. Archival triggers when:
+   - CHANGELOG exceeds 10,000 tokens (or profile-specific limit)
+   - DEVLOG exceeds 15,000 tokens (or profile-specific limit)
+   - Combined logs exceed 25,000 tokens (or profile-specific limit)
+5. Archive oldest entries first (regardless of date) until under token budget
+6. Update validation scripts to check token counts and recommend archival
+7. Test with real-world log files to verify token-based archival works
+8. Update documentation to explain token-based archival strategy
+9. Add examples showing before/after archival with token counts
+10. Implement backup mechanism before archival (copy to `.lfg-backup/` directory)
+11. Define archive file naming convention: `CHANGELOG-YYYY-MM.md` (month of oldest entry)
+12. Create recovery process for accidental archival (restore from backup, validate integrity)
+
+#### Technical Notes
+- Use existing token counting logic from validation scripts
+- Profile-aware: Read `.logfile-config.yml` for custom token targets
+- Archive to `logs/archive/CHANGELOG-YYYY-MM.md` and `logs/archive/DEVLOG-YYYY-MM.md`
+- Maintain cross-references after archival
+- Backup directory: `.lfg-backup/` (git-ignored)
+- Recovery command: `lfg restore --from-backup <timestamp>`
+
 ### Story 7.4: Validation Script Improvements
 
 **As a** developer using the validation scripts,
@@ -1022,12 +1047,17 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 8. Add `--fix` flag to auto-fix common issues (e.g., formatting)
 9. Add `--verbose` flag for detailed output
 10. Test validation scripts on real-world log files with known issues
+11. Performance requirement: Validation completes in <5 seconds for files up to 50,000 tokens
+12. Configuration for custom token limits via `.logfile-config.yml` (override defaults)
+13. Integration with existing workflows: pre-commit hooks, CI/CD pipelines, manual validation
 
 #### Technical Notes
 - Enhance existing `validate-log-files.ps1` and `validate-log-files.sh`
 - Use token counting from existing scripts
 - Profile-aware: Read `.logfile-config.yml` for thresholds
 - Exit codes: 0 = pass, 1 = warnings, 2 = errors
+- Performance optimization: Cache token counts, parallel file processing
+- Workflow integration: Export validation results in JSON format for CI/CD parsing
 
 ### Story 7.5: Git Hook Reliability
 
@@ -1053,311 +1083,193 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 - Must handle Windows line endings (CRLF vs LF)
 - Must be executable on Unix systems (`chmod +x`)
 
-### Story 7.6: Git Hook Auto-Population
+---
 
-**As a** developer making commits,
-**I want** git hooks to auto-populate CHANGELOG entries from commit messages,
-**so that** the log file system maintains itself without manual intervention.
+## Epic 8: AI Context Optimization 🧠 MISSION CRITICAL
 
-#### Acceptance Criteria
-1. Pre-commit hook extracts commit message and auto-adds CHANGELOG entry
-2. Commit message format detected: `type(scope): description` (conventional commits)
-3. Auto-categorization: `feat` → Added, `fix` → Fixed, `docs` → Changed, etc.
-4. Hook prompts for confirmation before adding entry (can be disabled in config)
-5. Post-merge hook updates STATE.md "Recently Completed" section
-6. Hooks respect `.logfile-config.yml` for customization
-7. Bypass available with `--no-verify` flag
-8. Works on Windows (PowerShell), Mac, and Linux (bash/zsh)
-9. Documentation explains auto-population behavior and customization
-10. Test with real commits to verify accuracy
+**Epic Goal:** Build features that directly help AI agents not get lost and not waste tokens - smart summarization, token monitoring, AI-optimized formatting.
 
-#### Technical Notes
-- Parse conventional commit format: `type(scope): description`
-- Map commit types to CHANGELOG categories per Keep a Changelog
-- Use commit hash in CHANGELOG entry for traceability
-- Consider prepare-commit-msg hook for pre-population
+**Priority:** HIGHEST - This is the core mission. Every feature must answer: "Does this help AI agents navigate better, remember better, or consume fewer tokens?"
 
-### Story 7.7: Token Budget CI Enforcement
+**Design Principles:**
+- AI agents are the primary user, not human developers
+- Every feature must reduce tokens OR improve AI navigation
+- Simplicity over complexity - complex systems confuse AI agents
+- Measure success by: tokens saved, AI confusion reduced, context quality improved
 
-**As a** team using CI/CD pipelines,
-**I want** CI checks to fail if log files exceed token budgets,
-**so that** the 93% token reduction promise is enforced automatically.
+**Mission Alignment Test:** Before adding any feature, ask:
+1. Does this reduce token consumption?
+2. Does this help AI agents find information faster?
+3. Does this prevent AI agents from getting lost or confused?
+4. If none of the above, REJECT the feature.
+
+### Story 8.1: Smart Context Summarization
+
+**As an** AI coding assistant starting a new session,
+**I want** an auto-generated concise project summary,
+**so that** I can understand the project state instantly without reading full log files.
 
 #### Acceptance Criteria
-1. CI script checks token counts against `.logfile-config.yml` limits
-2. CI fails with clear error if any log file exceeds budget
-3. CI provides specific guidance: "CHANGELOG is 12,450 tokens (limit: 10,000). Archive oldest 3 entries."
-4. CI warns (yellow) at 80% of budget, fails (red) at 100%
-5. GitHub Actions workflow template provided
-6. GitLab CI template provided
-7. Generic CI script for other platforms
-8. CI respects profile-specific token limits
-9. CI output includes current vs. allowed token counts for all files
-10. Documentation explains CI setup for each platform
+1. Generate summary from CHANGELOG + DEVLOG + STATE in <500 tokens
+2. Summary includes: current version, active work, recent decisions, blockers
+3. Summary prioritizes recent over old (last 7 days weighted higher)
+4. Summary format optimized for AI comprehension (structured, not prose)
+5. Summary updates automatically when log files change
+6. Summary stored in `logs/CONTEXT_SUMMARY.md` for instant access
+7. AI rules reference summary as first-read document
+8. Summary includes "What to do next" section based on STATE.md
+9. Token count displayed in summary header
+10. Validation warns if summary exceeds 500 tokens
 
 #### Technical Notes
-- Reuse token counting logic from validation scripts
-- Exit codes: 0 = pass, 1 = warning (>80%), 2 = fail (>100%)
-- GitHub Actions: `.github/workflows/lfg-validate.yml`
-- Support `--strict` mode that fails on warnings
+- Use existing log file content, not external APIs
+- Structure: Version → Active Work → Recent Decisions → Blockers → Next Steps
+- Consider frontmatter with token count and last-updated timestamp
+- AI agents should read this FIRST before diving into full logs
+
+### Story 8.2: Token Budget Dashboard
+
+**As an** AI coding assistant,
+**I want** real-time visibility into token consumption,
+**so that** I know when context is getting bloated and needs archival.
+
+#### Acceptance Criteria
+1. Dashboard shows current token count for each log file
+2. Dashboard shows percentage of budget used (e.g., "CHANGELOG: 8,500/10,000 (85%)")
+3. Dashboard warns at 80% threshold with specific guidance
+4. Dashboard recommends archival when over budget
+5. Dashboard accessible via simple command or file read
+6. Dashboard updates on every log file change
+7. Dashboard stored in `logs/TOKEN_STATUS.md` for AI access
+8. AI rules include "check token status before adding entries"
+9. Dashboard shows trend (growing/stable/shrinking)
+10. Dashboard includes "entries to archive" count when over budget
+
+#### Technical Notes
+- Reuse token counting from validation scripts
+- Simple markdown format for AI readability
+- Consider JSON alternative for programmatic access
+- Update via git hook or validation script
+
+### Story 8.3: AI-Optimized Document Templates
+
+**As an** AI coding assistant reading log files,
+**I want** documents structured for maximum AI comprehension,
+**so that** I can extract information quickly without confusion.
+
+#### Acceptance Criteria
+1. Templates use consistent heading hierarchy (H1 → H2 → H3)
+2. Templates include frontmatter with metadata (token count, last updated, related files)
+3. Templates use bullet points over paragraphs (faster parsing)
+4. Templates include "Quick Summary" section at top of each file
+5. Templates use explicit section markers (## Current Context, ## Daily Log)
+6. Templates avoid ambiguous language ("this", "that", "it")
+7. Templates include cross-reference links in consistent format
+8. Templates validated for AI readability (no orphan sections, no broken links)
+9. Templates include token budget in header
+10. Documentation explains why each format choice helps AI agents
+
+#### Technical Notes
+- Audit existing templates against AI comprehension best practices
+- Test with multiple AI assistants to verify comprehension
+- Consider "AI readability score" metric
+- Frontmatter format: YAML for consistency
+
+### Story 8.4: Intelligent Archival Triggers
+
+**As an** AI coding assistant,
+**I want** archival to happen based on what I actually access,
+**so that** frequently-referenced content stays available while stale content archives.
+
+#### Acceptance Criteria
+1. Track which log entries AI agents reference (via frontmatter or markers)
+2. Archive least-accessed entries first, not just oldest
+3. Preserve entries referenced in last 30 days regardless of age
+4. Archive entries that haven't been referenced in 60+ days
+5. Archival preserves cross-references (update links after archival)
+6. Archival creates summary of archived content for reference
+7. Archived content searchable but not loaded by default
+8. AI rules explain archival strategy so agents understand what's available
+9. Archival respects token budget as primary trigger
+10. Archival logs what was archived and why
+
+#### Technical Notes
+- Access tracking via simple marker in frontmatter or comment
+- Consider "last accessed" timestamp per entry
+- Balance access-based with size-based archival
+- Fallback to token-based if access tracking unavailable
+
+### Story 8.5: Context Relevance Scoring
+
+**As an** AI coding assistant working on a specific task,
+**I want** to know which log entries are most relevant to my current work,
+**so that** I can focus on important context and skip irrelevant history.
+
+#### Acceptance Criteria
+1. Each log entry tagged with relevant topics/areas (e.g., "auth", "database", "UI")
+2. AI can filter log entries by topic relevance
+3. STATE.md "Active Work" links to relevant CHANGELOG/DEVLOG entries
+4. Cross-references include relevance hints ("see also", "superseded by", "related to")
+5. Recent entries weighted higher than old entries
+6. Entries marked as "foundational" never deprioritized (ADRs, major decisions)
+7. AI rules explain how to use relevance scoring
+8. Validation checks for orphan entries (no tags, no references)
+9. Topic tags consistent across all log files
+10. Documentation explains tagging conventions
+
+#### Technical Notes
+- Simple tagging system (avoid complex taxonomies)
+- Tags in frontmatter or inline markers
+- Consider auto-tagging based on file paths mentioned
+- Keep tagging lightweight - don't add token overhead
 
 ---
 
-## Epic 8: Log Automation & Reliability �️ FOUNDATION
+## Rejected Ideas (Mission Drift)
 
-**Epic Goal:** Ensure log files are always updated through defense-in-depth: improved AI rules, git hook safety nets, and CLI scaffolding tools.
+The following epics were rejected after code-police review identified 60% mission drift. These features serve human developers, not AI agents, and do not reduce tokens or improve AI navigation.
 
-**Priority:** HIGH - Reliability is foundational. MCP deferred to Future Considerations after analysis showed current rules-based approach works well for rich content.
+### ~~Epic 9: CLI Tooling & Developer Experience~~ ❌ REJECTED
 
-**Design Principles (Revised After Dogfooding Analysis):**
-- AI writes rich content directly (CHANGELOG ~60-80 tokens/entry, DEVLOG ~500-1000 tokens/entry)
-- Git hooks serve as safety nets, not content generators
-- CLI tools reduce friction for structured documents (ADRs)
-- Rules enforcement > automation (content quality requires AI context)
+**Why Rejected:** CLI tools serve human developers, not AI agents. Commands like `lfg context`, `lfg handoff`, `lfg status` are developer convenience features that don't reduce token consumption or help AI agents navigate better.
 
-**Key Insight:** Analysis of actual `logs/CHANGELOG.md` and `logs/DEVLOG.md` revealed entries are too detailed to auto-generate from commit messages. The AI has session context needed for quality entries.
+**Original Goal:** Provide command-line tools for context injection, session handoffs, and status checks.
 
-### Story 8.1: Enhanced Rule Enforcement
+**Mission Alignment Score:** 3/10 - Severe drift from core mission.
 
-**As a** developer using AI coding assistants,
-**I want** AI rules with explicit stop conditions and self-correction,
-**so that** log updates happen reliably without complex automation.
+**What Would Be Lost:** `lfg context`, `lfg handoff`, `lfg status`, `lfg log` commands. These are developer conveniences that can be achieved with simple file reading - no special tooling needed.
 
-#### Acceptance Criteria
-1. AI rules include ⛔ STOP markers before commits
-2. Pre-commit checklist is explicit and numbered
-3. Post-commit verification is mandatory
-4. Self-correction triggers when violations detected
-5. Rules reference actual file paths (logs/CHANGELOG.md, logs/DEVLOG.md)
-6. Token budget reminders included in rules
-7. Rules work for both Augment and Claude Code
-8. Rules are under 150 lines (token efficient)
-9. Success criteria are explicit and testable
-10. Documentation explains why rules work better than automation
+### ~~Epic 10: Claude Code Subagent Integration~~ ❌ REJECTED
 
-#### Technical Notes
-- Build on Story 7.2 improvements already in progress
-- Reference `.logfile-config.yml` for paths
-- Include archival triggers in rules
-- Test with multiple AI assistants
+**Why Rejected:** No evidence Claude Code subagents exist as native architecture. Adds massive complexity (coordination protocols, file locking, fallback logic) without proven benefit. Each integration point is a potential failure mode that confuses AI agents.
 
-### Story 8.2: Git Hook Safety Net
+**Original Goal:** Create dedicated subagents (lfg-maintainer, lfg-archivist, lfg-validator, lfg-context-curator) for autonomous documentation.
 
-**As a** developer who might forget log updates,
-**I want** git hooks that warn (not block) when logs are missing,
-**so that** I have a safety net without friction.
+**Mission Alignment Score:** 2/10 - Complexity explosion, solves symptom (rule adherence) not root cause (unclear rules).
 
-#### Acceptance Criteria
-1. Pre-commit hook checks if CHANGELOG was modified
-2. Warning shown if commit touches code but not CHANGELOG
-3. Warning is non-blocking by default (proceed with Enter)
-4. Strict mode available: `LFG_STRICT=1` blocks commit
-5. Hook respects `.logfile-config.yml` for file paths
-6. Hook ignores non-code commits (docs-only, config-only)
-7. Hook runs in <500ms
-8. Works on Windows (PowerShell), Mac/Linux (Bash)
-9. Clear message explains what's missing and how to fix
-10. Integration with existing `lfg.py install-hooks` command
+**Code-Police Findings:**
+- Missing technical foundation (no Claude Code subagent API spec)
+- Integration conflicts with MCP server (both try to write same files)
+- Race conditions from concurrent file modifications
+- Debugging nightmare with distributed failures
+- Vendor lock-in to unspecified architecture
 
-#### Technical Notes
-- Extend existing pre-commit hook infrastructure
-- Pattern matching for code files vs doc files
-- Consider `.lfgignore` for excluding paths from check
-- Keep hook simple - detection only, not content generation
+**What Would Be Lost:** Subagent-based automation. Alternative: Better rule specification and validation (Epic 7) addresses root cause.
 
-### Story 8.3: ADR Scaffold Command
+### ~~Epic 11: Advanced Automation~~ ❌ REJECTED
 
-**As a** developer making architectural decisions,
-**I want** a CLI command that scaffolds an ADR from session context,
-**so that** ADR creation is less friction.
+**Why Rejected:** Git hook auto-population and CI enforcement serve development process, not AI memory. Zero token reduction, zero AI navigation improvement.
 
-#### Acceptance Criteria
-1. Command: `lfg adr "Title of decision"`
-2. Creates new ADR file with next sequence number (e.g., 015-title.md)
-3. Scaffolds standard sections: Context, Decision, Consequences, Alternatives
-4. Pre-fills date, status (Proposed), and title
-5. Option: `--context` includes recent DEVLOG decisions in Context section
-6. Option: `--from-session` prompts for session summary to include
-7. Opens file in editor after creation (configurable)
-8. Validates title format and file naming
-9. Respects `.logfile-config.yml` for ADR directory path
-10. Works on Windows, Mac, Linux
+**Original Goal:** Auto-populate CHANGELOG from commit messages, enforce token budgets in CI.
 
-#### Technical Notes
-- Pure Python implementation (extends lfg.py)
-- Template from `product/templates/ADR_template.md`
-- Parse existing ADRs to determine next number
-- Consider `--draft` flag for WIP ADRs
+**Mission Alignment Score:** 1/10 - Complete drift from core mission.
 
-### Story 8.4: CHANGELOG Entry Helper
+**Code-Police Findings:**
+- Auto-generated entries lack context that only working AI has
+- CI enforcement is developer tooling, not AI benefit
+- Premature automation before reliability proven
 
-**As a** developer adding changelog entries,
-**I want** a CLI command that formats entries correctly,
-**so that** entries are consistent and complete.
-
-#### Acceptance Criteria
-1. Command: `lfg changelog "Description of change"`
-2. Prompts for category: Added, Changed, Fixed, Deprecated, Removed, Security
-3. Prompts for affected files (tab completion from git status)
-4. Auto-formats entry per LFG conventions
-5. Appends to Unreleased section of CHANGELOG.md
-6. Option: `--commit <hash>` to include commit reference
-7. Option: `--no-prompt` uses defaults (Added, staged files)
-8. Validates entry length (warns if >100 tokens)
-9. Shows preview before writing
-10. Confirms write with line number
-
-#### Technical Notes
-- Integrate with git to suggest files from staged changes
-- Format: `- Description. Files: \`path/file\`. Commit: \`hash\``
-- Consider `--dry-run` flag
-- Can be called from git hook as helper
-
-### Story 8.5: DEVLOG Decision Logger
-
-**As a** developer logging decisions,
-**I want** a CLI command that captures decisions with context,
-**so that** DEVLOG entries follow the narrative format.
-
-#### Acceptance Criteria
-1. Command: `lfg decision "What was decided"`
-2. Prompts for: Situation, Challenge, Why, Result (optional sections)
-3. Auto-formats entry with date header and narrative structure
-4. Appends to Daily Log section of DEVLOG.md
-5. Option: `--brief` skips prompts, logs single-line decision
-6. Option: `--files <paths>` associates files with decision
-7. Option: `--adr <number>` links to related ADR
-8. Shows preview before writing
-9. Validates entry fits token budget (warns if DEVLOG over limit)
-10. Confirms write with entry location
-
-#### Technical Notes
-- Match existing DEVLOG entry format (The Situation/Challenge/Decision/Why/Result)
-- Consider reading recent git activity for context suggestions
-- Integrate with ADR creation if decision warrants ADR
-
----
-
-## Epic 9: CLI Tooling & Developer Experience 🔧 QUICK WINS
-
-**Epic Goal:** Provide command-line tools that make LFG effortless to use, enabling context injection, session handoffs, and status checks without opening files.
-
-**Priority:** MEDIUM-HIGH - Low effort, high daily-use value.
-
-### Story 9.1: Context Injection CLI
-
-**As a** developer starting an AI session,
-**I want** a CLI command to output optimized context for any AI tool,
-**so that** I can copy-paste ready-to-use context instantly.
-
-#### Acceptance Criteria
-1. Command: `lfg context [options]`
-2. Options:
-   - `--for <tool>`: Optimize for claude, gpt, augment, cursor (default: generic)
-   - `--tokens <n>`: Budget constraint (default: 2000)
-   - `--scope <level>`: minimal, standard, full (default: standard)
-   - `--copy`: Copy to clipboard automatically
-   - `--json`: Output as JSON instead of markdown
-3. Output is formatted for immediate paste into AI chat
-4. Output includes instruction header: "Here is the current project context:"
-5. Respects `.logfile-config.yml` for paths and settings
-6. Works on Windows, Mac, Linux
-7. Installable via npm: `npm install -g @lfg/cli`
-8. Help text explains each option with examples
-9. Response time < 500ms
-10. Test output quality with actual AI assistants
-
-#### Technical Notes
-- Standalone mode: CLI works independently with direct file parsing (no MCP dependency)
-- MCP mode: When MCP server available, CLI calls MCP tools for consistency
-- Reuse token counting and summarization logic (shared library between CLI and MCP)
-- Clipboard: use `clipboardy` or platform-native commands
-- Consider shell aliases: `alias ctx="lfg context --copy"`
-
-### Story 9.2: AI-to-AI Handoff Protocol
-
-**As a** developer switching between AI sessions,
-**I want** a structured handoff format that briefs the next AI,
-**so that** new sessions don't start from scratch.
-
-#### Acceptance Criteria
-1. Command: `lfg handoff [options]`
-2. Generates structured handoff document:
-   - What was attempted this session
-   - What succeeded / what failed
-   - Current hypothesis or approach
-   - Recommended next steps
-   - Files modified
-   - Open questions
-3. Option: `--from-git` extracts info from recent commits
-4. Option: `--interactive` prompts for each section
-5. Option: `--save` appends to DEVLOG as handoff entry
-6. Output formatted for paste into new AI session
-7. Handoff entries in DEVLOG marked with `## Handoff` header
-8. Previous handoffs queryable: `lfg handoff --list`
-9. Works with MCP server: `get_context(scope="handoff")`
-10. Documentation explains handoff best practices
-
-#### Technical Notes
-- Parse git log for `--from-git` mode
-- Store handoffs in DEVLOG under dedicated section
-- Consider timestamped handoff entries for history
-
-### Story 9.3: Status Check CLI
-
-**As a** developer checking project state,
-**I want** a quick CLI command to see current status,
-**so that** I don't need to open multiple files.
-
-#### Acceptance Criteria
-1. Command: `lfg status`
-2. Output shows:
-   - Current version (from CHANGELOG)
-   - Active work items (from STATE)
-   - Blockers (from STATE)
-   - Token budget status (% used for each file)
-   - Last update timestamps
-   - Staleness warnings (if files outdated)
-3. Option: `--json` for machine-readable output
-4. Option: `--verbose` for detailed breakdown
-5. Color-coded output: 🟢 healthy, 🟡 warning, 🔴 critical
-6. Exit codes for scripting: 0=healthy, 1=warning, 2=critical
-7. Works on Windows, Mac, Linux
-8. Response time < 200ms
-9. Respects `.logfile-config.yml` for paths
-10. Test with various project states
-
-#### Technical Notes
-- Reuse validation logic from existing scripts
-- Cache file stats for performance
-- Consider `watch` mode: `lfg status --watch`
-
-### Story 9.4: Quick Entry CLI
-
-**As a** developer making quick updates,
-**I want** CLI commands to add entries without opening files,
-**so that** logging friction is minimized.
-
-#### Acceptance Criteria
-1. Commands:
-   - `lfg log decision "Chose X because Y"`
-   - `lfg log progress "Completed auth module"`
-   - `lfg log blocker "Waiting on API access"`
-   - `lfg changelog "Added user authentication"`
-2. Auto-formats entries per LFG conventions
-3. Auto-timestamps entries
-4. Option: `--files <paths>` to associate files
-5. Option: `--adr <number>` to reference ADR
-6. Validates entry before writing
-7. Confirms write with file path and line number
-8. Integrates with MCP server (calls log_update internally)
-9. Works on Windows, Mac, Linux
-10. Tab completion for common entry types
-
-#### Technical Notes
-- Thin wrapper around MCP log_update tool
-- Can work standalone (direct file write) or via MCP
-- Consider `lfg log -m` for multi-line input
+**What Would Be Lost:** Automatic CHANGELOG entries, CI token budget checks. Alternative: AI writes rich content directly (current approach works), validation scripts already provide budget checks.
 
 ---
 
@@ -1414,32 +1326,6 @@ The following features were identified as high-value but deferred due to complex
 **Complexity:** LOW-MEDIUM - Tracking infrastructure, visualization, historical data.
 
 **Trigger for prioritization:** Marketing push or user requests for metrics.
-
-### Claude Code Subagent Integration
-
-**Concept:** Leverage Claude Code's subagent architecture to offload LFG maintenance tasks to dedicated subagents, further reducing main context consumption.
-
-**Value:**
-- Main agent stays focused on coding, subagent handles documentation
-- Subagent can have LFG rules pre-loaded, eliminating rule-following issues
-- Parallel execution: subagent updates logs while main agent continues work
-- Context isolation: LFG operations don't consume primary context window
-
-**Potential Subagents:**
-- `lfg-maintainer`: Handles CHANGELOG/DEVLOG updates after each task
-- `lfg-archivist`: Monitors token budgets, triggers archival when needed
-- `lfg-context-curator`: Prepares context summaries for session handoffs
-- `lfg-validator`: Runs validation checks, reports issues to main agent
-
-**Complexity:** MEDIUM - Requires Claude Code subagent API, coordination protocol, error handling.
-
-**Trigger for prioritization:** Claude Code subagent API stabilizes, user requests for reduced context overhead.
-
-**Implementation Notes:**
-- Subagents defined in `.claude/agents/` directory
-- Coordination via structured messages or MCP tools
-- Fallback to main agent if subagent unavailable
-- Consider Augment equivalent when multi-agent support available
 
 ### MCP Server (Programmatic API)
 
