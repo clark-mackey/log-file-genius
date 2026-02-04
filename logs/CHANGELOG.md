@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- LFG Schema Proposal revised with tiered approach - Code-Police review accepted Phase 1 (schema), rejected Phase 2/3 (CLI tools, VS Code). Added tiered metadata: Tier 1 inline for CHANGELOG (~18 tokens), Tier 2 condensed block for DEVLOG decisions (~25 tokens), Tier 3 full block for context only. Human readability preserved. Token overhead reduced 46% vs original proposal. Files: `project/docs/proposals/lfg-schema-proposal.md`. Commit: `cfee835`
 - PRD v0.6 Epic List completion - Added Epics 12 (Security), 13 (Validation), 17 (Incident Reports), 19 (Dogfooding - marked complete). Deferred Epic 15 (Governance - team process). Rejected Epic 18 (Modular Installer - developer tooling). Archived EPIC-18/19 specs and QA bug report to `project/archive/`. All epics now aligned with mission: help AI agents not get lost, not waste tokens. Files: `project/specs/prd.md`, `project/archive/specs/*`, `project/archive/qa/*`. Commit: `2820362`
 - DEVLOG/README clarity for autonomous agents - Fixed incorrect "Completed" status for Epics 12/13 (they're Planned, not complete). Added clear priority order: Epic 7 first (start with Story 7.2), then Epic 8. Updated project/README.md with same priority guidance. Files: `logs/DEVLOG.md`, `project/README.md`. Commit: `731fd7f`
 - Merged main branch product updates into development - Synced latest product/ changes from main (v0.2.0 release, token-usage rule, installer fixes). Files: `README.md`. Commit: `33c7c1a`
