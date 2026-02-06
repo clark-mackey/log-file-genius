@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Stories 8.6-8.11: Agent-first gap analysis - 6 new stories for Epic 8: Session Handoff Protocol, Self-Assessed Token Counting, Entry Verbosity Control, Cross-File Navigation Hints, Stale Context Detection, Archival Summary Index. All implementable via rule/template changes only - zero new dependencies. Files: `project/specs/prd.md`. Commit: `4c97104`
 - Epic 8: AI Context Optimization (NEW) - Replaced old Epic 8 with 5 mission-aligned stories: Smart Context Summarization (<500 tokens), Token Budget Dashboard, AI-Optimized Document Templates, Intelligent Archival Triggers, Context Relevance Scoring. All features directly help AI agents not get lost and not waste tokens. Files: `project/specs/prd.md`. Commit: `b9a9a38`
 - Project navigation guide for autonomous agents - Created `project/README.md` explaining directory structure, source of truth hierarchy, and what files to reference. Files: `project/README.md`. Commit: `9ebb777`
 

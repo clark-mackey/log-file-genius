@@ -147,7 +147,7 @@ Not applicable - this is a static documentation/template repository with no runt
 
 ### Epic 8: AI Context Optimization 🧠 NEW - MISSION CRITICAL
 **Goal:** Build features that directly help AI agents not get lost and not waste tokens - smart summarization, token monitoring, AI-optimized formatting.
-**Status:** NEW - Refocused on core mission after code-police review identified 60% mission drift.
+**Status:** EXPANDED - Stories 8.1-8.5 (original), Stories 8.6-8.11 (agent-first gaps: handoff, token self-assessment, verbosity, navigation, staleness, archival index). All new stories are rule/template changes only - zero new dependencies.
 
 ### Epic 12: Security & Secrets Detection 🔒 P0
 **Goal:** Prevent AI agents from leaking secrets (passwords, API keys, PII) into logs. AI must learn what NOT to document.
@@ -1247,6 +1247,152 @@ The PRD and epics are comprehensive, properly structured, and ready for architec
 - Tags in frontmatter or inline markers
 - Consider auto-tagging based on file paths mentioned
 - Keep tagging lightweight - don't add token overhead
+
+### Story 8.6: Session Handoff Protocol
+
+**As an** AI coding assistant ending a session,
+**I want** a standard way to write a handoff note for the next session,
+**so that** the next agent can pick up exactly where I left off without re-reading full logs.
+
+#### Acceptance Criteria
+1. Rule includes "🔚 SESSION END" section mirroring existing "🔄 SESSION START"
+2. Agent writes handoff note before session ends containing: what was done, what's in progress, what's next
+3. Handoff stored in `## Last Session` section of DEVLOG.md (above Daily Log)
+4. Handoff format is compact: 3 bullet points max (Done, In Progress, Next)
+5. Handoff overwrites previous handoff (only latest session matters)
+6. SESSION START rule updated to read handoff first
+7. Handoff includes branch name and last commit hash
+8. Token budget: <150 tokens per handoff
+9. No external tools required - agent writes directly to markdown
+10. Validation warns if handoff section is missing or >150 tokens
+
+#### Technical Notes
+- Modify `product/ai-rules/augment/log-file-maintenance.md` and claude-code equivalent
+- Add `## Last Session` section template to DEVLOG_template.md
+- Implementation: rule change + template change only, no scripts
+
+### Story 8.7: Self-Assessed Token Counting
+
+**As an** AI coding assistant writing log entries,
+**I want** a simple heuristic to estimate token usage without running scripts,
+**so that** I can self-regulate entry length and stay within budget.
+
+#### Acceptance Criteria
+1. Rule includes token estimation heuristic: "~4 characters = 1 token"
+2. Rule includes quick-reference table: 1 line ≈ 20 tokens, 1 paragraph ≈ 80 tokens
+3. Agent estimates token count before writing entries
+4. Agent checks estimated file size against budget thresholds from rule
+5. If estimated over budget, agent triggers archival before adding new entry
+6. No Python scripts or external tools required for estimation
+7. Heuristic accurate within ±20% for English markdown text
+8. Rule includes example: "This 80-char line ≈ 20 tokens"
+9. Token budgets embedded in rule (CHANGELOG <10k, DEVLOG <15k, Combined <25k)
+10. Validation scripts remain available for precise counting but are not required
+
+#### Technical Notes
+- Add "📊 TOKEN SELF-ASSESSMENT" section to log-file-maintenance rule
+- Heuristic: `token_estimate = character_count / 4`
+- Keep budgets in sync with profile definitions
+- Implementation: rule change only
+
+### Story 8.8: Entry Verbosity Control
+
+**As an** AI coding assistant writing DEVLOG entries,
+**I want** a compact entry format option,
+**so that** routine entries don't consume 150-250 tokens when 50-80 would suffice.
+
+#### Acceptance Criteria
+1. Rule defines two DEVLOG entry formats: Standard (narrative) and Compact (3-line)
+2. Compact format: `What → Why → Files` on 3 lines
+3. Standard format reserved for: major decisions, incidents, milestones
+4. Compact format used for: routine changes, minor fixes, session summaries
+5. Compact entry target: 50-80 tokens (vs 150-250 for standard)
+6. DEVLOG template updated with compact format example
+7. Rule provides decision guide: "If it needs an ADR, use standard. Otherwise, compact."
+8. Both formats maintain human readability
+9. Token savings: 50-100 tokens per entry for routine work
+10. Validation accepts both formats without warnings
+
+#### Technical Notes
+- Update `product/templates/DEVLOG_template.md` with compact format section
+- Update log-file-maintenance rule with format selection guidance
+- Compact format example:
+  ```
+  ### 2026-02-06: Fixed auth token refresh
+  Token refresh failed silently on expired sessions. Added retry logic with exponential backoff.
+  Files: `src/auth.js`, `src/retry.js`
+  ```
+- Implementation: template change + rule change
+
+### Story 8.9: Cross-File Navigation Hints
+
+**As an** AI coding assistant reading a CHANGELOG entry,
+**I want** a pointer to the related DEVLOG entry that explains *why*,
+**so that** I can navigate between files without guessing by date.
+
+#### Acceptance Criteria
+1. Rule convention: CHANGELOG entries with DEVLOG decisions include `→ DEVLOG {date}`
+2. Rule convention: DEVLOG entries referencing specific changes include `→ CHANGELOG {version}`
+3. Navigation hints added at end of entry line (inline, not separate line)
+4. Token cost: ~8 tokens per hint
+5. Hints are optional - only added when cross-reference exists
+6. Hints use consistent format across all log files
+7. Agent adds hints automatically when writing related entries
+8. Validation warns on orphan decisions (DEVLOG decision with no CHANGELOG link)
+9. Hints work in both rendered and raw markdown
+10. No new files or tools required
+
+#### Technical Notes
+- Add "🔗 CROSS-REFERENCES" convention to log-file-maintenance rule
+- Format: `→ DEVLOG 2026-02-06` or `→ CHANGELOG v0.3.0`
+- Implementation: rule convention only
+
+### Story 8.10: Stale Context Detection
+
+**As an** AI coding assistant starting a session,
+**I want** to know if the Current Context section is outdated,
+**so that** I don't make decisions based on stale information.
+
+#### Acceptance Criteria
+1. Rule clause: "At session start, check `Last Updated` date in Current Context"
+2. If Current Context is >7 days old, agent MUST update it before other work
+3. Agent compares `Last Updated` to current date (no external tools needed)
+4. Update includes: version, phase, objectives, recent changes since last update
+5. Staleness check added to SESSION START section of rule
+6. Agent reports staleness to user: "Current Context is X days old. Updating."
+7. Updated context includes new `Last Updated` date
+8. Token budget for context update: <800 tokens (existing budget)
+9. No scripts or external dependencies required
+10. Validation warns if `Last Updated` is >14 days old
+
+#### Technical Notes
+- Add staleness check to "🔄 SESSION START" section of log-file-maintenance rule
+- Simple date comparison: agent reads date, compares to today
+- Implementation: rule clause only
+
+### Story 8.11: Archival Summary Index
+
+**As an** AI coding assistant looking for an old decision or entry,
+**I want** a summary of what each archive file contains,
+**so that** I can find the right archive without reading all of them.
+
+#### Acceptance Criteria
+1. Rule: when archiving, agent adds summary line to Archive section
+2. Summary format: `- [filename](path) - Brief description of contents`
+3. Summary includes: key topics, decisions, epics covered in that archive
+4. Summary target: ~10 tokens per archive file
+5. Archive section in DEVLOG and CHANGELOG templates updated with example
+6. Agent can scan summaries to find relevant archive without opening files
+7. Summary written at time of archival (not retroactively)
+8. Validation warns if archive files exist without summary entries
+9. No new files or tools required
+10. Summaries maintained in the active log file's Archive section
+
+#### Technical Notes
+- Update Archive section guidance in log-file-maintenance rule
+- Update DEVLOG_template.md and CHANGELOG_template.md Archive sections
+- Example: `- [DEVLOG-2026-01.md](archive/DEVLOG-2026-01.md) - Epic 7 reliability, JWT decision, rate limiting incident`
+- Implementation: rule change + template change
 
 ---
 
