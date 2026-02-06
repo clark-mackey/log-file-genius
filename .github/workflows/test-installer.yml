@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false  # Continue testing other OS even if one fails
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-13]
+        os: [ubuntu-latest, macos-latest, macos-15]
         
     steps:
       - name: Checkout code
