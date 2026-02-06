@@ -78,8 +78,104 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 ## 🔄 SESSION START
 
 **At start of EVERY session:**
-1. Read `logs/DEVLOG.md` → "Current Context" section
-2. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
+1. Read `logs/DEVLOG.md` → "Last Session" section (if exists) for handoff context
+2. Read `logs/DEVLOG.md` → "Current Context" section
+3. **Staleness check:** If `Last Updated` date is >7 days old, update Current Context BEFORE other work
+   - Tell user: "Current Context is X days old. Updating before proceeding."
+   - Update: version, phase, objectives, recent changes
+   - Set new `Last Updated` date
+4. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
+
+---
+
+## 🔚 SESSION END
+
+**⚠️ Multi-agent:** If you are a subagent or teammate (not the lead/primary agent), skip this section. Only the primary agent writes session handoffs.
+
+**Before ending a session, write a handoff note:**
+
+1. Update `logs/DEVLOG.md` → "Last Session" section (overwrite previous)
+2. Format (3 bullets max, <150 tokens):
+   ```
+   ## Last Session
+   - **Done:** [What was completed this session]
+   - **In Progress:** [What's partially done, current state]
+   - **Next:** [What the next session should start with]
+   - **Branch:** `branch-name` | **Last Commit:** `hash`
+   ```
+3. Stage and commit with other changes (or amend last commit)
+
+---
+
+## 📊 TOKEN SELF-ASSESSMENT
+
+**Heuristic:** ~4 characters = 1 token. Use this to self-regulate without running scripts.
+
+**Quick reference:**
+- 1 line (~80 chars) ≈ 20 tokens
+- 1 paragraph (~320 chars) ≈ 80 tokens
+- 1 CHANGELOG entry ≈ 60-80 tokens
+- 1 DEVLOG compact entry ≈ 50-80 tokens
+- 1 DEVLOG incident entry ≈ 80-120 tokens
+- 1 DEVLOG standard entry ≈ 150-250 tokens
+
+**Budgets:**
+- CHANGELOG: <10,000 tokens
+- DEVLOG: <15,000 tokens
+- Combined: <25,000 tokens
+
+**Before writing:** Estimate entry size. If file is near budget, archive oldest entries first.
+
+---
+
+## ✏️ ENTRY VERBOSITY
+
+**Three DEVLOG entry formats:**
+
+**Compact format** (default for routine work, ~50-80 tokens):
+```
+### YYYY-MM-DD: Title
+Why/what in 1-2 sentences. Context or rationale.
+Files: `file1.py`, `file2.py`
+```
+
+**Incident format** (for failures worth learning from, ~80-120 tokens):
+```
+### YYYY-MM-DD: 🚨 INCIDENT - What failed
+**Root Cause:** Why it happened (1-2 sentences)
+**Prevention:** How to stop it recurring (1-2 actions)
+**Detection:** How to catch it earlier next time (1 action)
+Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
+```
+
+**Incident rubric — always qualifies:** security exposure, data loss/corruption, repeated failure (3+), silent failure, rule violation with impact, regression.
+
+**Standard format** (for major decisions, milestones, ~150-250 tokens):
+```
+### YYYY-MM-DD: Title
+**The Situation:** ...
+**The Decision:** ...
+**Why This Matters:** ...
+**Files Changed:** ...
+```
+
+**Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
+
+---
+
+## 🔗 CROSS-REFERENCES
+
+**When writing entries that relate across files, add navigation hints:**
+
+- CHANGELOG entry with a DEVLOG decision: append `→ DEVLOG YYYY-MM-DD`
+- DEVLOG entry referencing a specific version: append `→ CHANGELOG vX.Y.Z`
+
+**Example:**
+```
+- Fixed token refresh bug. Files: `src/auth.js`. Commit: `abc123` → DEVLOG 2026-02-06
+```
+
+Hints are optional - only add when a cross-reference exists.
 
 ---
 
@@ -89,7 +185,9 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 **Action:** Archive OLDEST entries first until under budget
 1. Move oldest entries to `logs/archive/[FILENAME]-YYYY-MM.md`
-2. Re-run validation to confirm
+2. Add summary line to the Archive section of the source file:
+   `- [FILENAME-YYYY-MM.md](archive/FILENAME-YYYY-MM.md) - Brief description of contents`
+3. Re-run validation to confirm
 
 **Key:** Archive by TOKEN COUNT, not date. Recent entries may need archiving if over budget.
 

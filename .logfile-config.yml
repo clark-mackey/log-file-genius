@@ -4,7 +4,7 @@
 # Version tracking - DO NOT EDIT MANUALLY
 # Updated automatically by update scripts
 version: "0.2.0"
-last_updated: "2026-01-22"
+last_updated: "2026-02-06"
 
 # Profile selection - determines token targets and validation strictness
 # Options: solo-developer, team, open-source, startup
@@ -39,8 +39,6 @@ updates:
 # Related documents
 # These links help AI assistants find relevant documentation
 related_docs:
-  prd: "project/prd.md"
-  architecture: "project/architecture.md"
+  prd: "project/specs/prd.md"
   workflow: "project/WORKFLOW.md"
-  roadmap: "project/specs/ROADMAP-REVISED-2025-11.md"
 

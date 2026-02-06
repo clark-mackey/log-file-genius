@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - README rewrite: reframed around agent performance. New tagline ("Make your AI agents rip"), problem/solution sections focus on agent behavior not token bloat, "Why It's Genius" leads with performance outcomes. Added shipped features: session continuity, self-regulating budgets, incident learning, safety tooling. Fixed broken emoji, removed stale "incidents" reference, updated token budgets. Files: `README.md`. Commit: `70b7ad6`
 
+- Dogfood update: synced local LFG install to latest product version. AI rules updated from 115→213 lines (adds session handoff, token self-assessment, entry verbosity, incident format, cross-references, archival summaries). Fixed stale related_docs paths in config. Files: `.augment/rules/log-file-maintenance.md`, `.logfile-config.yml`. Commit: `ec50460`
+
 ### Changed
 
 - LFG Schema Proposal revised with tiered approach - Code-Police review accepted Phase 1 (schema), rejected Phase 2/3 (CLI tools, VS Code). Added tiered metadata: Tier 1 inline for CHANGELOG (~18 tokens), Tier 2 condensed block for DEVLOG decisions (~25 tokens), Tier 3 full block for context only. Human readability preserved. Token overhead reduced 46% vs original proposal. Files: `project/docs/proposals/lfg-schema-proposal.md`. Commit: `cfee835`
