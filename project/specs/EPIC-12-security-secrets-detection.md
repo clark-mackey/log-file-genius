@@ -1,10 +1,12 @@
 # Epic 12: Security & Secrets Detection
 
-**Status:** Not Started  
-**Priority:** P0 - CRITICAL (Blocker for any serious adoption)  
-**Estimated Effort:** 2 weeks  
-**Dependencies:** None  
+**Status:** In Progress (Partial)
+**Priority:** P0 - CRITICAL (Blocker for any serious adoption)
+**Estimated Effort:** 2 weeks
+**Dependencies:** None
 **Source:** Red Team Analysis (context/research/Red Team Analysis_ (REVISED) (1).md)
+
+> **Implementation Note (Feb 2026):** `detect-secrets.py` is implemented with multi-layer detection (entropy analysis, pattern matching, context awareness). Pre-commit hook integration via `lfg.py install-hooks` is working. Remaining: SECURITY.md policy, redaction guide, security-specific AI rules, test suite.
 
 ---
 

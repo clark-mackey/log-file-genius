@@ -2,8 +2,8 @@
 
 **Purpose:** Clear completion criteria for Epic 12, 13, and 15 to prevent scope creep and ensure quality.
 
-**Last Updated:** 2025-11-03  
-**Related:** [ROADMAP-REVISED-2025-11.md](ROADMAP-REVISED-2025-11.md)
+**Last Updated:** 2026-02-06
+**Related:** [PRD](prd.md)
 
 ---
 
@@ -146,11 +146,13 @@
 
 ---
 
-## Epic 15: Governance & Review
+## Epic 15: Governance & Review — ⚠️ DEFERRED
 
-**Priority:** P1 - HIGH  
-**Timeline:** Week 5 (7 days)  
+**Priority:** DEFERRED (Team process feature — not direct AI benefit per mission)
+**Timeline:** TBD
 **Spec:** [EPIC-15-governance-review.md](EPIC-15-governance-review.md)
+
+> **Note:** Epic 15 deferred per PRD v0.6. Checklist below retained for reference if reactivated.
 
 ### Definition of Done
 

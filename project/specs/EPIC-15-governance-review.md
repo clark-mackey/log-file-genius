@@ -1,10 +1,12 @@
 # Epic 15: Governance & Review Workflows (Simplified for Solo/Teams)
 
-**Status:** Not Started  
-**Priority:** P1 - HIGH (Important for teams, nice-to-have for solo)  
-**Estimated Effort:** 1 week (simplified version)  
-**Dependencies:** Epic 13 (Validation)  
+**Status:** DEFERRED
+**Priority:** DEFERRED (Team process feature — not direct AI benefit per mission)
+**Estimated Effort:** 1 week (simplified version)
+**Dependencies:** Epic 13 (Validation)
 **Source:** Red Team Analysis (context/research/Red Team Analysis_ (REVISED) (1).md)
+
+> **Deferral Note (Feb 2026):** Deferred per PRD v0.6. Governance workflows are team-process features that don't directly help AI agents "not get lost, not waste tokens." May revisit when team adoption creates demand.
 
 ---
 
