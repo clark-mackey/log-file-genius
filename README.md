@@ -1,8 +1,8 @@
 # Log File Genius
 
-**Stop the context rot. Give your AI a genius-level memory.**
+**Make your AI agents rip. Not guess, not loop, not forget — rip.**
 
-> A token-efficient documentation system that reduces AI context bloat by 93% while improving project memory.
+> Five markdown files + AI rules that give any agent (or subagent) instant, complete project context in under 5% of its context window.
 
 [![GitHub stars](https://img.shields.io/github/stars/clark-mackey/log-file-genius?style=social)](https://github.com/clark-mackey/log-file-genius/stargazers)
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
@@ -12,40 +12,44 @@
 
 ---
 
-## 😫 The Problem: Your AI Has a Terrible Memory
+## 😫 The Problem: Your AI Agent Is Working Blind
 
-Traditional project documentation becomes a bloated mess over time. Your AI coding assistant spends half its context window just trying to remember what happened last week.
+Your agent doesn't know what happened yesterday. It doesn't know why you chose Postgres over Mongo. It doesn't know its teammate just refactored the auth module. So it guesses, goes in circles, and makes decisions you already made — badly.
 
-**Before Log File Genius:**
-- 📊 **90,000-110,000 tokens** of verbose logs.
-- 🤖 **45-55% of your AI's context window** wasted on history.
-- ❌ **Result:** The AI lacks context, makes uninformed decisions, and repeats past mistakes.
+**Without Log File Genius:**
+- 🔄 **Agents repeat past mistakes** because there's no structured record of what failed and why
+- 🧠 **Context lost between sessions** — every new chat starts from scratch
+- 🤖 **Subagents start from zero** — they have no idea what the lead agent decided
+- 📊 **90,000+ tokens** of bloated docs eating your context window, and the AI *still* doesn't know what's going on
 
-It's like trying to have a conversation with someone who has amnesia. Every. Single. Day.
+It's like hiring a brilliant contractor who shows up every morning with amnesia. Every. Single. Day.
 
-Or maybe you are new here and vibe coding your first projects. 
+Or maybe you're vibe coding your first projects and wondering why the AI keeps going in circles.
 
-**Vibe Coding Before Log File Genius:**
-- 📊 **50,000-70,000 tokens** of retrying work-arounds and responding to your questions about how code works.
-- 🤖 **45-55% of your AI's context window** wasted on hand holding and ineffective loops through code.
-- ❌ **Result:** The AI has the wrong context, makes bad decisions, and hallucinates.
+**Vibe Coding Without Log File Genius:**
+- 🔄 **Endless loops** — the AI retries the same broken approach because it has no memory of what already failed
+- 🤖 **Half your context window** wasted on hand-holding and ineffective back-and-forth
+- ❌ **Result:** The AI hallucinates, makes bad decisions, and you spend more time fixing its work than writing code
 
-## 💡 The Solution: A Genius-Level Memory
+## 💡 The Solution: A Shared Brain for Every Agent
 
-Log File Genius is a five-document system that gives your AI a an improved long-term memory while consuming less than **5%** of its context window.
+Log File Genius is five markdown files and a set of AI rules. Any agent — lead, subagent, teammate, or a fresh session — reads them and instantly knows: what are we building, what changed, why we decided that, what's happening right now, and what rules we follow.
+
+The AI maintains the files itself. You don't write documentation — the agent does, as part of its workflow.
 
 **After Log File Genius:**
-- 📊 **~7,000-10,000 tokens** for complete project history.
-- 🤖 **93% reduction** in context bloat. 
-- ✅ **Result:** The AI has near-instant access to all decisions, changes, and narratives, leading to smarter, faster, and more accurate coding.
+- ⚡ **Agents make informed decisions** from the first message — no ramp-up, no guessing
+- 🔄 **Session continuity** — handoff protocol means zero context lost between sessions
+- 🤖 **Subagents spin up dangerous** — full project context in under 500ms
+- 📊 **Up to 93% token reduction** — complete project history in ~7,000-10,000 tokens instead of 90,000+
 
 | Document | The Vibe | Purpose | Token Budget |
 |---|---|---|---|
 | **PRD** | The Dream ✨ | What we're building and why | ~5k tokens |
-| **CHANGELOG** | The Facts 📊 | What changed (files, versions, facts) | ~2k tokens |
-| **DEVLOG** | The Story ✍️ | *Why* it changed (the narrative, the reasoning) | ~3k tokens |
+| **CHANGELOG** | The Facts 📊 | What changed (files, versions, facts) | <10k tokens |
+| **DEVLOG** | The Story ✍️ | *Why* it changed (the narrative, the reasoning) | <15k tokens |
 | **ADRs** | The Rules 🏛️ | How we made significant decisions | On-demand |
-| **STATE** | The Current State | What agent on what task? | <500 tokens |
+| **STATE** | The Now 📍 | What agent is on what task, right now? | <500 tokens |
 
 [Dive into the full methodology →](product/docs/log_file_how_to.md)
 
@@ -53,23 +57,29 @@ Log File Genius is a five-document system that gives your AI a an improved long-
 
 ## 🧠 Why It's Genius
 
-This isn't just another documentation template. It's a complete system designed for AI-first development.
+This isn't just documentation. It's an operating system for AI agent performance.
 
-- **93% Token Reduction:** Keep your context window free for what matters: the code you're writing *right now*. Sheds old context like a snake sheds its skin.
+- **🚀 Agents That Actually Perform:** Your agent reads 5 files and knows everything — what we're building, what changed, why, what's happening now, and what rules to follow. No ramp-up. No guessing. Just execution.
 
-- **Near Perfect Project Memory:** The five-document system separates facts from narrative, giving your AI a complete, holistic understanding of the project's history and goals.
+- **🔄 Zero Context Loss Between Sessions:** The handoff protocol means a new session picks up exactly where the last one left off. No more "let me re-read the codebase to understand what's going on."
 
-- **⚡ Zero-Search Navigation:** With bidirectional frontmatter linking, your AI never wastes tokens searching for files. It instantly knows where to find related documents.
+- **🤖 Multi-Agent & Subagent Ready:** Spin up a subagent and it has full project context in seconds. `STATE.md` prevents collisions. The handoff protocol prevents duplicated work. Agent teams that actually coordinate.
 
-- **🤖 Multi-Agent Ready:** The included `STATE.md` file and handoff protocol provide a lightweight coordination layer, preventing agent collisions and duplicated work in complex, multi-agent environments.
+- **🧠 Self-Regulating:** Agents manage their own token budgets, estimate entry sizes, and archive proactively. No babysitting. No external tools. The AI maintains the files as part of its workflow — you don't write documentation, the agent does.
 
-- **Scalable by Design:** The built-in archiving strategy keeps your active logs lean and fast, even on multi-year projects.
+- **🚨 Learns From Failures:** The `🚨 INCIDENT` format in DEVLOG means agents document what broke, why, and how to prevent it. Next time a similar problem comes up, the agent already knows the answer.
 
-- **Tool Agnostic:** Works seamlessly with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant. Your toaster will probably be running it soon.
+- **⚡ Zero-Search Navigation:** Bidirectional frontmatter linking means your AI never wastes tokens searching for files. Every document points to its related documents. One hop to anything.
+
+- **📊 Up to 93% Token Reduction:** Sheds old context like a snake sheds its skin. Complete project history in <5% of the context window, leaving the rest for what matters: the code you're writing *right now*.
+
+- **🔒 Safety Built In:** Secret detection, log validation, and pre-commit hooks catch problems before they hit the repo. Your agent won't accidentally leak API keys into a DEVLOG entry.
+
+- **🔧 Tool Agnostic:** Works with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant. Your toaster will probably be running it soon.
 
 ---
 
-## � Repository Structure
+## 📁 Repository Structure
 
 This repository uses a two-branch strategy: `main` contains only the `product/` directory for distribution, while `development` contains both `product/` and `project/` directories for development work.
 
@@ -107,7 +117,7 @@ The installer will:
 - ✅ Configure everything for immediate use
 
 **What gets installed:**
-- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs, incidents)
+- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs)
 - `.augment/` or `.claude/` - AI assistant rules
 - `.logfile-config.yml` - Profile configuration
 
