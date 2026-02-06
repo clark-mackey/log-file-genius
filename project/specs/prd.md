@@ -6,42 +6,39 @@
 
 **Primary Mission: Help AI agents not get lost, not waste tokens.**
 
-- **Stop context rot:** Reduce AI context bloat by 93% (90-110k → 7-10k tokens) so AI has room for actual code
-- **Give AI genius-level memory:** Structured 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) separates facts from narrative
+- **Stop context rot:** Reduce AI context bloat by up to 93% so AI has room for actual code
+- **Give AI structured memory:** 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) separates facts from narrative
 - **Zero-search navigation:** Bidirectional frontmatter linking so AI never wastes tokens searching for files
-- **Prevent AI confusion:** Token-based archival keeps logs lean, AI always has fresh relevant context
-- **Multi-agent coordination:** STATE.md prevents agent collisions and duplicated work
+- **Session continuity:** Handoff protocol ensures no context lost between sessions
+- **Self-regulating budgets:** Agents estimate token usage and archive proactively — no external tools
+- **Multi-agent safe:** Rules work for single agents, teams, and swarms without conflicts
 - **Tool agnostic:** Works with any AI assistant (Augment, Claude Code, Cursor, Copilot)
+- **Minimal dependencies:** Plain markdown files and AI rules at the core — optional Python scripts for validation and analysis
 
 ### Background Context
 
-AI coding assistants like Augment, Claude Code, and GitHub Copilot are increasingly used in software development, but they struggle when project context grows large. Traditional documentation approaches consume too much of the AI's context window, leaving less room for actual coding work. Clark Mackey developed a 5-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) that provides complete project context while consuming less than 5% of an AI's context window. The system has proven effective in his own projects, reducing token usage by 93% (from ~90-110k to ~7-10k tokens) while maintaining full project history, current state, and decision rationale. This PRD defines a project to package this method into an installable GitHub repository with clear documentation and AI assistant rules, making it accessible to the broader developer community.
+AI coding assistants struggle when project context grows large — traditional documentation consumes too much of the context window, leaving less room for code. Log File Genius is a 5-document system that provides complete project context while consuming less than 5% of an AI's context window. Packaged as an installable GitHub repository with AI assistant rules and templates.
 
-### Current State (As of December 2025)
+### Current State (As of February 2026)
 
-**Repository Status:** ✅ Live on GitHub - 8 stars, public repository
+**Repository Status:** ✅ Live on GitHub - public repository
 
 **What's Working:**
-- ✅ Augment starter pack complete (`.augment/rules/`, config, validation)
-- ✅ Claude Code starter pack complete (`.claude/`, project instructions, rules)
-- ✅ Working installer scripts (`install.ps1`, `install.sh`) - cross-platform
-- ✅ Profile system (`.logfile-config.yml`) with 4 profiles (solo-developer, team, open-source, startup)
-- ✅ Validation scripts (profile-aware, token counting)
-- ✅ Core templates (CHANGELOG, DEVLOG, STATE, ADR)
-- ✅ Git hooks for automated validation
+- ✅ Augment + Claude Code starter packs with platform-specific rules
+- ✅ Cross-platform installer scripts (`install.ps1`, `install.sh`)
+- ✅ Profile system with 4 profiles (solo-developer, team, open-source, startup)
+- ✅ Token-based archival (CHANGELOG <10k, DEVLOG <15k, combined <25k tokens)
+- ✅ Session handoff protocol, stale context detection, entry verbosity control
+- ✅ Multi-agent guard clauses (agent-topology-neutral)
+- ✅ Validation scripts, git hooks, secret detection
 
-**Known Issues (Priority Order):**
-1. **Archival logic broken** - Uses date-based rules ("older than 2 weeks") instead of token/size-based limits
-2. **Rule adherence inconsistent** - Augment Code doesn't consistently follow the maintenance rules
-3. **Claude Code parity incomplete** - Needs to be as reliable as Augment (when Augment works)
-4. **Documentation gaps** - Missing brownfield migration guides, troubleshooting, real-world examples
+**Known Issues:**
+1. **Rule adherence inconsistent** — improved but not 100% reliable across all AI platforms
+2. **Documentation gaps** — missing brownfield migration guides, troubleshooting, real-world examples
 
 **What's Deferred:**
-- ❌ Cursor support (deferred to post-MVP)
-- ❌ Advanced features from context (hooks, slash commands) - alternative approach for future consideration
-
-**Real-World Usage Insights:**
-After several weeks of production use, the core methodology works but automation reliability needs improvement. The biggest pain points are archival automation and ensuring AI agents consistently follow the rules.
+- ❌ Cursor support (post-MVP)
+- ❌ MCP Server (deferred until rules-based approach proves insufficient)
 
 ### Change Log
 
@@ -54,6 +51,7 @@ After several weeks of production use, the core methodology works but automation
 | 2026-02-01 | 0.5     | MAJOR REFOCUS: Rejected Epics 9/10/11 (mission drift). New Epic 8 for AI context optimization. Epic 7 refined. | Augment Agent  |
 | 2026-02-01 | 0.6     | Added Epics 12/13/17/19 to Epic List. Deferred Epic 15, rejected Epic 18. Aligned all epics with mission.   | Augment Agent  |
 | 2026-02-06 | 0.7     | Epic 10 revised: dedicated subagents → agent-agnostic multi-agent support. SESSION END guard for agent teams. | Augment Agent  |
+| 2026-02-06 | 0.8     | PRD alignment pass: updated Goals, Background, Current State (Feb 2026), Technical Assumptions, Next Steps. Fixed stale claims and Augment-only language. | Augment Agent  |
 
 ---
 
@@ -89,27 +87,27 @@ After several weeks of production use, the core methodology works but automation
 
 ### Repository Structure: Monorepo
 
-Single repository containing all templates, documentation, examples, and Augment rules in a clear folder structure.
+Single repository containing all templates, documentation, examples, and AI assistant rules in a clear folder structure.
 
 ### Service Architecture
 
-Not applicable - this is a static documentation/template repository with no runtime services or deployment requirements.
+No runtime services. The core system is markdown files and AI rules. Optional Python scripts provide validation, token counting, and secret detection.
 
 ### Testing Requirements
 
-**Manual validation only** - No automated testing required. Quality assurance will be through:
-- Manual review of template completeness
-- Verification that all cross-links work correctly
+**Automated + manual validation:**
+- Validation scripts (`validate-log-files.ps1`, `validate.sh`, `lint-logs.py`) check structure and token budgets
+- Git hooks run validation on commit
+- Manual review of template completeness and cross-link integrity
 - Testing installation process with fresh projects
-- Validation that Augment rules load correctly
 
 ### Additional Technical Assumptions and Requests
 
 - **Version Control:** GitHub repository with clear versioning (semantic versioning for releases)
 - **Documentation Format:** All files in Markdown (.md) format for maximum AI assistant compatibility
-- **File Organization:** Clear folder structure separating templates, examples, documentation, and Augment rules
+- **File Organization:** Clear folder structure separating templates, examples, documentation, and AI assistant rules
 - **License:** MIT License to allow free use, modification, and distribution
-- **Dependencies:** Zero dependencies - pure Markdown files that work out of the box
+- **Dependencies:** Minimal — core system is pure markdown + AI rules. Optional Python scripts for validation and analysis
 - **Compatibility:** Designed to work with Augment, Claude Code, Cursor, and other AI coding assistants that support custom rules/instructions
 - **Example Project:** Include a sample project structure showing the system in use
 - **Maintenance Guide:** Documentation on how to keep the log files updated and when to archive old entries
@@ -1589,9 +1587,9 @@ Dogfooding analysis revealed that LFG's value comes from *rich, contextual entri
 
 ## Next Steps
 
-### UX Expert Prompt
-*To be generated after PRD approval*
-
-### Architect Prompt - Epic 8: Log Automation & Reliability
-
-*No architect prompt needed. Epic 8 extends existing infrastructure (lfg.py, pre-commit hooks, AI rules). Implementation is straightforward CLI additions. See Epic 8 stories for acceptance criteria.*
+**Priority order:**
+1. **Epic 7** — Fix remaining rule adherence issues across AI platforms
+2. **Epic 8** — Complete Stories 8.1-8.5 (smart summarization, token monitoring, AI-optimized formatting)
+3. **Epic 12** — Secret detection rules to prevent AI from leaking credentials into logs
+4. **Epic 2** — Brownfield migration guides for existing projects
+5. **Epic 4** — Documentation gaps (troubleshooting, real-world examples)

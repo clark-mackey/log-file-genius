@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Epic 8: AI Context Optimization (NEW) - Replaced old Epic 8 with 5 mission-aligned stories: Smart Context Summarization (<500 tokens), Token Budget Dashboard, AI-Optimized Document Templates, Intelligent Archival Triggers, Context Relevance Scoring. All features directly help AI agents not get lost and not waste tokens. Files: `project/specs/prd.md`. Commit: `b9a9a38`
 - Project navigation guide for autonomous agents - Created `project/README.md` explaining directory structure, source of truth hierarchy, and what files to reference. Files: `project/README.md`. Commit: `9ebb777`
 
+- PRD v0.8 alignment pass: Updated Goals (session continuity, self-regulating budgets, minimal dependencies), Background (trimmed), Current State (Feb 2026, resolved issues removed), Technical Assumptions (fixed zero-deps, Augment-only language, manual-only testing), Next Steps (priority order). Files: `project/specs/prd.md`. Commit: `3801f2a`
+
 ### Changed
 
 - LFG Schema Proposal revised with tiered approach - Code-Police review accepted Phase 1 (schema), rejected Phase 2/3 (CLI tools, VS Code). Added tiered metadata: Tier 1 inline for CHANGELOG (~18 tokens), Tier 2 condensed block for DEVLOG decisions (~25 tokens), Tier 3 full block for context only. Human readability preserved. Token overhead reduced 46% vs original proposal. Files: `project/docs/proposals/lfg-schema-proposal.md`. Commit: `cfee835`
