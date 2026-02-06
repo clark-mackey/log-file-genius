@@ -72,10 +72,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Archive
 
-**Versions older than 30 days** are archived for token efficiency:
-- [CHANGELOG-2025-10.md](../archive/CHANGELOG-2025-10.md) - October 2025 (v0.5.x - v0.6.1)
-- [CHANGELOG-2025-09.md](../archive/CHANGELOG-2025-09.md) - September 2025 (v0.3.x - v0.4.x)
-- [CHANGELOG-2025-08.md](../archive/CHANGELOG-2025-08.md) - August 2025 (v0.1.x - v0.2.x)
+**Versions older than 30 days** are archived for token efficiency.
+Each link includes a brief summary so agents know what's inside without opening the file:
+- [CHANGELOG-2025-10.md](../archive/CHANGELOG-2025-10.md) - Auth overhaul, rate limiting, v0.5.x-v0.6.1
+- [CHANGELOG-2025-09.md](../archive/CHANGELOG-2025-09.md) - Initial API, database setup, v0.3.x-v0.4.x
+- [CHANGELOG-2025-08.md](../archive/CHANGELOG-2025-08.md) - Project bootstrap, CI pipeline, v0.1.x-v0.2.x
 
 ---
 
@@ -94,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 4. **No code examples** - Link to files instead
 5. **No "Why This Matters"** - That belongs in DEVLOG
 6. **Archive monthly** - Move versions >30 days old to `/archive/CHANGELOG-YYYY-MM.md`
+7. **Summarize archives** - Each archive link should have a brief description of contents
 
 ### Categories (Keep a Changelog Standard)
 
