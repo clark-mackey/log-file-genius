@@ -53,6 +53,7 @@ After several weeks of production use, the core methodology works but automation
 | 2026-02-01 | 0.4     | Added Epic 10 (Claude Code Subagent Integration), promoted from Future Considerations to HIGH VALUE priority | Augment Agent  |
 | 2026-02-01 | 0.5     | MAJOR REFOCUS: Rejected Epics 9/10/11 (mission drift). New Epic 8 for AI context optimization. Epic 7 refined. | Augment Agent  |
 | 2026-02-01 | 0.6     | Added Epics 12/13/17/19 to Epic List. Deferred Epic 15, rejected Epic 18. Aligned all epics with mission.   | Augment Agent  |
+| 2026-02-06 | 0.7     | Epic 10 revised: dedicated subagents → agent-agnostic multi-agent support. SESSION END guard for agent teams. | Augment Agent  |
 
 ---
 
@@ -177,9 +178,9 @@ Not applicable - this is a static documentation/template repository with no runt
 **Goal:** ~~Provide CLI tools for developer convenience.~~
 **Status:** REJECTED - Serves human developers, not AI agents. Does not reduce tokens or improve AI navigation. Moved to Rejected Ideas.
 
-### ~~Epic 10: Claude Code Subagents~~ ❌ REJECTED
-**Goal:** ~~Create subagents for autonomous documentation.~~
-**Status:** REJECTED - Adds complexity that confuses AI agents. No proven architecture. Moved to Rejected Ideas.
+### Epic 10: Agent-Agnostic Multi-Agent Support 🔄 REVISED
+**Goal:** Ensure LFG files work for any agent topology (single, team, swarm) without assumptions or conflicts.
+**Status:** COMPLETE - SESSION END guard added (Story 10.1). Audit confirmed existing designs are multi-agent safe (Stories 10.2, 10.3).
 
 ### ~~Epic 11: Advanced Automation~~ ❌ REJECTED
 **Goal:** ~~Git hook auto-population, CI enforcement.~~
@@ -1410,22 +1411,82 @@ The following epics were rejected after code-police review identified 60% missio
 
 **What Would Be Lost:** `lfg context`, `lfg handoff`, `lfg status`, `lfg log` commands. These are developer conveniences that can be achieved with simple file reading - no special tooling needed.
 
-### ~~Epic 10: Claude Code Subagent Integration~~ ❌ REJECTED
+### ~~Epic 10: Claude Code Subagent Integration~~ → **Epic 10: Agent-Agnostic Multi-Agent Support** 🔄 REVISED
 
-**Why Rejected:** No evidence Claude Code subagents exist as native architecture. Adds massive complexity (coordination protocols, file locking, fallback logic) without proven benefit. Each integration point is a potential failure mode that confuses AI agents.
+**Previous Status:** REJECTED (dedicated subagent model was speculative).
 
-**Original Goal:** Create dedicated subagents (lfg-maintainer, lfg-archivist, lfg-validator, lfg-context-curator) for autonomous documentation.
+**Why Revised:** Claude Code 4.6 confirmed agent teams — lead agent spawns teammates, each a full independent instance sharing the file system. LFG doesn't need dedicated subagents. Instead, LFG files must work well when **any number of agents** (1, team, or swarm) read/write them concurrently.
 
-**Mission Alignment Score:** 2/10 - Complexity explosion, solves symptom (rule adherence) not root cause (unclear rules).
+**New Goal:** Ensure all LFG files, rules, and templates are agent-topology-neutral — no assumptions about how many agents exist or how they coordinate.
 
-**Code-Police Findings:**
-- Missing technical foundation (no Claude Code subagent API spec)
-- Integration conflicts with MCP server (both try to write same files)
-- Race conditions from concurrent file modifications
-- Debugging nightmare with distributed failures
-- Vendor lock-in to unspecified architecture
+**Mission Alignment Score:** 8/10 - Directly prevents agents from getting lost in multi-agent scenarios. Zero new dependencies.
 
-**What Would Be Lost:** Subagent-based automation. Alternative: Better rule specification and validation (Epic 7) addresses root cause.
+**Design Principles:**
+- LFG provides good files, not agent orchestration
+- Rules work for 1 agent or 20 agents identically
+- No file locking, no coordination protocols
+- Append-only patterns where possible
+- Guard clauses for singleton operations (like session handoff)
+
+#### Story 10.1: Multi-Agent SESSION END Guard
+
+**As an** AI agent working as a teammate in an agent swarm,
+**I want** the SESSION END rule to tell me to skip handoff writing,
+**so that** only the primary agent writes the session handoff and teammates don't overwrite it.
+
+**Acceptance Criteria:**
+1. SESSION END section includes multi-agent guard clause
+2. Guard: "If you are a subagent or teammate, skip this section"
+3. Only primary/lead agent writes `## Last Session`
+4. Guard is 1 line, <20 tokens overhead
+5. Works for single agent (guard is irrelevant, no harm)
+6. Works for agent teams (teammates see guard, skip)
+7. No coordination protocol needed — each agent self-identifies
+8. Updated in all 4 rule file copies (2 canonical + 2 starter packs)
+
+**Status:** ✅ COMPLETE
+
+#### Story 10.2: Agent-Topology-Neutral Rules Audit
+
+**As an** LFG maintainer,
+**I want** all rules and templates audited for single-agent assumptions,
+**so that** nothing breaks or conflicts when multiple agents use LFG files.
+
+**Acceptance Criteria:**
+1. Every rule section reviewed for single-agent assumptions
+2. BEFORE EVERY COMMIT: works for any agent (whoever commits, updates CHANGELOG) ✅ Already safe
+3. SESSION START: works for any agent (read-only, no conflict) ✅ Already safe
+4. SESSION END: guarded for multi-agent ✅ (Story 10.1)
+5. CHANGELOG entries: append-only, no conflict ✅ Already safe
+6. DEVLOG Daily Log entries: append-only with timestamps, no conflict ✅ Already safe
+7. STATE.md Active Work: supports agent attribution ✅ Already designed for this
+8. No rule assumes "there is exactly one agent"
+9. Audit results documented (this story serves as documentation)
+
+**Status:** ✅ COMPLETE (audit done during Epic 10 design — only SESSION END needed fixing)
+
+#### Story 10.3: Context Discovery for Spawned Agents
+
+**As an** AI agent newly spawned into a project (as a teammate),
+**I want** to quickly understand the project state from LFG files,
+**so that** I can contribute without duplicating work or missing context.
+
+**Acceptance Criteria:**
+1. DEVLOG "Current Context" section is the single entry point for any new agent
+2. STATE.md "Active Work" section shows what other agents are currently doing
+3. DEVLOG "Last Session" shows what the lead agent's last session accomplished
+4. No new files or sections needed — existing structure serves this purpose
+5. SESSION START rule already instructs agents to read context on startup
+6. New teammates can follow the same SESSION START flow as any agent
+7. Token budget for context discovery: <800 tokens (existing budget)
+
+**Status:** ✅ COMPLETE (existing file design already supports this — no changes needed)
+
+#### Technical Notes — Epic 10
+- All changes are rule file edits only — zero new files, zero dependencies
+- The only code change needed was Story 10.1 (guard clause, 1 line per file)
+- Stories 10.2 and 10.3 confirmed existing designs already work for multi-agent
+- Original Epic 10 stories (dedicated subagents) are permanently rejected — wrong approach
 
 ### ~~Epic 11: Advanced Automation~~ ❌ REJECTED
 

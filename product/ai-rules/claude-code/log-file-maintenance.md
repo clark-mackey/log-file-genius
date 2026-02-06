@@ -90,6 +90,8 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 ## 🔚 SESSION END
 
+**⚠️ Multi-agent:** If you are a subagent or teammate (not the lead/primary agent), skip this section. Only the primary agent writes session handoffs.
+
 **Before ending a session, write a handoff note:**
 
 1. Update `logs/DEVLOG.md` → "Last Session" section (overwrite previous)
