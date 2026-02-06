@@ -33,6 +33,15 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ---
 
+## Last Session
+
+- **Done:** [Initial project setup, installed Log File Genius]
+- **In Progress:** [None]
+- **Next:** [Begin development work, document first decisions]
+- **Branch:** `main` | **Last Commit:** `initial`
+
+---
+
 ## Daily Log - Newest First
 
 ### 2025-11-05: Setting Up Log File Genius
@@ -96,27 +105,31 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Template Guidelines (Remove this section in actual use)
 
-### Entry Format for Daily Log
+### Entry Formats for Daily Log
 
-Each entry should tell a story with this structure:
+**Compact format** (default for routine work, ~50-80 tokens):
+
+```markdown
+### YYYY-MM-DD: Title
+Why/what in 1-2 sentences. Context or rationale.
+Files: `file1.py`, `file2.py`
+```
+
+**Standard format** (for major decisions, incidents, milestones, ~150-250 tokens):
 
 ```markdown
 ### YYYY-MM-DD: Title - The Core Theme
 
 **The Situation/Problem/Context:** Set the scene (1-2 sentences)
 
-**The Challenge/Investigation/Realization:** What you discovered (1-3 sentences)
-
 **The Decision/Fix/Solution:** What you did about it (1-3 sentences)
 
 **Why This Matters/The Insight/The Lesson:** The takeaway (1-2 sentences)
 
-**The Result/Impact/Outcome:** What happened (1 sentence)
-
 **Files Changed:** `file1.py`, `file2.py`
-
-**Shipped:** vX.Y.Z (if applicable)
 ```
+
+**Decision guide:** If it needs an ADR → use standard. Otherwise → compact.
 
 ### Best Practices for AI Efficiency
 
