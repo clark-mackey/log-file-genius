@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project navigation guide for autonomous agents - Created `project/README.md` explaining directory structure, source of truth hierarchy, and what files to reference. Files: `project/README.md`. Commit: `9ebb777`
 
 - PRD v0.8 alignment pass: Updated Goals (session continuity, self-regulating budgets, minimal dependencies), Background (trimmed), Current State (Feb 2026, resolved issues removed), Technical Assumptions (fixed zero-deps, Augment-only language, manual-only testing), Next Steps (priority order). Files: `project/specs/prd.md`. Commit: `3801f2a`
+- PRD v0.9: Epic 17 REJECTED (scope creep). Lightweight incident format added to DEVLOG template with `🚨 INCIDENT` prefix, 6-item rubric, structured root-cause/prevention fields. Incident format added to both AI rule files. Files: `project/specs/prd.md`, `product/templates/DEVLOG_template.md`, `product/ai-rules/augment/log-file-maintenance.md`, `product/ai-rules/claude-code/log-file-maintenance.md`. Commit: `f6ab74a`
 - Epic spec status updates: EPIC-12 → In Progress (Partial), EPIC-13 → In Progress (Partial), EPIC-15 → DEFERRED. DEFINITION-OF-DONE.md fixed broken ROADMAP link, noted Epic 15 deferral. Files: `project/specs/EPIC-12-security-secrets-detection.md`, `project/specs/EPIC-13-validation-reliability.md`, `project/specs/EPIC-15-governance-review.md`, `project/specs/DEFINITION-OF-DONE.md`. Commit: `e719d03`
 
 ### Changed

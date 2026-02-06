@@ -52,6 +52,7 @@ AI coding assistants struggle when project context grows large — traditional d
 | 2026-02-01 | 0.6     | Added Epics 12/13/17/19 to Epic List. Deferred Epic 15, rejected Epic 18. Aligned all epics with mission.   | Augment Agent  |
 | 2026-02-06 | 0.7     | Epic 10 revised: dedicated subagents → agent-agnostic multi-agent support. SESSION END guard for agent teams. | Augment Agent  |
 | 2026-02-06 | 0.8     | PRD alignment pass: updated Goals, Background, Current State (Feb 2026), Technical Assumptions, Next Steps. Fixed stale claims and Augment-only language. | Augment Agent  |
+| 2026-02-06 | 0.9     | Epic 17 REJECTED (scope creep). Incident reporting replaced by lightweight DEVLOG incident format with rubric and `🚨 INCIDENT` prefix. | Augment Agent  |
 
 ---
 
@@ -156,9 +157,9 @@ No runtime services. The core system is markdown files and AI rules. Optional Py
 **Goal:** Verify AI agents maintain logs correctly with automated validation and self-assessment.
 **Status:** Planned. Spec: `project/specs/EPIC-13-validation-reliability.md`
 
-### Epic 17: Incident Reports & Learning 📋 P1
-**Goal:** Teach AI agents to create structured incident reports when failures occur - documenting what went wrong and how to prevent recurrence.
-**Status:** Planned. Template WIP in `project/templates/`. Spec: `project/specs/EPIC-17-incident-reports-learning.md`
+### ~~Epic 17: Incident Reports & Learning~~ ❌ REJECTED → DEVLOG Enhancement
+**Goal:** ~~Standalone incident report document type with 210-line template, severity levels, verification framework.~~
+**Status:** REJECTED - Scope creep (enterprise incident management for solo project). Replaced by lightweight incident entry format in DEVLOG template. See DEVLOG template → "Incident format". Spec: `project/specs/EPIC-17-incident-reports-learning.md`
 
 ### ~~Epic 15: Governance & Review~~ ⏸️ DEFERRED
 **Goal:** ~~Human review workflows for AI-generated documentation.~~
@@ -1500,6 +1501,23 @@ The following epics were rejected after code-police review identified 60% missio
 - Premature automation before reliability proven
 
 **What Would Be Lost:** Automatic CHANGELOG entries, CI token budget checks. Alternative: AI writes rich content directly (current approach works), validation scripts already provide budget checks.
+
+### ~~Epic 17: Incident Reports & Learning~~ ❌ REJECTED → DEVLOG Enhancement
+
+**Why Rejected:** Standalone incident report document type (210-line template, SEV-1 through SEV-5, verification framework, metrics dashboards) is enterprise scope creep for a solo project. Information duplicates what DEVLOG and CHANGELOG already capture. Adds a 6th document type that breaks schema consistency (no frontmatter linking, no AI guidance, no archive strategy, Related Documents at bottom not top).
+
+**Original Goal:** Structured incident reporting system with template, how-to guide, AI auto-detection, verification framework, and metrics tracking.
+
+**Mission Alignment Score:** 4/10 - The *concept* of learning from failures helps AI agents, but the *implementation* wastes tokens (210-line template vs 20-line DEVLOG format) and fragments knowledge across a new document type.
+
+**Code-Police Findings:**
+- DEVLOG "Fixed" entries + CHANGELOG "Fixed" entries already capture incident information
+- 8-section template creates navigation overhead that hurts AI token efficiency
+- Severity levels (SEV-1 to SEV-5) add enterprise complexity with no AI benefit
+- Success metrics ("5+ incidents/month") force artificial incident creation
+- Schema breaks all established patterns (no frontmatter linking, no AI guidance, no archive)
+
+**What Was Kept:** Lightweight incident entry format added to DEVLOG template with `🚨 INCIDENT` prefix for easy filtering, structured root-cause/prevention fields, and a short rubric of qualifying events. Same learning value, 90% fewer tokens.
 
 ---
 

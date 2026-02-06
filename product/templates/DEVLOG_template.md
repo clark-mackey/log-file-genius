@@ -115,7 +115,7 @@ Why/what in 1-2 sentences. Context or rationale.
 Files: `file1.py`, `file2.py`
 ```
 
-**Standard format** (for major decisions, incidents, milestones, ~150-250 tokens):
+**Standard format** (for major decisions, milestones, ~150-250 tokens):
 
 ```markdown
 ### YYYY-MM-DD: Title - The Core Theme
@@ -129,7 +129,28 @@ Files: `file1.py`, `file2.py`
 **Files Changed:** `file1.py`, `file2.py`
 ```
 
-**Decision guide:** If it needs an ADR → use standard. Otherwise → compact.
+**Incident format** (for failures worth learning from, ~80-120 tokens):
+
+```markdown
+### YYYY-MM-DD: 🚨 INCIDENT - Short description of what failed
+
+**Root Cause:** Why it happened (1-2 sentences)
+**Prevention:** How to stop it recurring (1-2 actions)
+**Detection:** How to catch it earlier next time (1 action)
+Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
+```
+
+**Incident rubric — always qualifies:**
+1. **Security exposure** — secrets, credentials, or PII leaked or nearly leaked
+2. **Data loss or corruption** — user data, log history, or config destroyed
+3. **Repeated failure** — same error occurs 3+ times across sessions
+4. **Silent failure** — something broke but no error was raised or detected
+5. **Rule violation with impact** — AI skipped a required step and it caused downstream problems
+6. **Regression** — a previously working feature broke due to a change
+
+> **For AI Agents:** Use the `🚨 INCIDENT` prefix so incidents are findable by text search. Not every bug is an incident — only failures where root-cause analysis prevents recurrence. When in doubt, use compact format with a note instead.
+
+**Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
 
 ### Best Practices for AI Efficiency
 

@@ -116,6 +116,7 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 - 1 paragraph (~320 chars) ≈ 80 tokens
 - 1 CHANGELOG entry ≈ 60-80 tokens
 - 1 DEVLOG compact entry ≈ 50-80 tokens
+- 1 DEVLOG incident entry ≈ 80-120 tokens
 - 1 DEVLOG standard entry ≈ 150-250 tokens
 
 **Budgets:**
@@ -129,7 +130,7 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 ## ✏️ ENTRY VERBOSITY
 
-**Two DEVLOG entry formats:**
+**Three DEVLOG entry formats:**
 
 **Compact format** (default for routine work, ~50-80 tokens):
 ```
@@ -138,7 +139,18 @@ Why/what in 1-2 sentences. Context or rationale.
 Files: `file1.py`, `file2.py`
 ```
 
-**Standard format** (for major decisions, incidents, milestones, ~150-250 tokens):
+**Incident format** (for failures worth learning from, ~80-120 tokens):
+```
+### YYYY-MM-DD: 🚨 INCIDENT - What failed
+**Root Cause:** Why it happened (1-2 sentences)
+**Prevention:** How to stop it recurring (1-2 actions)
+**Detection:** How to catch it earlier next time (1 action)
+Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
+```
+
+**Incident rubric — always qualifies:** security exposure, data loss/corruption, repeated failure (3+), silent failure, rule violation with impact, regression.
+
+**Standard format** (for major decisions, milestones, ~150-250 tokens):
 ```
 ### YYYY-MM-DD: Title
 **The Situation:** ...
@@ -147,7 +159,7 @@ Files: `file1.py`, `file2.py`
 **Files Changed:** ...
 ```
 
-**Decision guide:** If it needs an ADR → use standard. Otherwise → compact.
+**Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
 
 ---
 
