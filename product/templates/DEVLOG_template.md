@@ -96,10 +96,9 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Archive
 
-**Entries older than 14 days** are archived for token efficiency:
-- [DEVLOG-2025-10-W3.md](../archive/DEVLOG-2025-10-W3.md) - Week of Oct 20-26
-- [DEVLOG-2025-10-W2.md](../archive/DEVLOG-2025-10-W2.md) - Week of Oct 13-19
-- [DEVLOG-2025-10-W1.md](../archive/DEVLOG-2025-10-W1.md) - Week of Oct 6-12
+Older entries are archived when the file exceeds its token budget (~15,000 tokens).
+Each link includes a brief summary so agents know what's inside without opening the file:
+- *No archived entries yet*
 
 ---
 
@@ -115,7 +114,7 @@ Why/what in 1-2 sentences. Context or rationale.
 Files: `file1.py`, `file2.py`
 ```
 
-**Standard format** (for major decisions, incidents, milestones, ~150-250 tokens):
+**Standard format** (for major decisions, milestones, ~150-250 tokens):
 
 ```markdown
 ### YYYY-MM-DD: Title - The Core Theme
@@ -129,7 +128,28 @@ Files: `file1.py`, `file2.py`
 **Files Changed:** `file1.py`, `file2.py`
 ```
 
-**Decision guide:** If it needs an ADR → use standard. Otherwise → compact.
+**Incident format** (for failures worth learning from, ~80-120 tokens):
+
+```markdown
+### YYYY-MM-DD: 🚨 INCIDENT - Short description of what failed
+
+**Root Cause:** Why it happened (1-2 sentences)
+**Prevention:** How to stop it recurring (1-2 actions)
+**Detection:** How to catch it earlier next time (1 action)
+Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
+```
+
+**Incident rubric — always qualifies:**
+1. **Security exposure** — secrets, credentials, or PII leaked or nearly leaked
+2. **Data loss or corruption** — user data, log history, or config destroyed
+3. **Repeated failure** — same error occurs 3+ times across sessions
+4. **Silent failure** — something broke but no error was raised or detected
+5. **Rule violation with impact** — AI skipped a required step and it caused downstream problems
+6. **Regression** — a previously working feature broke due to a change
+
+> **For AI Agents:** Use the `🚨 INCIDENT` prefix so incidents are findable by text search. Not every bug is an incident — only failures where root-cause analysis prevents recurrence. When in doubt, use compact format with a note instead.
+
+**Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
 
 ### Best Practices for AI Efficiency
 
@@ -172,11 +192,11 @@ Files: `file1.py`, `file2.py`
 
 ### Narrative Tips for Token Efficiency
 
-- ✅ "The feedback instructions were buried at the end, so Claude treated them as optional."
-- ❌ "We had built the entire feedback infrastructure - the `rate_skill` tool, the Supabase database, the authentication system. Everything was in place. But when we tested it with a real skill, Claude never asked for feedback. We were confused and frustrated. We downloaded the skill ZIP file and examined the SKILL.md file carefully..."
+- ✅ "The validation rules were buried at the end of the config, so the AI treated them as optional."
+- ❌ "We had built the entire validation system — the linter, the config parser, the error handling. Everything was in place. But when we tested it with a real project, the AI skipped validation entirely. We were confused. We opened the config file and read through every section carefully..."
 
-- ✅ "Added explicit 'IMMEDIATELY' instruction, cutting response time from 5-7 seconds to <1 second."
-- ❌ "But then we noticed something frustrating. When the user typed '5' to rate the output, Claude took 5-7 seconds to respond. We could see it in the UI: 'Thinking about the significance of the number 5...' What?! Claude was overthinking a simple rating!"
+- ✅ "Moved the retry logic to a shared utility, cutting duplication from 12 call sites to 1."
+- ❌ "But then we noticed something frustrating. Every API call had its own retry logic. Some retried 3 times, some 5, some not at all. The timeout values were different everywhere. We spent an hour cataloging every single call site..."
 
 **The difference:** Same story, same insights, 60-70% fewer tokens.
 

@@ -104,7 +104,7 @@ The complete documentation system consists of five interconnected documents:
 
 **Example Entry:**
 ```markdown
-- Conservative metadata parsing - `enhance_skill` reads body OR metadata; preserves unknown fields. Files: `enhance_skill.py`, `test_frontmatter_compliance.py`. See: [ADR-002](../adr/002-conservative-metadata-management.md)
+- Unified error response format - All API endpoints now return structured JSON error envelopes. Files: `middleware/errors.py`, `tests/test_error_responses.py`. See: [ADR-002](../adr/002-unified-error-model.md)
 ```
 
 ### DEVLOG.md - "Why It Changed"
@@ -125,19 +125,19 @@ The complete documentation system consists of five interconnected documents:
 
 **Example Entry:**
 ```markdown
-### 2025-10-29: Customer Onboarding with Existing Skills
+### 2025-10-29: Migrating to Unified Error Responses
 
-**Situation:** First customer signed up with 15 existing skills created with other tools. Skills worked but didn't follow our conventions.
+**Situation:** API had grown to 40+ endpoints, each with its own error format. Clients were doing fragile string matching to parse errors.
 
-**Challenge:** Onboard without breaking existing skills, losing data, interfering with other tools, or requiring manual edits.
+**Challenge:** Standardize without breaking existing integrations or requiring a major version bump.
 
-**Decision:** Built conservative metadata fallback parsing. `enhance_skill` reads from body (preferred) OR metadata (fallback). Critically, we only manage our fields and never delete unknown metadata. Codified in ADR-002.
+**Decision:** Introduced a unified error envelope (`{ error: { code, message, details } }`) via middleware. Old endpoints return the new format alongside legacy fields during a transition period. Codified in ADR-002.
 
-**Why Conservative:** If we deleted unknown metadata, we'd break customers using other tools on the same skill files. Conservative approach enables ecosystem compatibility.
+**Why This Approach:** A hard cutover would break mobile clients on older versions. The middleware approach means endpoints don't need individual changes — just the middleware wraps responses.
 
-**Impact:** Smooth onboarding - bulk register with `register_all_skills`, optionally migrate with `enhance_skill`. No data loss, no manual editing.
+**Impact:** All new endpoints use the standard format automatically. Legacy endpoints have a 90-day transition window. Client SDK updated to parse both formats.
 
-**Files:** `enhance_skill.py`, `test_frontmatter_compliance.py`, `docs/pilot/onboarding-existing-skills.md`
+**Files:** `middleware/errors.py`, `tests/test_error_responses.py`, `docs/api/error-handling.md`
 ```
 
 ### STATE.md - "What's Happening Now"
@@ -719,23 +719,23 @@ When multiple agents or developers work on the same codebase:
 ```markdown
 ## Current Context
 
-**Version:** v0.6.4
+**Version:** v0.2.0
 **Branch:** main
-**Phase:** Pilot customer onboarding
+**Phase:** Beta launch
 
 **Stack:**
-- Python 3.11+ (MCP server, tools, scripts)
-- Supabase (PostgreSQL + RLS for multi-tenant analytics)
-- Claude Desktop (MCP client)
+- Node.js 20+ (API server)
+- PostgreSQL (primary database)
+- React (frontend)
 
 **Current Objectives:**
-- Onboard 10 pilot customers with existing skills
-- Collect feedback data for analytics
+- Complete API error handling standardization
+- Add integration test coverage for auth flow
 
 **Entry Points:**
-- MCP Server: `core/mcp-server/src/server.py`
-- Tools: `core/mcp-server/src/tools/`
-- Database: `core/database/schema.sql`
+- API: `src/server.ts`
+- Routes: `src/routes/`
+- Database: `src/db/schema.sql`
 ```
 
 **Update Frequency for Current Context:**
@@ -811,31 +811,31 @@ When multiple agents or developers work on the same codebase:
 ```markdown
 ## Current Context
 
-**Version:** v0.6.4
+**Version:** v0.3.0
 **Branch:** main
-**Phase:** Pilot customer onboarding & feedback loop optimization
+**Phase:** Beta launch & monitoring
 
 **Stack:**
-- Python 3.11+ (MCP server, tools, scripts)
-- Supabase (PostgreSQL + RLS for multi-tenant analytics)
-- Claude Desktop (MCP client)
-- pytest (testing framework)
+- Node.js 20+ (API server)
+- PostgreSQL (primary database)
+- React (frontend)
+- Jest (testing framework)
 
 **Key Architectural Decisions:**
-- [ADR-001](../adr/001-no-claude-file-system-access.md) - No Claude file system access
-- [ADR-002](../adr/002-conservative-metadata-management.md) - Conservative metadata management
-- [ADR-003](../adr/003-feedback-integration-into-workflow.md) - Feedback integration into workflow
+- [ADR-001](../adr/001-use-postgresql.md) - PostgreSQL over MongoDB
+- [ADR-002](../adr/002-unified-error-model.md) - Unified error response format
+- [ADR-003](../adr/003-jwt-auth-strategy.md) - JWT authentication strategy
 
 **Current Objectives:**
-- Onboard 10 pilot customers with existing skills
-- Collect feedback data for skill improvement analytics
-- Validate feedback loop with real usage
+- Complete API error handling standardization
+- Add integration test coverage for auth flow
+- Set up monitoring dashboards
 
 **Entry Points:**
-- MCP Server: `core/mcp-server/src/server.py`
-- Tools: `core/mcp-server/src/tools/`
-- Database: `core/database/schema.sql`
-- Scripts: `product/scripts/`
+- API: `src/server.ts`
+- Routes: `src/routes/`
+- Database: `src/db/schema.sql`
+- Scripts: `scripts/`
 ```
 
 **Update Frequency for Current Context:**
