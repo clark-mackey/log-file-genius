@@ -37,46 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.6.4] - 2025-10-29
-
-### Added
-- Conservative metadata parsing - `enhance_skill` reads body OR metadata; preserves unknown fields. Files: `enhance_skill.py`, `test_frontmatter_compliance.py`. PR: [#1240](link)
-- Onboarding guide for existing skills - Documentation for customer migration. Files: `docs/pilot/onboarding-existing-skills.md`. PR: [#1240](link)
-
-### Changed
-- Feedback sampling strategy - First use: 100%, subsequent: 20% to reduce user fatigue. Files: `create_skill.py`. PR: [#1241](link)
-
-### Fixed
-- YAML description truncation - Removed "..." suffix that broke parsing. Files: `create_skill.py`. PR: [#1242](link)
-
----
-
-## [0.6.3] - 2025-10-29
-
-### Fixed
-- YAML frontmatter compliance - Moved `alias`, `version`, `id` to metadata block per Claude spec. Files: `create_skill.py`, `enhance_skill.py`. PR: [#1235](link)
-
----
-
-## [0.6.2] - 2025-10-28
-
-### Added
-- Skill alias and version persistence - Per-org uniqueness, case-insensitive. Files: `database/schema.sql`, `tools/*.py`. PR: [#1230](link)
-- Usage analytics with version/platform tracking - New breakdowns in `get_usage_summary`. Files: `analytics.py`, `database/views.sql`. PR: [#1231](link)
-- Governance bundle in packaged skills - Provenance and changelog included. Files: `package_skill.py`. PR: [#1232](link)
-
-### Changed
-- Feature flag for DB-dependent features - `CSF_DB_V062_MIGRATED=1` gates new functionality. Files: `config.py`, all tools. PR: [#1233](link)
-
----
-
 ## Archive
 
-**Versions older than 30 days** are archived for token efficiency.
+Older versions are archived when the file exceeds its token budget (~10,000 tokens).
 Each link includes a brief summary so agents know what's inside without opening the file:
-- [CHANGELOG-2025-10.md](../archive/CHANGELOG-2025-10.md) - Auth overhaul, rate limiting, v0.5.x-v0.6.1
-- [CHANGELOG-2025-09.md](../archive/CHANGELOG-2025-09.md) - Initial API, database setup, v0.3.x-v0.4.x
-- [CHANGELOG-2025-08.md](../archive/CHANGELOG-2025-08.md) - Project bootstrap, CI pipeline, v0.1.x-v0.2.x
+- *No archived entries yet*
 
 ---
 

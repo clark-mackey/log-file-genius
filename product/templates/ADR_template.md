@@ -14,7 +14,7 @@ What is the issue or situation that motivates this decision? What constraints ex
 Keep this section concise but complete. An AI agent or future developer should be able to understand the problem space in 2-3 sentences.
 
 **Example:**
-> We need to support customers migrating existing skills from other tools. These skills may contain metadata fields that CSF doesn't recognize or use. If we delete unknown metadata, we risk breaking other tools that rely on those fields.
+> Our API currently returns errors as plain strings with HTTP status codes. As the API grows, clients need consistent error responses with machine-readable codes, human-readable messages, and optional field-level details for validation errors.
 
 ---
 
@@ -23,7 +23,7 @@ Keep this section concise but complete. An AI agent or future developer should b
 What is the change that we're proposing or have agreed to? State it clearly and directly.
 
 **Example:**
-> The `enhance_skill` tool will only manage CSF-owned fields: `alias`, `version`, and `id` in the metadata block. All other metadata fields will be preserved exactly as-is and never deleted or modified.
+> All API errors will use a unified JSON envelope: `{ "error": { "code": "VALIDATION_FAILED", "message": "...", "details": [...] } }`. HTTP status codes follow RFC 7231. Client SDKs will parse this format automatically.
 
 ---
 
@@ -46,17 +46,16 @@ What becomes easier or harder as a result of this decision? What are the tradeof
 **Example:**
 
 ### Positive
-- Ecosystem compatibility - other tools can use the same skill files without conflict
-- No hidden breakage for customers using multiple tools
-- Smooth onboarding for customers with existing skills from other sources
+- Consistent error handling across all endpoints
+- Client SDKs can parse errors programmatically without string matching
+- Validation errors include field-level details for better UX
 
 ### Negative
-- Slightly more complex parsing logic (must check multiple locations)
-- Metadata may accumulate stale or redundant fields over time
-- Cannot enforce a "clean" metadata structure
+- Requires updating all existing error responses (migration effort)
+- Slightly larger response payloads for simple errors
 
 ### Neutral
-- Customers may need guidance on which fields are CSF-managed vs. their own
+- Third-party integrations will need to update their error parsing logic
 
 ---
 
@@ -66,14 +65,14 @@ What other options did you evaluate? Why were they rejected?
 
 **Example:**
 
-### Alternative 1: Delete all non-CSF metadata
-**Rejected because:** This would break other tools that rely on custom metadata fields, creating hidden failures for customers.
+### Alternative 1: Return errors as plain text strings
+**Rejected because:** Clients can't reliably parse error types without fragile string matching. No support for field-level validation details.
 
-### Alternative 2: Require manual metadata cleanup
-**Rejected because:** Poor user experience; customers shouldn't need to manually edit files to use CSF.
+### Alternative 2: Use HTTP status codes only (no response body)
+**Rejected because:** Status codes alone don't provide enough context. A 400 could mean missing field, invalid format, or business rule violation.
 
-### Alternative 3: Maintain a whitelist of known third-party fields
-**Rejected because:** Impossible to maintain; we can't predict all tools that might use skill files.
+### Alternative 3: Use a third-party error standard (Problem Details RFC 7807)
+**Rejected because:** Added complexity without clear benefit for our use case. Our simpler format covers all current needs.
 
 ---
 
@@ -82,9 +81,9 @@ What other options did you evaluate? Why were they rejected?
 Any additional context, links to discussions, or implementation details that don't fit above.
 
 **Example:**
-- See discussion in Issue #156 about customer onboarding challenges
-- Implementation details in PR #1240
-- Related to the broader "ecosystem compatibility" philosophy discussed in the Oct 28 team meeting
+- See discussion in Issue #42 about inconsistent error handling across endpoints
+- Implementation details in PR #58
+- Related to the API versioning decision in ADR-002
 
 ---
 

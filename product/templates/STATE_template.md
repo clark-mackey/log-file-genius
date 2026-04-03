@@ -1,7 +1,7 @@
 # Current State
 
-**Last Updated:** 2025-10-30 14:23 UTC  
-**Updated By:** Agent-1 (main branch)
+**Last Updated:** [Current Date and Time]
+**Updated By:** [Agent Name] ([branch])
 
 ---
 
@@ -17,52 +17,41 @@
 
 ## Active Work
 
-- **Agent-1** (main): Implementing user authentication flow
-- **Agent-2** (feature/api-v2): Refactoring REST endpoints for v2 API
-- **Developer-1** (feature/dashboard): Building analytics dashboard UI
+- *No active work sessions*
 
 ---
 
 ## Blockers
 
-- Database migration script needs review before deployment (blocks Agent-1)
-- API v2 specification awaiting stakeholder approval (blocks Agent-2)
-- Chart.js integration issues with reactive state (blocks Developer-1)
+- *None*
 
 ---
 
 ## Recently Completed (Last 2-4 Hours)
 
-- ✅ User model updated with email verification fields (Agent-1, 12:45)
-- ✅ Test suite passing on main branch (Agent-2, 13:30)
-- ✅ Fixed CORS configuration for staging environment (Developer-1, 14:00)
+- *No recent completions*
 
 ---
 
 ## Next Priorities
 
-1. Merge feature/auth-flow after OAuth2 tests pass
-2. Review and approve database migration script
-3. Complete API v2 endpoint refactoring
-4. Resolve Chart.js integration issues or switch to alternative library
+1. [First priority task]
+2. [Second priority task]
 
 ---
 
 ## Branch Status
 
-- **main**: Clean, all tests passing, ready for merges
-- **feature/auth-flow**: 3 commits ahead, tests passing, ready for review
-- **feature/api-v2**: 7 commits ahead, 2 failing tests, needs work
-- **feature/dashboard**: 5 commits ahead, blocked on Chart.js issue
+- **main**: [Status]
 
 ---
 
 ## Token Budget Dashboard (Optional)
 
-- **STATE.md**: ~450 tokens (target: <500)
-- **CHANGELOG**: ~8,200 tokens (target: <10,000)
-- **DEVLOG**: ~12,500 tokens (target: <15,000)
-- **Combined logs**: ~21,150 tokens (target: <25,000)
+- **STATE.md**: ~[X] tokens (target: <500)
+- **CHANGELOG**: ~[X] tokens (target: <10,000)
+- **DEVLOG**: ~[X] tokens (target: <15,000)
+- **Combined logs**: ~[X] tokens (target: <25,000)
 
 ---
 
@@ -89,7 +78,7 @@
 
 1. **Read STATE.md FIRST** - Before starting any work
 2. **Update immediately** - Don't batch updates, keep it fresh
-3. **Be specific** - "Implementing auth" is vague, "Adding OAuth2 PKCE flow" is clear
+3. **Be specific** - "Working on login" is vague, "Adding email verification to signup flow" is clear
 4. **Include timestamps** - Helps agents understand recency
 5. **Archive to CHANGELOG** - Move "Recently Completed" items older than 24 hours to CHANGELOG
 6. **Keep it under 500 tokens** - This is a snapshot, not a history
@@ -125,51 +114,40 @@
 
 ### Multi-Agent Workflow Example
 
-**Agent-1 starts work:**
-1. Reads STATE.md → sees Agent-2 is working on API endpoints
-2. Adds to "Active Work": "Agent-1 (feature/auth): Adding OAuth2 support"
-3. Checks "Blockers" → none affect auth work
+**Agent starts work:**
+1. Reads STATE.md → sees what other agents are working on
+2. Adds to "Active Work": "[Agent Name] ([branch]): [Specific task description]"
+3. Checks "Blockers" → confirms no conflicts
 4. Proceeds with work
 
-**Agent-1 during work:**
-1. Every 30-60 minutes: Updates progress in "Active Work" section
-2. Hits blocker: Adds to "Blockers" section immediately
-3. Resolves blocker: Removes from "Blockers" section
-
-**Agent-1 completes work:**
+**Agent completes work:**
 1. Moves task from "Active Work" to "Recently Completed" with timestamp
-2. Updates "Branch Status" for feature/auth branch
+2. Updates "Branch Status"
 3. Updates "Next Priorities" if needed
 4. Commits changes to STATE.md
-
-**Next day:**
-1. Agent-2 archives "Recently Completed" items older than 24 hours to CHANGELOG
-2. STATE.md stays fresh and lightweight
 
 ### Example Entry Formats
 
 **Active Work:**
 ```markdown
-- **Agent-1** (feature/auth): Adding OAuth2 PKCE flow with token rotation
-- **Developer-1** (main): Fixing critical bug in payment processing
+- **Agent-1** (feature/login): Adding email verification flow
+- **Agent-2** (main): Updating configuration schema
 ```
 
 **Blockers:**
 ```markdown
-- Database migration script needs DBA review before deployment (blocks Agent-1)
-- Waiting for design mockups for dashboard UI (blocks Developer-2)
+- Config schema migration needs review before merging (blocks Agent-2)
 ```
 
 **Recently Completed:**
 ```markdown
-- ✅ OAuth2 PKCE flow implemented and tested (Agent-1, 14:30)
-- ✅ Payment bug fixed, deployed to staging (Developer-1, 15:00)
+- ✅ Email verification flow implemented and tested (Agent-1, 14:30)
+- ✅ Config schema updated, tests passing (Agent-2, 15:00)
 ```
 
 **Branch Status:**
 ```markdown
 - **main**: Clean, all tests passing (last updated: 15:30)
-- **feature/auth**: 5 commits ahead, tests passing, ready for review
-- **hotfix/payment-bug**: Merged to main at 15:00
+- **feature/login**: 3 commits ahead, tests passing, ready for review
 ```
 

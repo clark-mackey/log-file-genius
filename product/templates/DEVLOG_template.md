@@ -96,10 +96,9 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Archive
 
-**Entries older than 14 days** are archived for token efficiency:
-- [DEVLOG-2025-10-W3.md](../archive/DEVLOG-2025-10-W3.md) - Week of Oct 20-26
-- [DEVLOG-2025-10-W2.md](../archive/DEVLOG-2025-10-W2.md) - Week of Oct 13-19
-- [DEVLOG-2025-10-W1.md](../archive/DEVLOG-2025-10-W1.md) - Week of Oct 6-12
+Older entries are archived when the file exceeds its token budget (~15,000 tokens).
+Each link includes a brief summary so agents know what's inside without opening the file:
+- *No archived entries yet*
 
 ---
 
@@ -193,11 +192,11 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 
 ### Narrative Tips for Token Efficiency
 
-- ✅ "The feedback instructions were buried at the end, so Claude treated them as optional."
-- ❌ "We had built the entire feedback infrastructure - the `rate_skill` tool, the Supabase database, the authentication system. Everything was in place. But when we tested it with a real skill, Claude never asked for feedback. We were confused and frustrated. We downloaded the skill ZIP file and examined the SKILL.md file carefully..."
+- ✅ "The validation rules were buried at the end of the config, so the AI treated them as optional."
+- ❌ "We had built the entire validation system — the linter, the config parser, the error handling. Everything was in place. But when we tested it with a real project, the AI skipped validation entirely. We were confused. We opened the config file and read through every section carefully..."
 
-- ✅ "Added explicit 'IMMEDIATELY' instruction, cutting response time from 5-7 seconds to <1 second."
-- ❌ "But then we noticed something frustrating. When the user typed '5' to rate the output, Claude took 5-7 seconds to respond. We could see it in the UI: 'Thinking about the significance of the number 5...' What?! Claude was overthinking a simple rating!"
+- ✅ "Moved the retry logic to a shared utility, cutting duplication from 12 call sites to 1."
+- ❌ "But then we noticed something frustrating. Every API call had its own retry logic. Some retried 3 times, some 5, some not at all. The timeout values were different everywhere. We spent an hour cataloging every single call site..."
 
 **The difference:** Same story, same insights, 60-70% fewer tokens.
 
