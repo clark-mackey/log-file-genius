@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dogfood update: synced local LFG install to latest product version. AI rules updated from 115â†’213 lines (adds session handoff, token self-assessment, entry verbosity, incident format, cross-references, archival summaries). Fixed stale related_docs paths in config. Files: `.augment/rules/log-file-maintenance.md`, `.logfile-config.yml`. Commit: `ec50460`
 
+- Added llms.txt to guide AI agents on correct installation. Prevents agents from pulling files from development branch or manually copying files. Files: `llms.txt`. Commit: `c804312`
 ### Fixed
 
 - Scrubbed Skill Flywheel data from product templates and docs. Replaced real project examples (enhance_skill, CSF, Supabase, rate_skill) with generic placeholders in all 4 templates and how-to guide. Files: `product/templates/CHANGELOG_template.md`, `product/templates/DEVLOG_template.md`, `product/templates/ADR_template.md`, `product/templates/STATE_template.md`, `product/docs/log_file_how_to.md`. Commit: `2880379`

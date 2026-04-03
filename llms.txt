@@ -1,0 +1,53 @@
+# Log File Genius
+
+> Five markdown files + AI rules that make AI coding agents perform better by giving them instant, complete project context in under 5% of their context window. Works with any AI assistant.
+
+## Installation
+
+**Always use the `main` branch.** The `development` branch contains internal project files and should never be used for installation.
+
+Install as a git submodule in an existing project:
+
+```bash
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius && ./.log-file-genius/product/scripts/install.sh
+```
+
+```powershell
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius; .\.log-file-genius\product\scripts\install.ps1
+```
+
+The installer creates a `logs/` folder and AI rules in your project. Do not manually copy files from this repository.
+
+## What It Does
+
+Log File Genius installs 5 markdown files that act as a shared brain for AI agents:
+
+- **PRD** — What we're building and why (~5k tokens)
+- **CHANGELOG** — What changed, files and versions (<10k tokens)
+- **DEVLOG** — Why it changed, narrative and reasoning (<15k tokens)
+- **STATE** — What agent is on what task, right now (<500 tokens)
+- **ADRs** — How significant decisions were made (on-demand)
+
+AI rules are installed that make the agent maintain these files automatically as part of its workflow. The user does not write documentation — the agent does.
+
+## Key Concepts
+
+- **Session continuity:** Handoff protocol ensures zero context lost between sessions
+- **Multi-agent safe:** STATE.md prevents agent collisions. Subagents spin up with full context
+- **Self-regulating:** Agents manage their own token budgets and archive proactively
+- **Incident learning:** `🚨 INCIDENT` format in DEVLOG documents failures and prevention
+- **Zero-search navigation:** Bidirectional frontmatter linking between all documents
+- **Safety:** Secret detection, log validation, and pre-commit hooks
+
+## Docs
+
+- [Installation Guide](https://github.com/clark-mackey/log-file-genius/blob/main/INSTALL.md): Detailed installation, troubleshooting, and post-install verification
+- [The Methodology](https://github.com/clark-mackey/log-file-genius/blob/main/product/docs/log_file_how_to.md): Complete guide to the 5-document system, writing style, token budgets, and archival
+- [Migration Guide](https://github.com/clark-mackey/log-file-genius/blob/main/product/docs/MIGRATION_GUIDE.md): Strategies for adding Log File Genius to projects with existing documentation
+
+## Important
+
+- **Do not clone or fork this repo to install it.** Use the submodule command above.
+- **Do not copy individual files from this repo.** The installer handles file placement and AI rule configuration.
+- **Do not use the `development` branch.** It contains internal project management files (logs, specs, planning) that are not part of the product.
+- **The `product/` directory is the distributable.** Templates, scripts, AI rules, and docs live there.
