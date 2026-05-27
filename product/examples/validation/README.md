@@ -41,7 +41,7 @@ This directory contains example CHANGELOG and DEVLOG files for testing the valid
 **PowerShell:**
 ```powershell
 # Copy valid file to test location
-Copy-Item examples/validation/valid-changelog.md docs/planning/CHANGELOG.md
+Copy-Item examples/validation/valid-changelog.md logs/CHANGELOG.md
 
 # Run validation (should pass)
 .\scripts\validate-log-files.ps1 -Changelog -Verbose
@@ -57,7 +57,7 @@ Copy-Item examples/validation/valid-changelog.md docs/planning/CHANGELOG.md
 **PowerShell:**
 ```powershell
 # Copy invalid file to test location
-Copy-Item examples/validation/invalid-changelog.md docs/planning/CHANGELOG.md
+Copy-Item examples/validation/invalid-changelog.md logs/CHANGELOG.md
 
 # Run validation (should fail)
 .\scripts\validate-log-files.ps1 -Changelog -Verbose
@@ -116,8 +116,8 @@ After testing, restore your original files:
 
 ```powershell
 # Restore from git
-git checkout docs/planning/CHANGELOG.md
-git checkout docs/planning/DEVLOG.md
+git checkout logs/CHANGELOG.md
+git checkout logs/DEVLOG.md
 ```
 
 ---

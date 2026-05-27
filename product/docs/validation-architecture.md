@@ -41,7 +41,7 @@ docs/
 ### CHANGELOG Validation
 
 **Required Structure:**
-- File must exist at `docs/planning/CHANGELOG.md`
+- File must exist at `logs/CHANGELOG.md` (configurable via `.logfile-config.yml` → `paths`)
 - Must have "## [Unreleased]" section
 - Must have at least one category: Added, Changed, Fixed, Deprecated, Removed, Security
 
@@ -63,19 +63,24 @@ docs/
 ### DEVLOG Validation
 
 **Required Structure:**
-- File must exist at `docs/planning/DEVLOG.md`
-- Must have "## Current Context (Source of Truth)" section
-- Must have "## Daily Log - Newest First" section
-
-**Current Context Requirements:**
-- Must have "Version" field
-- Must have "Active Branch" field
-- Must have "Phase" field
+- File must exist at `logs/DEVLOG.md` (configurable via `.logfile-config.yml` → `paths`)
+- Must have a `## Daily Log` section (narrative entries only — no Current Context section)
 
 **Entry Format:**
 - Must have date in format: `### YYYY-MM-DD: Title`
 - Must have at least one of: "Situation", "Challenge", "Decision", "Why", "Result"
 - Files section is optional but recommended
+
+### STATE Validation
+
+**Required Structure:**
+- File must exist at `logs/STATE.md` (configurable via `.logfile-config.yml` → `paths`)
+- STATE is first-class: it owns Current Context (Version, Active Branch, Phase) + Last Session handoff
+- Missing STATE is a **warning** (not an error), prompting creation
+
+**Token Budget:**
+- Warn at 400 tokens (80% of 500 target)
+- Error at 500 tokens
 
 **Exit Codes:**
 - 0: All checks passed
@@ -191,12 +196,12 @@ exit 0
 
 ```
 ❌ CHANGELOG Error: Missing "Unreleased" section
-   Location: docs/planning/CHANGELOG.md
+   Location: logs/CHANGELOG.md
    Expected: ## [Unreleased]
    Fix: Add "## [Unreleased]" section at line 10
 
 ❌ DEVLOG Error: Invalid date format
-   Location: docs/planning/DEVLOG.md:45
+   Location: logs/DEVLOG.md:45
    Found: ### 10-31-2025: My Entry
    Expected: ### 2025-10-31: My Entry
    Fix: Use YYYY-MM-DD format for dates

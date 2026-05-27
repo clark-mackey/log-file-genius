@@ -56,7 +56,7 @@ A realistic example showing 3 weeks of development on a REST API project for tas
 
 - ✅ Narrative structure: Situation → Challenge → Decision → Impact
 - ✅ Entries are 150-250 words (concise but meaningful)
-- ✅ Current Context section updated weekly
+- ✅ Narrative-only — no Current Context section (that lives in STATE.md)
 - ✅ Links to ADRs for detailed decisions
 - ✅ Archive entries older than 14 days
 
@@ -98,9 +98,9 @@ A realistic example showing 3 weeks of development on a REST API project for tas
 
 ### Single Developer Projects
 
-- **STATE.md** - Optional, use DEVLOG Current Context instead
+- **STATE.md** - First-class: owns Current Context (version, branch, phase) + Last Session handoff
 - **CHANGELOG** - Essential for version tracking
-- **DEVLOG** - Essential for narrative and decision context
+- **DEVLOG** - Essential for narrative and decision context (narrative-only, no Current Context section)
 - **ADRs** - Use for significant architectural decisions only
 
 ### Multi-Agent Environments
@@ -112,9 +112,9 @@ A realistic example showing 3 weeks of development on a REST API project for tas
 
 ### Large Teams
 
-- **STATE.md** - Update every 30-60 minutes during active work
+- **STATE.md** - Update every 30-60 minutes during active work; owns Current Context + Last Session
 - **CHANGELOG** - Automated via CI/CD if possible
-- **DEVLOG** - Weekly updates to Current Context, daily entries for significant events
+- **DEVLOG** - Daily entries for significant events (narrative-only)
 - **ADRs** - Formal review process before acceptance
 
 ---
