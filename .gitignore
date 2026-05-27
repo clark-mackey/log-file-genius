@@ -64,3 +64,6 @@ wheels/
 # OS
 Thumbs.db
 
+
+# Git worktrees (superpowers)
+.worktrees/
