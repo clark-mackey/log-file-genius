@@ -36,7 +36,8 @@ param(
     [switch]$Changelog,
     [switch]$Devlog,
     [switch]$Tokens,
-    [switch]$Verbose
+    [switch]$Verbose,
+    [switch]$PrintConfig
 )
 
 # Configuration - Standard paths (all logs in /logs/ folder)
@@ -126,6 +127,22 @@ function Get-PercentageOfTarget {
     return [math]::Round(($Current / $Target) * 100)
 }
 
+function Read-NestedConfig {
+    param([string]$Content, [string]$Parent, [string]$Key)
+    $lines = $Content -split "`r?`n"
+    $inBlock = $false
+    foreach ($line in $lines) {
+        if ($line -match '^[A-Za-z_]+:') {
+            $inBlock = ($line -match ('^' + [regex]::Escape($Parent) + ':\s*$'))
+            continue
+        }
+        if ($inBlock -and $line -match ('^\s+' + [regex]::Escape($Key) + ':\s*(\S+)')) {
+            return $Matches[1]
+        }
+    }
+    return $null
+}
+
 function Load-ProfileConfig {
     # Check for config file in standard locations
     $configPaths = @(
@@ -153,48 +170,36 @@ function Load-ProfileConfig {
         Write-Host "Loading profile config from: $configFile" -ForegroundColor $COLOR_INFO
     }
 
-    # Simple YAML parsing for our limited use case
-    # We only need to read profile name and overrides.token_targets
-    $content = Get-Content $configFile -Raw
+    $cfg = Get-Content $configFile -Raw
 
-    # Extract profile name
-    if ($content -match 'profile:\s*(\S+)') {
-        $profileName = $matches[1]
-        if ($Verbose) {
-            Write-Host "Profile: $profileName" -ForegroundColor $COLOR_INFO
-        }
-    }
+    # Read nested paths block
+    $v = Read-NestedConfig $cfg "paths" "changelog"
+    if ($v) { $script:CHANGELOG_PATH = $v }
+    $v = Read-NestedConfig $cfg "paths" "devlog"
+    if ($v) { $script:DEVLOG_PATH = $v }
 
-    # Extract token target overrides if present
-    if ($content -match 'changelog_warning:\s*(\d+)') {
-        $script:CHANGELOG_TOKEN_WARNING = [int]$matches[1]
+    # Read nested token_targets block; derive warnings at 80%
+    $v = Read-NestedConfig $cfg "token_targets" "changelog"
+    if ($v) {
+        $script:CHANGELOG_TOKEN_ERROR = [int]$v
+        $script:CHANGELOG_TOKEN_WARNING = [int]([int]$v * 0.8)
     }
-    if ($content -match 'changelog_error:\s*(\d+)') {
-        $script:CHANGELOG_TOKEN_ERROR = [int]$matches[1]
-    }
-    if ($content -match 'devlog_warning:\s*(\d+)') {
-        $script:DEVLOG_TOKEN_WARNING = [int]$matches[1]
-    }
-    if ($content -match 'devlog_error:\s*(\d+)') {
-        $script:DEVLOG_TOKEN_ERROR = [int]$matches[1]
-    }
-    if ($content -match 'combined_warning:\s*(\d+)') {
-        $script:COMBINED_TOKEN_WARNING = [int]$matches[1]
-    }
-    if ($content -match 'combined_error:\s*(\d+)') {
-        $script:COMBINED_TOKEN_ERROR = [int]$matches[1]
+    $v = Read-NestedConfig $cfg "token_targets" "devlog"
+    if ($v) {
+        $script:DEVLOG_TOKEN_ERROR = [int]$v
+        $script:DEVLOG_TOKEN_WARNING = [int]([int]$v * 0.8)
     }
 
     # Extract validation strictness
-    if ($content -match 'strictness:\s*(\S+)') {
+    if ($cfg -match 'strictness:\s*(\S+)') {
         $script:VALIDATION_STRICTNESS = $matches[1]
     }
-    if ($content -match 'fail_on_warnings:\s*(true|false)') {
+    if ($cfg -match 'fail_on_warnings:\s*(true|false)') {
         $script:FAIL_ON_WARNINGS = $matches[1] -eq 'true'
     }
 
     # Extract version and check for updates
-    if ($content -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
+    if ($cfg -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
         $configVersion = $matches[1]
         $latestVersion = "0.2.0"  # Current version
 
@@ -434,6 +439,16 @@ Write-Host "" -ForegroundColor $COLOR_INFO
 
 # Load profile configuration
 Load-ProfileConfig
+
+if ($PrintConfig) {
+    Write-Output "CHANGELOG_PATH=$CHANGELOG_PATH"
+    Write-Output "DEVLOG_PATH=$DEVLOG_PATH"
+    Write-Output "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
+    Write-Output "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
+    Write-Output "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
+    Write-Output "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    exit 0
+}
 
 $exitCode = $EXIT_SUCCESS
 
