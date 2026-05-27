@@ -50,6 +50,7 @@ RUN_CHANGELOG=false
 RUN_DEVLOG=false
 RUN_TOKENS=false
 VERBOSE=false
+PRINT_CONFIG=false
 
 for arg in "$@"; do
     case $arg in
@@ -57,9 +58,10 @@ for arg in "$@"; do
         --devlog) RUN_DEVLOG=true ;;
         --tokens) RUN_TOKENS=true ;;
         --verbose) VERBOSE=true ;;
+        --print-config) PRINT_CONFIG=true ;;
         *)
             echo "Unknown option: $arg"
-            echo "Usage: $0 [--changelog] [--devlog] [--tokens] [--verbose]"
+            echo "Usage: $0 [--changelog] [--devlog] [--tokens] [--verbose] [--print-config]"
             exit 1
             ;;
     esac
@@ -138,33 +140,29 @@ load_profile_config() {
         echo -e "\033[36mLoading profile config from: $config_file\033[0m"
     fi
 
-    # Simple YAML parsing for our limited use case
-    # Extract profile name
-    if grep -q "^profile:" "$config_file"; then
-        local profile_name=$(grep "^profile:" "$config_file" | awk '{print $2}')
-        if [ "$VERBOSE" = true ]; then
-            echo -e "\033[36mProfile: $profile_name\033[0m"
-        fi
-    fi
+    # Block-aware YAML extraction: reads nested keys without ambiguity.
+    # Sets inblk=1 only while inside the named top-level block; resets on
+    # any new top-level key so sibling blocks are never misread.
+    read_nested() {
+        awk -v parent="$1" -v key="$2" '
+            /^[A-Za-z_]+:/ { inblk = ($0 ~ "^" parent ":") }
+            inblk && $1 == key":" { print $2; exit }
+        ' "$config_file"
+    }
 
-    # Extract token target overrides if present
-    if grep -q "changelog_warning:" "$config_file"; then
-        CHANGELOG_TOKEN_WARNING=$(grep "changelog_warning:" "$config_file" | awk '{print $2}')
+    local v
+    v=$(read_nested "paths" "changelog"); [ -n "$v" ] && CHANGELOG_PATH="$v"
+    v=$(read_nested "paths" "devlog");    [ -n "$v" ] && DEVLOG_PATH="$v"
+
+    v=$(read_nested "token_targets" "changelog")
+    if [ -n "$v" ]; then
+        CHANGELOG_TOKEN_ERROR="$v"
+        CHANGELOG_TOKEN_WARNING=$((v * 80 / 100))
     fi
-    if grep -q "changelog_error:" "$config_file"; then
-        CHANGELOG_TOKEN_ERROR=$(grep "changelog_error:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "devlog_warning:" "$config_file"; then
-        DEVLOG_TOKEN_WARNING=$(grep "devlog_warning:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "devlog_error:" "$config_file"; then
-        DEVLOG_TOKEN_ERROR=$(grep "devlog_error:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "combined_warning:" "$config_file"; then
-        COMBINED_TOKEN_WARNING=$(grep "combined_warning:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "combined_error:" "$config_file"; then
-        COMBINED_TOKEN_ERROR=$(grep "combined_error:" "$config_file" | awk '{print $2}')
+    v=$(read_nested "token_targets" "devlog")
+    if [ -n "$v" ]; then
+        DEVLOG_TOKEN_ERROR="$v"
+        DEVLOG_TOKEN_WARNING=$((v * 80 / 100))
     fi
 
     # Extract validation strictness
@@ -385,6 +383,17 @@ echo ""
 
 # Load profile configuration
 load_profile_config
+
+# Debug: print resolved config and exit (no validation runs)
+if [ "${PRINT_CONFIG:-false}" = true ]; then
+    echo "CHANGELOG_PATH=$CHANGELOG_PATH"
+    echo "DEVLOG_PATH=$DEVLOG_PATH"
+    echo "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
+    echo "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
+    echo "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
+    echo "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    exit 0
+fi
 
 # Run validations
 if [ "$RUN_CHANGELOG" = true ]; then
