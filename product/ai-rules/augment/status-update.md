@@ -15,18 +15,19 @@ When the user says **"@status update"** or **"status update"**, execute this com
 Provide a concise 3-5 bullet point summary of the project's current state and next steps.
 
 ### Step 1: Read These Files (in parallel)
-- `logs/DEVLOG.md` → "Current Context (Source of Truth)" section
-- `logs/DEVLOG.md` → "Current Objectives" section
-- `logs/CHANGELOG.md` → "Unreleased" section
-- `logs/adr/README.md` → Recent ADRs (if any)
+
+Read paths from `.logfile-config.yml` → `paths` (fallback `logs/`):
+- **STATE** → "Current Context" + "Last Session" sections (current state)
+- **CHANGELOG** → "Unreleased" section
+- **ADR README** → Recent ADRs (if any)
 
 ### Step 2: Extract Key Information
-- **Current version** (from DEVLOG Current Context)
-- **Active branch** (from DEVLOG Current Context)
-- **Active phase** (from DEVLOG Current Context)
+- **Current version** (from STATE Current Context)
+- **Active branch** (from STATE Current Context)
+- **Active phase** (from STATE Current Context)
 - **Recent changes** (from CHANGELOG Unreleased - last 3-5 entries)
-- **Current objectives** (from DEVLOG Current Objectives - unchecked items)
-- **Known risks/blockers** (from DEVLOG Current Context)
+- **Current objectives** (from STATE Current Context - unchecked items)
+- **Known risks/blockers** (from STATE Current Context)
 
 ### Step 3: Format the Output
 

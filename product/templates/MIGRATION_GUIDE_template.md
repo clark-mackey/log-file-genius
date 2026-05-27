@@ -110,10 +110,10 @@ git checkout origin/main -- product/scripts/validate-log-files.sh
 
 **Action:**
 ```bash
-# Pull latest rules
-git checkout origin/main -- .augment/rules/log-file-maintenance.md
-# Or copy from starter packs
-cp product/starter-packs/augment/.augment/rules/log-file-maintenance.md .augment/rules/
+# Recommended: run the updater (sources rules from product/ai-rules/)
+./.log-file-genius/product/scripts/update.sh
+# Or copy a single rule directly from the canonical source
+cp .log-file-genius/product/ai-rules/augment/log-file-maintenance.md .augment/rules/
 ```
 
 ---

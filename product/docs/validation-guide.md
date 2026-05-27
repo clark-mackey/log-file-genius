@@ -74,7 +74,7 @@ git commit --no-verify
 ### 1. CHANGELOG Validation
 
 **What it checks:**
-- ✅ File exists at `docs/planning/CHANGELOG.md`
+- ✅ File exists at `logs/CHANGELOG.md` (configurable via `.logfile-config.yml` → `paths`)
 - ✅ Has `## [Unreleased]` section
 - ✅ Has at least one category (Added, Changed, Fixed, Deprecated, Removed, Security)
 - ✅ Release dates are in YYYY-MM-DD format
@@ -130,40 +130,24 @@ git commit --no-verify
 ### 2. DEVLOG Validation
 
 **What it checks:**
-- ✅ File exists at `docs/planning/DEVLOG.md`
-- ✅ Has `## Current Context` section
-- ✅ Has `## Daily Log` section
-- ✅ Current Context has required fields (Version, Active Branch, Phase)
+- ✅ File exists at `logs/DEVLOG.md` (configurable via `.logfile-config.yml` → `paths`)
+- ✅ Has `## Daily Log` section (narrative-only; Current Context belongs in STATE.md, not DEVLOG)
+- ✅ Token budget within target (<15,000 tokens)
 - ✅ Entry dates are in `### YYYY-MM-DD: Title` format
 
 **Common errors and fixes:**
 
-#### Error: Missing Current Context section
+#### Warning: Missing Daily Log section
 ```
-❌ DEVLOG Error: Missing "Current Context" section
+⚠️  DEVLOG Warning: Missing 'Daily Log' section
 ```
 
 **Fix:** Add this section to your DEVLOG:
 ```markdown
-## Current Context (Source of Truth)
+## Daily Log
 
-- **Current Version:** v0.1.0-dev
-- **Active Branch:** `main`
-- **Phase:** Development
-```
-
-#### Error: Missing required fields
-```
-❌ DEVLOG Error: Missing required field in Current Context: Version
-```
-
-**Fix:** Ensure all required fields are present:
-```markdown
-## Current Context (Source of Truth)
-
-- **Current Version:** v0.1.0-dev
-- **Active Branch:** `main`
-- **Phase:** Development
+### 2025-10-31: Your Entry Title
+...
 ```
 
 #### Error: Invalid entry date format
@@ -282,24 +266,24 @@ When token counts approach limits, archive old entries:
 
 ```bash
 # Create archive directory if needed
-mkdir -p docs/planning/archive
+mkdir -p logs/archive
 
 # Create archive file with year-month
-touch docs/planning/archive/CHANGELOG-2025-10.md
+touch logs/archive/CHANGELOG-2025-10.md
 ```
 
 ### Step 2: Move OLDEST Entries
 
 Move the OLDEST entries (by position, not date) from main file to archive until under token budget:
 
-**From `docs/planning/CHANGELOG.md`:**
+**From `logs/CHANGELOG.md`:**
 ```markdown
 ## [1.0.0] - 2025-09-15
 ### Added
 - Old feature
 ```
 
-**To `docs/planning/archive/CHANGELOG-2025-09.md`:**
+**To `logs/archive/CHANGELOG-2025-09.md`:**
 ```markdown
 # CHANGELOG Archive - September 2025
 
