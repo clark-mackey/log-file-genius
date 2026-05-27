@@ -54,8 +54,20 @@ def parse_config(config_path: str) -> Dict[str, Any]:
     result: Dict[str, Any] = {}
     current_parent = None
 
-    with open(config_path, "r", encoding="utf-8") as f:
-        for lineno, raw in enumerate(f, 1):
+    # utf-8-sig transparently strips a BOM (common from Windows/Notepad edits) so
+    # the first key isn't silently mangled. OS/decode errors become ConfigError so
+    # callers get the clean failure path, never a raw traceback.
+    try:
+        f = open(config_path, "r", encoding="utf-8-sig")
+    except OSError as e:
+        raise ConfigError(f"Could not open config: {e}")
+
+    with f:
+        try:
+            lines = list(enumerate(f, 1))
+        except (OSError, UnicodeDecodeError) as e:
+            raise ConfigError(f"Could not read config: {e}")
+        for lineno, raw in lines:
             if "\t" in raw:
                 raise ConfigError(f"Tab indentation not allowed (line {lineno})")
             line = _strip_comment(raw)

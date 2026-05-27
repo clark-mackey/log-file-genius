@@ -62,6 +62,22 @@ def test_template_config_parses():
     assert cfg["log_file_genius_version"] == "0.2.0"
 
 
+def test_bom_prefixed_config_parses_first_key(tmp_path):
+    # Windows/Notepad often writes a UTF-8 BOM; the first key must not be mangled.
+    p = tmp_path / ".logfile-config.yml"
+    p.write_text("profile: team\n", encoding="utf-8-sig")
+    cfg = parse_config(str(p))
+    assert cfg["profile"] == "team"
+
+
+def test_undecodable_config_raises_configerror(tmp_path):
+    # Non-UTF-8 bytes must surface as ConfigError, not a raw UnicodeDecodeError.
+    p = tmp_path / ".logfile-config.yml"
+    p.write_bytes(b"profile: \xff\xfe team\n")
+    with pytest.raises(ConfigError):
+        parse_config(str(p))
+
+
 def test_out_of_subset_content_fails_loudly(tmp_path):
     # Documents the boundary: full-YAML constructs (list items) raise, never
     # silently mis-parse.
