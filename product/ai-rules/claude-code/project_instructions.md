@@ -7,10 +7,10 @@ This project uses the **Log File Genius** system - a token-efficient documentati
 1. **Read Configuration First:**
    - **ALWAYS** read `.logfile-config.yml` to find log file locations
    - Default paths (if config not found):
-     - CHANGELOG: `docs/planning/CHANGELOG.md`
-     - DEVLOG: `docs/planning/DEVLOG.md`
-     - ADR: `docs/adr/`
-     - STATE: `docs/STATE.md`
+     - CHANGELOG: `logs/CHANGELOG.md`
+     - DEVLOG: `logs/DEVLOG.md`
+     - ADR: `logs/adr/`
+     - STATE: `logs/STATE.md`
 
 2. **Maintain the Five-Document System:**
    - **PRD** - What we're building and why
@@ -42,11 +42,11 @@ When the user invokes these commands, follow the corresponding rule file:
 
 - **Configuration:** `.logfile-config.yml` (log file paths)
 - **Full methodology:** `.log-file-genius/product/docs/log_file_how_to.md`
-- **Templates:** `log-file-genius/templates/` directory
-- **Validation:** `./log-file-genius/scripts/validate-log-files.sh`
+- **Templates:** `.log-file-genius/product/templates/` directory
+- **Validation:** `.log-file-genius/product/scripts/validate-log-files.sh`
 
 ## Important Notes
 
 - Always read `.logfile-config.yml` to find log file locations
-- Templates in `log-file-genius/templates/` are customizable
+- Templates in `.log-file-genius/product/templates/` are customizable
 - Check `.log-file-genius/product/docs/log_file_how_to.md` for detailed guidance
