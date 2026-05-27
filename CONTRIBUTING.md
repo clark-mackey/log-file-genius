@@ -54,7 +54,7 @@ Help expand support for more AI coding assistants!
 - Other AI assistants
 
 **To add a new platform:**
-1. Create a starter pack in `starter-packs/[platform-name]/`
+1. Add the platform's rule set in `product/ai-rules/[platform-name]/`
 2. Include setup instructions, rules/instructions, and examples
 3. Test thoroughly with the platform
 4. Update the main README.md with the new platform
@@ -205,9 +205,9 @@ All contributors will be:
 
 ## 📋 Starter Pack Contribution Checklist
 
-If you're adding a new AI assistant starter pack:
+If you're adding a new AI assistant rule set:
 
-- [ ] Created `starter-packs/[platform-name]/` directory
+- [ ] Created `product/ai-rules/[platform-name]/` directory
 - [ ] Included README.md with setup instructions
 - [ ] Added platform-specific rules/instructions
 - [ ] Provided working examples

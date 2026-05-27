@@ -28,7 +28,8 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
-import yaml
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config_parser import parse_config, ConfigError
 
 
 @dataclass
@@ -267,12 +268,14 @@ class LogLinter:
         self.config = self._load_config(config_path)
         self.changelog_path = self.config.get('paths', {}).get('changelog', 'logs/CHANGELOG.md')
         self.devlog_path = self.config.get('paths', {}).get('devlog', 'logs/DEVLOG.md')
+        self.state_path = self.config.get('paths', {}).get('state', 'logs/STATE.md')
 
         # Token targets from profile or defaults
         profile = self.config.get('profile', 'solo-developer')
         self.changelog_target = self.config.get('token_targets', {}).get('changelog', 10000)
         self.devlog_target = self.config.get('token_targets', {}).get('devlog', 15000)
         self.combined_target = self.config.get('token_targets', {}).get('combined', 25000)
+        self.state_target = self.config.get('token_targets', {}).get('state', 500)
     
     def _load_config(self, config_path: str) -> Dict:
         """Load configuration from .logfile-config.yml"""
@@ -280,11 +283,10 @@ class LogLinter:
             return {}
 
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f) or {}
-        except Exception as e:
-            print(f"Warning: Could not load config: {e}", file=sys.stderr)
-            return {}
+            return parse_config(config_path)
+        except ConfigError as e:
+            print(f"ERROR: Invalid .logfile-config.yml: {e}", file=sys.stderr)
+            sys.exit(2)
 
     def _validate_frontmatter_links(self, file_path: str, lines: List[str], result: ValidationResult):
         """Validate frontmatter links point to existing files"""
@@ -415,20 +417,13 @@ class LogLinter:
         with open(self.devlog_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         
-        # Check for Current Context section
-        has_current_context = False
+        # Check for Daily Log section
         has_daily_log = False
-        
+
         for i, line in enumerate(lines, 1):
-            if 'Current Context' in line or 'Source of Truth' in line:
-                has_current_context = True
             if 'Daily Log' in line or 'Development Log' in line:
                 has_daily_log = True
-        
-        if not has_current_context:
-            result.add_issue('error', None, "Missing 'Current Context' section",
-                           "Add '## Current Context (Source of Truth)' section")
-        
+
         if not has_daily_log:
             result.add_issue('warning', None, "Missing 'Daily Log' section",
                            "Add '## Daily Log' section for development entries")
@@ -448,7 +443,28 @@ class LogLinter:
         self._validate_frontmatter_links(self.devlog_path, lines, result)
 
         return result
-    
+
+    def validate_state(self) -> ValidationResult:
+        """Validate STATE.md exists and is within its token budget."""
+        result = ValidationResult(file=self.state_path)
+        if not os.path.exists(self.state_path):
+            result.add_issue('warning', None, f"STATE not found at {self.state_path}",
+                             "Create STATE.md for current context + session handoff")
+            return result
+        with open(self.state_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        token_count = self._estimate_tokens(text)
+        if token_count > self.state_target:
+            result.add_issue('error', None,
+                           f"STATE exceeds token target ({token_count} > {self.state_target})",
+                           "Trim STATE to the now; move history into CHANGELOG/DEVLOG")
+        elif token_count > self.state_target * 0.8:
+            result.add_issue('warning', None,
+                           f"STATE approaching token target ({token_count}/{self.state_target})")
+        else:
+            result.add_issue('info', None, f"STATE within target ({token_count}/{self.state_target})")
+        return result
+
     def validate_combined_tokens(self) -> ValidationResult:
         """Validate combined token count of CHANGELOG + DEVLOG"""
         result = ValidationResult(file="Combined (CHANGELOG + DEVLOG)")
@@ -489,6 +505,7 @@ class LogLinter:
         results = []
         results.append(self.validate_changelog())
         results.append(self.validate_devlog())
+        results.append(self.validate_state())
         results.append(self.validate_combined_tokens())
         return results
 

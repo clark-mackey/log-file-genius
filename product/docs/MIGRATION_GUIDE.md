@@ -144,10 +144,10 @@ wc -c docs/**/*.md | awk '{print $1/4 " tokens"}'
 
 ```bash
 # Copy all templates to your project
-cp product/templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
-cp product/templates/DEVLOG_template.md docs/planning/DEVLOG.md
-cp product/templates/STATE_template.md docs/planning/STATE.md
-cp product/templates/ADR_template.md docs/adr/ADR-template.md
+cp product/templates/CHANGELOG_template.md logs/CHANGELOG.md
+cp product/templates/DEVLOG_template.md logs/DEVLOG.md
+cp product/templates/STATE_template.md logs/STATE.md
+cp product/templates/ADR_template.md logs/adr/ADR-template.md
 ```
 
 #### Step 2: Backfill Recent History
@@ -275,7 +275,7 @@ find docs -name "*.md" -exec wc -c {} + | awk '{sum+=$1} END {print sum/4 " toke
 
 **Create archive directory:**
 ```bash
-mkdir -p docs/planning/archive
+mkdir -p logs/archive
 ```
 
 **Move old entries:**
@@ -340,7 +340,7 @@ the API layer...
 Create ADR files for major decisions referenced in CHANGELOG/DEVLOG:
 
 ```bash
-cp templates/ADR_template.md docs/adr/003-jwt-authentication.md
+cp templates/ADR_template.md logs/adr/003-jwt-authentication.md
 ```
 
 Fill in with full context, alternatives considered, consequences.
@@ -349,7 +349,7 @@ Fill in with full context, alternatives considered, consequences.
 
 ```bash
 # Check new token counts
-find docs/planning -name "*.md" ! -path "*/archive/*" -exec wc -c {} + | awk '{sum+=$1} END {print sum/4 " tokens"}'
+find logs -name "*.md" ! -path "*/archive/*" -exec wc -c {} + | awk '{sum+=$1} END {print sum/4 " tokens"}'
 ```
 
 **Target:** <10,000 tokens for CHANGELOG + DEVLOG + STATE combined
@@ -387,8 +387,8 @@ Create a checklist:
 
 Copy templates for missing documents:
 ```bash
-[ ! -f docs/planning/DEVLOG.md ] && cp product/templates/DEVLOG_template.md docs/planning/DEVLOG.md
-[ ! -f docs/planning/STATE.md ] && cp product/templates/STATE_template.md docs/planning/STATE.md
+[ ! -f logs/DEVLOG.md ] && cp product/templates/DEVLOG_template.md logs/DEVLOG.md
+[ ! -f logs/STATE.md ] && cp product/templates/STATE_template.md logs/STATE.md
 ```
 
 #### Step 3: Standardize Existing Documents
@@ -414,9 +414,9 @@ Update navigation in all documents (see Navigation Matrix in `docs/log_file_how_
 #### Step 5: Verify Token Budgets
 
 ```bash
-wc -c docs/planning/CHANGELOG.md | awk '{print "CHANGELOG: " $1/4 " tokens"}'
-wc -c docs/planning/DEVLOG.md | awk '{print "DEVLOG: " $1/4 " tokens"}'
-wc -c docs/planning/STATE.md | awk '{print "STATE: " $1/4 " tokens"}'
+wc -c logs/CHANGELOG.md | awk '{print "CHANGELOG: " $1/4 " tokens"}'
+wc -c logs/DEVLOG.md | awk '{print "DEVLOG: " $1/4 " tokens"}'
+wc -c logs/STATE.md | awk '{print "STATE: " $1/4 " tokens"}'
 ```
 
 **Targets:**
@@ -507,11 +507,11 @@ Don't want to migrate everything at once? Here's a gradual path:
 cat > scripts/check_tokens.sh << 'EOF'
 #!/bin/bash
 echo "=== Token Budget Check ==="
-echo "CHANGELOG: $(wc -c < docs/planning/CHANGELOG.md | awk '{print int($1/4)}') tokens"
-echo "DEVLOG: $(wc -c < docs/planning/DEVLOG.md | awk '{print int($1/4)}') tokens"
-echo "STATE: $(wc -c < docs/planning/STATE.md | awk '{print int($1/4)}') tokens"
+echo "CHANGELOG: $(wc -c < logs/CHANGELOG.md | awk '{print int($1/4)}') tokens"
+echo "DEVLOG: $(wc -c < logs/DEVLOG.md | awk '{print int($1/4)}') tokens"
+echo "STATE: $(wc -c < logs/STATE.md | awk '{print int($1/4)}') tokens"
 echo "---"
-echo "TOTAL: $(cat docs/planning/{CHANGELOG,DEVLOG,STATE}.md | wc -c | awk '{print int($1/4)}') tokens"
+echo "TOTAL: $(cat logs/{CHANGELOG,DEVLOG,STATE}.md | wc -c | awk '{print int($1/4)}') tokens"
 echo "TARGET: <10,000 tokens"
 EOF
 chmod +x scripts/check_tokens.sh

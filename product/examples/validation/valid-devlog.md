@@ -1,21 +1,8 @@
 # Development Log (DEVLOG)
 
----
+A narrative chronicle of the project journey — the decisions, discoveries, and pivots that shaped the work.
 
-## Current Context (Source of Truth)
-
-- **Current Version:** v1.0.0
-- **Active Branch:** `main`
-- **Phase:** Production - Stable release
-
-### Current Objectives
-- Monitor production metrics
-- Plan v1.1 features
-- Address user feedback
-
-### Recent Risks & Opportunities
-- **Risk:** Increased load may require scaling
-- **Opportunity:** User adoption exceeding expectations
+> **Current project state (Version, Active Branch, Phase) lives in STATE.md.**
 
 ---
 

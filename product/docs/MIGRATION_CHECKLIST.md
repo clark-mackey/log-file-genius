@@ -24,16 +24,16 @@ Copy this checklist to track your migration progress. Check off items as you com
 ## Phase 1: Setup Structure
 
 ### Directory Structure
-- [ ] Created `docs/planning/` directory
-- [ ] Created `docs/adr/` directory
-- [ ] Created `docs/planning/archive/` directory (if needed)
+- [ ] Created `logs/` directory
+- [ ] Created `logs/adr/` directory
+- [ ] Created `logs/archive/` directory (if needed)
 - [ ] Created `templates/` directory (if copying templates)
 
 ### Copy Templates
-- [ ] Copied `CHANGELOG_template.md` → `docs/planning/CHANGELOG.md` (or kept existing)
-- [ ] Copied `DEVLOG_template.md` → `docs/planning/DEVLOG.md` (or created new)
-- [ ] Copied `STATE_template.md` → `docs/planning/STATE.md` (optional)
-- [ ] Copied `ADR_template.md` → `docs/adr/ADR-template.md`
+- [ ] Copied `CHANGELOG_template.md` → `logs/CHANGELOG.md` (or kept existing)
+- [ ] Copied `DEVLOG_template.md` → `logs/DEVLOG.md` (or created new)
+- [ ] Copied `STATE_template.md` → `logs/STATE.md` (first-class: owns Current Context + Last Session)
+- [ ] Copied `ADR_template.md` → `logs/adr/ADR-template.md`
 
 ---
 
@@ -56,9 +56,9 @@ Copy this checklist to track your migration progress. Check off items as you com
 - [ ] Archived old entries (if >4,000 tokens)
 - [ ] Verified token count: _________ tokens (target: <4,000)
 
-### STATE.md (Optional)
+### STATE.md (First-Class)
 - [ ] Created from template
-- [ ] Populated with current state
+- [ ] Populated with Current Context (Version, Active Branch, Phase) + Last Session
 - [ ] Set up update routine (every 30-60 minutes)
 - [ ] Verified token count: _________ tokens (target: <500)
 
@@ -71,7 +71,7 @@ Copy this checklist to track your migration progress. Check off items as you com
 ### ADRs
 - [ ] Identified 3-5 major decisions to extract
 - [ ] Created ADR files for each decision
-- [ ] Added ADR index (README.md in `docs/adr/`)
+- [ ] Added ADR index (README.md in `logs/adr/`)
 - [ ] Linked ADRs from CHANGELOG/DEVLOG
 
 ---

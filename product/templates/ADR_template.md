@@ -1,9 +1,23 @@
+---
+doc: ADR
+related:
+  changelog: ../CHANGELOG.md
+  devlog: ../DEVLOG.md
+  state: ../STATE.md
+---
+
 # ADR-XXX: [Decision Title]
 
 **Status:** [Proposed | Accepted | Deprecated | Superseded]
 **Date:** YYYY-MM-DD
 **Deciders:** [Names or team]
 **Related:** [PR #XXX, Issue #XXX, ADR-XXX]
+
+---
+
+## Related Documents
+
+📊 **[CHANGELOG](../CHANGELOG.md)** · 📖 **[DEVLOG](../DEVLOG.md)** · 📈 **[STATE](../STATE.md)**
 
 ---
 

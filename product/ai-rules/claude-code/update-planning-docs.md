@@ -23,7 +23,7 @@ Which planning document(s) need updating?
 
 1. **CHANGELOG** - Add technical change entries
 2. **DEVLOG** - Add decision/milestone narrative
-3. **DEVLOG Current Context** - Update project state
+3. **STATE (Current Context + Last Session)** - Update project state
 4. **ADR** - Create architectural decision record
 5. **All of the above** - Comprehensive update
 
@@ -36,7 +36,7 @@ Please specify (1-5):
 
 1. Ask: "What changed? (files, features, fixes)"
 2. Determine category: Added, Changed, Fixed, Deprecated, Removed, Security
-3. Open `logs/CHANGELOG.md`
+3. Open CHANGELOG (path from `.logfile-config.yml` → `paths.changelog`, default `logs/CHANGELOG.md`)
 4. Add entry under "Unreleased" section in appropriate category
 5. Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\` (if available)`
 6. Show the entry to user for confirmation
@@ -57,7 +57,7 @@ Please specify (1-5):
    - Why does it matter?
    - What was the result?
    - What files changed?
-3. Open `logs/DEVLOG.md`
+3. Open DEVLOG (path from `.logfile-config.yml` → `paths.devlog`, default `logs/DEVLOG.md`)
 4. Add entry to "Daily Log" section (newest first)
 5. Use format: Situation/Challenge/Decision/Why/Result/Files
 6. Keep entry 150-250 words
@@ -80,7 +80,7 @@ Please specify (1-5):
 **Files Changed:** `.augment/rules/log-file-maintenance.md`
 ```
 
-#### Option 3: Update DEVLOG Current Context
+#### Option 3: Update STATE (Current Context + Last Session)
 
 1. Ask: "What changed in project state?"
    - Version?
@@ -88,8 +88,8 @@ Please specify (1-5):
    - Phase?
    - Objectives?
    - Risks/blockers?
-2. Open `logs/DEVLOG.md` → "Current Context (Source of Truth)" section
-3. Update relevant fields
+2. Read `.logfile-config.yml` → `paths.state` (fallback `logs/STATE.md`)
+3. Update "Current Context" and/or "Last Session" sections as needed
 4. Show changes to user for confirmation
 
 #### Option 4: Create ADR
@@ -123,8 +123,10 @@ Planning files updated. Would you like me to:
 
 ## Key Files Reference
 
+Read paths from `.logfile-config.yml` → `paths` (fallback `logs/`):
 - **CHANGELOG:** `logs/CHANGELOG.md`
 - **DEVLOG:** `logs/DEVLOG.md`
+- **STATE:** `logs/STATE.md`
 - **ADRs:** `logs/adr/` directory
 - **Templates:** `.log-file-genius/templates/` directory
 - **How-to guide:** `.log-file-genius/docs/log_file_how_to.md`

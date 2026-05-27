@@ -84,14 +84,14 @@ The complete documentation system consists of five interconnected documents:
 - ❌ Not a technical implementation guide
 - ❌ Not a historical record
 
-**Location:** `docs/specs/PRD.md` or `docs/specs/PRD-[Project-Name].md`
+**Location:** `project/specs/PRD.md` or `project/specs/PRD-[Project-Name].md` (outside `logs/`; loaded on-demand)
 
 ### CHANGELOG.md - "What Changed"
 
 **Purpose:** Technical record of changes to the codebase  
 **Format:** Single-line entries with file paths  
 **Audience:** Developers, AI agents needing facts  
-**Token Target:** ~1,500-2,000 tokens
+**Token Target:** <10,000 tokens
 
 **Characteristics:**
 - ✅ Factual, concise, technical
@@ -112,7 +112,7 @@ The complete documentation system consists of five interconnected documents:
 **Purpose:** Narrative chronicle of the project journey  
 **Format:** Situation/Challenge/Decision/Impact/Files structure  
 **Audience:** Team members, future maintainers, AI agents needing context  
-**Token Target:** ~3,000-4,000 tokens
+**Token Target:** <15,000 tokens
 
 **Characteristics:**
 - ✅ Tells the story
@@ -142,36 +142,37 @@ The complete documentation system consists of five interconnected documents:
 
 ### STATE.md - "What's Happening Now"
 
-**Purpose:** At-a-glance snapshot of current project state for multi-agent coordination
-**Format:** Structured sections (Active Work, Blockers, Recently Completed, Next Priorities)
-**Audience:** AI agents, developers in multi-agent environments
+**Purpose:** The single source of truth for current project state — owns Current Context (version, branch, phase, objectives, risks) AND the Last Session handoff. STATE is a first-class document, not optional.
+**Format:** Structured sections (Current Context, Active Work, Blockers, Recently Completed, Next Priorities, Last Session)
+**Audience:** AI agents, developers — anyone starting or resuming work
 **Token Target:** <500 tokens (ultra-lightweight)
 
 **Characteristics:**
-- ✅ Updated at start and end of work sessions
+- ✅ Owns Current Context: version, branch, phase, objectives, key risks
+- ✅ Owns Last Session handoff: what was done, what's next, any context to carry forward
+- ✅ Updated at start and end of every work session
 - ✅ Shows last 2-4 hours of activity
 - ✅ Lists active work, blockers, and priorities
 - ✅ Includes branch status for git workflows
-- ✅ Archived to CHANGELOG after 24 hours
+- ✅ Old "Recently Completed" items archived to CHANGELOG after 24 hours
 - ❌ Not a historical record (that's CHANGELOG/DEVLOG)
-- ❌ Not for long-term context (that's DEVLOG Current Context)
+- ❌ Not a narrative log (that's DEVLOG)
 
 **When to Update STATE.md:**
-- **Start of work session:** Add yourself to "Active Work"
+- **Start of work session:** Read it first; add yourself to "Active Work"; confirm Current Context is accurate
 - **Every 30-60 minutes:** Update progress during active work
 - **When blocked:** Immediately add to "Blockers" section
-- **End of work session:** Move task to "Recently Completed"
-- **After 24 hours:** Archive old items to CHANGELOG
+- **End of work session:** Move task to "Recently Completed"; update Last Session with handoff notes
+- **Version/branch/phase changes:** Update Current Context immediately
+- **After 24 hours:** Archive old "Recently Completed" items to CHANGELOG
 
 **Use Cases:**
-- **Multi-agent environments:** Prevents duplicate work and merge conflicts
-- **Team coordination:** Everyone knows who's working on what
-- **Handoffs:** New agents/developers can see current state instantly
-- **Single developer:** Optional - use DEVLOG Current Context instead
+- **Session start:** Every agent reads STATE first — no guessing about version, branch, or what was last worked on
+- **Multi-agent coordination:** Prevents duplicate work and merge conflicts
+- **Handoffs:** New agents/developers resume instantly without reading CHANGELOG or DEVLOG
+- **Single developer:** Still the right place for current context — lightweight enough to always maintain
 
-**Location:** `docs/planning/STATE.md`
-
-**Note:** STATE.md is optional for single-developer projects. For multi-agent environments (Factory Droid, Claude Code with subagents, team workflows), it's highly recommended for coordination.
+**Location:** `logs/STATE.md`
 
 ### ADRs - "Architectural Decisions"
 
@@ -225,7 +226,7 @@ The five-document system supports a **progressive disclosure strategy** where AI
 
 #### Layer 2: Recent History (<2,000 tokens)
 
-**What to load:** STATE.md + DEVLOG Current Context + CHANGELOG Unreleased section
+**What to load:** STATE.md (Current Context + Last Session) + CHANGELOG Unreleased section + recent DEVLOG entries
 
 **When to use:**
 - Understanding current project state
@@ -236,7 +237,7 @@ The five-document system supports a **progressive disclosure strategy** where AI
 **Token budget:** <2,000 tokens
 
 **Example use case:**
-> Agent needs to add feature → Reads Current Context for stack/standards → Reads recent CHANGELOG for related changes → Implements feature following conventions
+> Agent needs to add feature → Reads STATE Current Context for version/stack/standards → Reads recent CHANGELOG for related changes → Implements feature following conventions
 
 #### Layer 3: Full Project Context (<10,000 tokens)
 
@@ -273,11 +274,11 @@ The five-document system supports a **progressive disclosure strategy** where AI
 **Start minimal, expand as needed:**
 
 ```
-1. Read STATE.md (Layer 1)
+1. Read STATE.md — Current Context + Last Session (Layer 1)
    ↓
    Need more context?
    ↓
-2. Read DEVLOG Current Context + Recent CHANGELOG (Layer 2)
+2. Read STATE + Recent CHANGELOG + Recent DEVLOG entries (Layer 2)
    ↓
    Still need more?
    ↓
@@ -348,68 +349,83 @@ The five-document system supports a **progressive disclosure strategy** where AI
 
 From any document, agents can navigate to any other document using these exact relative paths:
 
-| From Document | To PRD | To CHANGELOG | To DEVLOG | To STATE | To ADRs | To Templates |
-|---------------|--------|--------------|-----------|----------|---------|--------------|
-| **PRD** (`docs/specs/PRD.md`) | - | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | `../adr/README.md` | `../planning/templates/` |
-| **CHANGELOG** (`docs/planning/CHANGELOG.md`) | `../specs/PRD.md` | - | `./DEVLOG.md` | `./STATE.md` | `../adr/README.md` | `./templates/` |
-| **DEVLOG** (`docs/planning/DEVLOG.md`) | `../specs/PRD.md` | `./CHANGELOG.md` | - | `./STATE.md` | `../adr/README.md` | `./templates/` |
-| **STATE** (`docs/planning/STATE.md`) | `../specs/PRD.md` | `./CHANGELOG.md` | `./DEVLOG.md` | - | `../adr/README.md` | `./templates/` |
-| **ADR README** (`docs/adr/README.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | - | `../planning/templates/` |
-| **Individual ADR** (`docs/adr/001-title.md`) | `../specs/PRD.md` | `../planning/CHANGELOG.md` | `../planning/DEVLOG.md` | `../planning/STATE.md` | `./README.md` | `../planning/templates/` |
+| From Document | To PRD | To CHANGELOG | To DEVLOG | To STATE | To ADRs |
+|---------------|--------|--------------|-----------|----------|---------|
+| **PRD** (`project/specs/PRD.md`) | - | `../../logs/CHANGELOG.md` | `../../logs/DEVLOG.md` | `../../logs/STATE.md` | `../../logs/adr/README.md` |
+| **CHANGELOG** (`logs/CHANGELOG.md`) | `../project/specs/PRD.md` | - | `./DEVLOG.md` | `./STATE.md` | `./adr/README.md` |
+| **DEVLOG** (`logs/DEVLOG.md`) | `../project/specs/PRD.md` | `./CHANGELOG.md` | - | `./STATE.md` | `./adr/README.md` |
+| **STATE** (`logs/STATE.md`) | `../project/specs/PRD.md` | `./CHANGELOG.md` | `./DEVLOG.md` | - | `./adr/README.md` |
+| **ADR README** (`logs/adr/README.md`) | `../../project/specs/PRD.md` | `../CHANGELOG.md` | `../DEVLOG.md` | `../STATE.md` | - |
+| **Individual ADR** (`logs/adr/001-title.md`) | `../../project/specs/PRD.md` | `../CHANGELOG.md` | `../DEVLOG.md` | `../STATE.md` | `./README.md` |
+
+> **Note:** Actual relative paths depend on where your project root places `logs/` and `project/specs/`. Agents resolve paths from `.logfile-config.yml` → `paths`, with `logs/` as the fallback default. Always verify paths match your layout.
 
 ### Standard Frontmatter Template
 
-**For PRD (`docs/specs/PRD.md`):**
+**For PRD (`project/specs/PRD.md`):**
 ```markdown
 ---
 Related Documents:
-- [CHANGELOG](../planning/CHANGELOG.md) - Technical changes and version history
-- [DEVLOG](../planning/DEVLOG.md) - Why changes were made (narrative)
-- [ADRs](../adr/README.md) - Architectural decision records
+- [CHANGELOG](../../logs/CHANGELOG.md) - Technical changes and version history
+- [DEVLOG](../../logs/DEVLOG.md) - Why changes were made (narrative)
+- [STATE](../../logs/STATE.md) - Current context and session handoff
+- [ADRs](../../logs/adr/README.md) - Architectural decision records
 ---
 ```
 
-**For CHANGELOG (`docs/planning/CHANGELOG.md`):**
+**For CHANGELOG (`logs/CHANGELOG.md`):**
 ```markdown
 ---
 Related Documents:
-- [PRD](../specs/PRD.md) - Product requirements and specifications
+- [PRD](../project/specs/PRD.md) - Product requirements and specifications
 - [DEVLOG](./DEVLOG.md) - Why changes were made (narrative)
-- [ADRs](../adr/README.md) - Architectural decision records
-- [Template](./templates/Changelog_template.md) - Entry format guide
+- [STATE](./STATE.md) - Current context and session handoff
+- [ADRs](./adr/README.md) - Architectural decision records
 ---
 ```
 
-**For DEVLOG (`docs/planning/DEVLOG.md`):**
+**For DEVLOG (`logs/DEVLOG.md`):**
 ```markdown
 ---
 Related Documents:
-- [PRD](../specs/PRD.md) - Product requirements and specifications
+- [PRD](../project/specs/PRD.md) - Product requirements and specifications
 - [CHANGELOG](./CHANGELOG.md) - Technical changes and version history
-- [ADRs](../adr/README.md) - Architectural decision records
-- [Template](./templates/Devlog_template.md) - Entry format guide
+- [STATE](./STATE.md) - Current context and session handoff
+- [ADRs](./adr/README.md) - Architectural decision records
 ---
 ```
 
-**For ADR README (`docs/adr/README.md`):**
+**For STATE (`logs/STATE.md`):**
 ```markdown
 ---
 Related Documents:
-- [PRD](../specs/PRD.md) - Product requirements and specifications
-- [CHANGELOG](../planning/CHANGELOG.md) - Technical changes and version history
-- [DEVLOG](../planning/DEVLOG.md) - Why changes were made (narrative)
-- [Template](../planning/templates/ADR_template.md) - Entry format guide
+- [PRD](../project/specs/PRD.md) - Product requirements and specifications
+- [CHANGELOG](./CHANGELOG.md) - Technical changes and version history
+- [DEVLOG](./DEVLOG.md) - Development narrative
+- [ADRs](./adr/README.md) - Architectural decision records
 ---
 ```
 
-**For Individual ADRs (`docs/adr/001-title.md`):**
+**For ADR README (`logs/adr/README.md`):**
+```markdown
+---
+Related Documents:
+- [PRD](../../project/specs/PRD.md) - Product requirements and specifications
+- [CHANGELOG](../CHANGELOG.md) - Technical changes and version history
+- [DEVLOG](../DEVLOG.md) - Why changes were made (narrative)
+- [STATE](../STATE.md) - Current context and session handoff
+---
+```
+
+**For Individual ADRs (`logs/adr/001-title.md`):**
 ```markdown
 ---
 Related Documents:
 - [ADR Index](./README.md) - All architectural decisions
-- [PRD](../specs/PRD.md) - Product requirements
-- [CHANGELOG](../planning/CHANGELOG.md) - Technical changes
-- [DEVLOG](../planning/DEVLOG.md) - Development narrative
+- [PRD](../../project/specs/PRD.md) - Product requirements
+- [CHANGELOG](../CHANGELOG.md) - Technical changes
+- [DEVLOG](../DEVLOG.md) - Development narrative
+- [STATE](../STATE.md) - Current context
 ---
 ```
 
@@ -448,32 +464,29 @@ Agent returns: Uses back-link to return to CHANGELOG/DEVLOG
 
 ```
 project-root/
-├── docs/
-│   ├── planning/
-│   │   ├── CHANGELOG.md          # What changed (facts)
-│   │   ├── DEVLOG.md             # Why it changed (story)
-│   │   ├── STATE.md              # What's happening now (current work)
-│   │   ├── templates/
-│   │   │   ├── Changelog_template.md
-│   │   │   ├── Devlog_template.md
-│   │   │   ├── STATE_template.md
-│   │   │   └── ADR_template.md
-│   │   └── archive/              # Old entries (if needed)
-│   │       ├── CHANGELOG-2024-Q4.md
-│   │       └── DEVLOG-2024-Q4.md
+├── logs/                         # All runtime logs (resolved from .logfile-config.yml → paths)
+│   ├── CHANGELOG.md              # What changed (facts)
+│   ├── DEVLOG.md                 # Why it changed (story)
+│   ├── STATE.md                  # Current context + session handoff (the now)
 │   ├── adr/
 │   │   ├── README.md             # ADR index
 │   │   ├── 001-decision-title.md
 │   │   ├── 002-decision-title.md
 │   │   └── ...
+│   └── archive/                  # Old entries (if needed)
+│       ├── CHANGELOG-2024-Q4.md
+│       └── DEVLOG-2024-Q4.md
+├── project/
 │   └── specs/
-│       ├── PRD.md                # Product requirements
+│       ├── PRD.md                # Product requirements (loaded on-demand)
 │       └── ...
 └── product/scripts/
     ├── condense_changelog.py     # Transformation script
     ├── condense_devlog.py        # Transformation script
     └── check_token_counts.py    # Monitoring script
 ```
+
+> **Path resolution:** Agents look for `paths` in `.logfile-config.yml` first; if not present, `logs/` is the default. Templates live wherever your installer placed them.
 
 ### Document Relationships
 
@@ -488,7 +501,7 @@ project-root/
              │                                │
              ▼                                ▼
 ┌────────────────────────┐      ┌────────────────────────────┐
-│   CHANGELOG (Planning) │◄────►│     DEVLOG (Planning)      │
+│   CHANGELOG (logs/)    │◄────►│     DEVLOG (logs/)         │
 │   "What changed"       │      │     "Why it changed"       │
 │   Facts, files, dates  │      │  Story, reasoning, context │
 └────────┬───────────────┘      └──────────┬─────────────────┘
@@ -695,53 +708,13 @@ Different documents have different update frequencies based on their purpose. Un
 
 **Why Frequent Updates:** CHANGELOG is the technical record. If you changed code, update CHANGELOG. This keeps the "what changed" record accurate and prevents forgetting details.
 
-**⚠️ CRITICAL - Update Current Context Section:**
+**⚠️ CHANGELOG does NOT own Current Context.**
 
-The **Current Context** section at the top of CHANGELOG.md must be kept current at all times, especially in multi-tenant development environments with multiple agents or developers working simultaneously.
+Current Context (version, branch, phase, objectives, stack) lives exclusively in **`logs/STATE.md`**. CHANGELOG is facts-only: what changed, which files, which version. No Current Context section belongs here.
 
-**Update Current Context When:**
-- ✅ **Version changes** - Immediately update version number after release/tag
-- ✅ **Branch changes** - Update when switching primary development branch
-- ✅ **Phase changes** - Update when moving to new development phase (alpha → beta → production)
-- ✅ **Stack changes** - Update when adding/removing major technologies
-- ✅ **Entry points change** - Update when key files/modules are added/moved/renamed
-- ✅ **Objectives change** - Update when current work focus shifts
+When you need to update version, branch, phase, or objectives — update **STATE.md**, not CHANGELOG.
 
-**Why This Matters in Multi-Agent Environments:**
-
-When multiple agents or developers work on the same codebase:
-- Agent A might be working on v0.6.4 while Agent B starts v0.7.0
-- Agent A might be in "main" branch while Agent B is in "feature/new-api"
-- Without current context, agents make assumptions based on stale information
-- Stale context leads to merge conflicts, duplicate work, and wasted tokens
-
-**Example Current Context Section:**
-```markdown
-## Current Context
-
-**Version:** v0.2.0
-**Branch:** main
-**Phase:** Beta launch
-
-**Stack:**
-- Node.js 20+ (API server)
-- PostgreSQL (primary database)
-- React (frontend)
-
-**Current Objectives:**
-- Complete API error handling standardization
-- Add integration test coverage for auth flow
-
-**Entry Points:**
-- API: `src/server.ts`
-- Routes: `src/routes/`
-- Database: `src/db/schema.sql`
-```
-
-**Update Frequency for Current Context:**
-- **Minimum:** Daily review and update if anything changed
-- **Ideal:** Immediately when version/branch/phase/objectives change
-- **Critical:** Before starting new work session (verify context is current)
+> See [STATE.md - Update Continuously During Active Work](#statemd---update-continuously-during-active-work) for the full update workflow.
 
 ---
 
@@ -785,81 +758,28 @@ When multiple agents or developers work on the same codebase:
 - ❌ Typo fixes or formatting changes
 - ❌ Changes already well-documented in CHANGELOG
 
-**⚠️ CRITICAL - Update Current Context Section:**
+**⚠️ DEVLOG does NOT own Current Context.**
 
-The **Current Context** section at the top of DEVLOG.md must be kept current at all times, especially in multi-tenant development environments with multiple agents or developers working simultaneously.
+Current Context (version, branch, phase, objectives, stack, ADR index) lives exclusively in **`logs/STATE.md`**. DEVLOG is narrative-only: the story of why decisions were made. No Current Context section belongs here.
 
-**Update Current Context When:**
-- ✅ **Version changes** - Immediately update version number after release/tag
-- ✅ **Branch changes** - Update when switching primary development branch
-- ✅ **Phase changes** - Update when moving to new development phase
-- ✅ **Stack changes** - Update when adding/removing major technologies
-- ✅ **Objectives change** - Update when current work focus shifts
-- ✅ **Entry points change** - Update when key files/modules are added/moved/renamed
-- ✅ **ADRs created** - Update Decisions (ADR Index) section with new ADRs
+When multiple agents work on the same codebase, they read **STATE.md** — not DEVLOG — to synchronize on version, branch, and objectives. This keeps coordination lightweight (<500 tokens) and separates the "now" from the historical narrative.
 
-**Why This Matters in Multi-Agent Environments:**
-
-When multiple agents or developers work on the same codebase:
-- **Context synchronization:** All agents need to know current version, branch, and objectives
-- **Avoid duplicate work:** Agent A shouldn't start work Agent B just finished
-- **Correct decision context:** Agents need to know which ADRs are active/superseded
-- **Accurate objectives:** Agents should work toward current goals, not outdated ones
-- **Token efficiency:** Stale context wastes tokens on incorrect assumptions
-
-**Example Current Context Section:**
-```markdown
-## Current Context
-
-**Version:** v0.3.0
-**Branch:** main
-**Phase:** Beta launch & monitoring
-
-**Stack:**
-- Node.js 20+ (API server)
-- PostgreSQL (primary database)
-- React (frontend)
-- Jest (testing framework)
-
-**Key Architectural Decisions:**
-- [ADR-001](../adr/001-use-postgresql.md) - PostgreSQL over MongoDB
-- [ADR-002](../adr/002-unified-error-model.md) - Unified error response format
-- [ADR-003](../adr/003-jwt-auth-strategy.md) - JWT authentication strategy
-
-**Current Objectives:**
-- Complete API error handling standardization
-- Add integration test coverage for auth flow
-- Set up monitoring dashboards
-
-**Entry Points:**
-- API: `src/server.ts`
-- Routes: `src/routes/`
-- Database: `src/db/schema.sql`
-- Scripts: `scripts/`
-```
-
-**Update Frequency for Current Context:**
-- **Minimum:** Daily review and update if anything changed
-- **Ideal:** Immediately when version/branch/phase/objectives/ADRs change
-- **Critical:** Before starting new work session (verify context is current)
-- **Multi-Agent:** Before and after each agent's work session
-
-**Coordination in Multi-Agent Environments:**
+**Coordination workflow (multi-agent):**
 
 ```markdown
-# Example workflow for Agent A:
-1. Read DEVLOG Current Context (verify version, branch, objectives)
+# Agent A:
+1. Read STATE.md (verify version, branch, objectives, last session notes)
 2. Do work
-3. Update DEVLOG Current Context if anything changed (version, objectives, ADRs)
+3. Update STATE.md Current Context + Last Session if anything changed
 4. Commit changes
 
 # Agent B (starting work later):
-1. Read DEVLOG Current Context (sees Agent A's updates)
+1. Read STATE.md (sees Agent A's updates)
 2. Knows current state without asking
 3. Continues work with correct context
 ```
 
-**Token Savings:** Keeping Current Context updated saves 100-200 tokens per agent session by eliminating the need to search for current state, ask clarifying questions, or make incorrect assumptions.
+> See [STATE.md - Update Continuously During Active Work](#statemd---update-continuously-during-active-work) for the full update workflow.
 
 ---
 
@@ -922,9 +842,7 @@ When multiple agents or developers work on the same codebase:
 - Include timestamps for completed items
 - Keep under 500 tokens (archive old items to CHANGELOG)
 
-**Why Continuous Updates:** STATE.md prevents duplicate work and merge conflicts in multi-agent environments. It's the "what's happening right now" snapshot that keeps everyone coordinated.
-
-**Note:** STATE.md is optional for single-developer projects. Use DEVLOG Current Context instead.
+**Why Continuous Updates:** STATE.md is the single source for current context. It prevents duplicate work and merge conflicts, and it means any agent — solo or in a multi-agent setup — can resume work instantly without reading CHANGELOG or DEVLOG history.
 
 ---
 
@@ -1007,7 +925,7 @@ When multiple agents or developers work on the same codebase:
 ### When to Archive/Condense Logs
 
 **Triggers:**
-1. **Token count exceeds budget** (>25,000 tokens combined)
+1. **Token count exceeds budget** (>25,000 tokens combined for CHANGELOG + DEVLOG)
 2. **File length exceeds threshold** (>1,500 lines)
 3. **Quarterly maintenance** (every 3 months)
 4. **Before major milestones** (releases, audits)
@@ -1016,7 +934,7 @@ When multiple agents or developers work on the same codebase:
 
 **Step 1: Create Safety Snapshot**
 ```bash
-git add docs/planning/CHANGELOG.md docs/planning/DEVLOG.md
+git add logs/CHANGELOG.md logs/DEVLOG.md
 git commit -m "Pre-transformation snapshot: CHANGELOG + DEVLOG"
 ```
 
@@ -1037,7 +955,7 @@ python product/scripts/check_token_counts.py
 
 **Step 5: Commit**
 ```bash
-git add docs/
+git add logs/
 git commit -m "Log transformation: Reduced from X to Y tokens"
 ```
 
@@ -1045,8 +963,8 @@ git commit -m "Log transformation: Reduced from X to Y tokens"
 
 | File | Archive Trigger | Keep in Main File |
 |------|----------------|-------------------|
-| CHANGELOG.md | >1,500 lines OR >2,000 tokens | Last 30-90 days |
-| DEVLOG.md | >2,000 lines OR >4,000 tokens | Last 30-90 days |
+| CHANGELOG.md | >1,500 lines OR >10,000 tokens | Last 30-90 days |
+| DEVLOG.md | >2,000 lines OR >15,000 tokens | Last 30-90 days |
 | ADRs | Never archive | All (loaded on-demand) |
 
 ---
@@ -1055,12 +973,12 @@ git commit -m "Log transformation: Reduced from X to Y tokens"
 
 ### Target Budgets
 
-| Document | Token Target | Max Tokens | % of 200k Context |
-|----------|-------------|------------|-------------------|
-| CHANGELOG.md | 1,500-2,000 | 3,000 | 1-1.5% |
-| DEVLOG.md | 3,000-4,000 | 6,000 | 1.5-2% |
+| Document | Target | Hard Max | % of 200k Context |
+|----------|--------|----------|-------------------|
+| CHANGELOG.md | 5,000-8,000 | 10,000 | 2.5-4% |
+| DEVLOG.md | 8,000-12,000 | 15,000 | 4-6% |
 | STATE.md | <500 | 500 | <0.25% |
-| Combined (CHANGELOG + DEVLOG + STATE) | 5,000-6,500 | 10,000 | 2.5-3.25% |
+| Combined (CHANGELOG + DEVLOG) | 13,000-20,000 | 25,000 | 6.5-10% |
 | ADRs (on-demand) | Variable | N/A | Loaded as needed |
 
 ### Token Estimation
@@ -1089,15 +1007,17 @@ def estimate_tokens(file_path):
         content = f.read()
     return len(content) // 4
 
-changelog_tokens = estimate_tokens('docs/planning/CHANGELOG.md')
-devlog_tokens = estimate_tokens('docs/planning/DEVLOG.md')
+changelog_tokens = estimate_tokens('logs/CHANGELOG.md')
+devlog_tokens = estimate_tokens('logs/DEVLOG.md')
+state_tokens = estimate_tokens('logs/STATE.md')
 total_tokens = changelog_tokens + devlog_tokens
 
-print(f"CHANGELOG.md: ~{changelog_tokens:,} tokens")
-print(f"DEVLOG.md: ~{devlog_tokens:,} tokens")
-print(f"Total: ~{total_tokens:,} tokens")
-print(f"Target: <10,000 tokens")
-print(f"Status: {'✅ GOOD' if total_tokens < 10000 else '⚠️ NEEDS CONDENSING'}")
+print(f"CHANGELOG.md: ~{changelog_tokens:,} tokens (max 10,000)")
+print(f"DEVLOG.md: ~{devlog_tokens:,} tokens (max 15,000)")
+print(f"STATE.md: ~{state_tokens:,} tokens (max 500)")
+print(f"Combined (CHANGELOG + DEVLOG): ~{total_tokens:,} tokens")
+print(f"Target: <25,000 tokens combined")
+print(f"Status: {'✅ GOOD' if total_tokens < 25000 else '⚠️ NEEDS CONDENSING'}")
 ```
 
 ---
@@ -1235,7 +1155,7 @@ A complete example showing 3 weeks of development on a REST API project:
 **DEVLOG:**
 - Narrative structure: Situation → Challenge → Decision → Impact
 - Entries are 150-250 words (concise but meaningful)
-- Current Context section updated weekly
+- Narrative-only; current context lives in STATE.md
 - Links to ADRs for detailed decisions
 
 **STATE.md:**
@@ -1277,26 +1197,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications  
+📋 **[PRD](../project/specs/PRD.md)** - Product requirements and specifications  
 📖 **[DEVLOG](./DEVLOG.md)** - Why changes were made (narrative)  
-⚖️ **[ADRs](../adr/README.md)** - Architectural decision records  
-📝 **[Template](./templates/Changelog_template.md)** - Entry format guide
+🗂️ **[STATE](./STATE.md)** - Current context and session handoff  
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file contains facts about what changed. For reasoning and context, see DEVLOG.md.
-
----
-
-## Current Context
-
-**Version:** v0.1.0  
-**Branch:** main  
-**Phase:** Initial development
-
-**Stack:**
-- [Your tech stack here]
-
-**Entry Points:**
-- [Key files/modules here]
+> **For AI Agents:** This file contains facts about what changed. For current version/branch/objectives, read STATE.md. For reasoning and context, see DEVLOG.md.
 
 ---
 
@@ -1311,10 +1217,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## References
 
-- **PRD:** `../specs/PRD.md`
+- **PRD:** `../project/specs/PRD.md`
 - **DEVLOG:** `./DEVLOG.md`
-- **ADRs:** `../adr/README.md`
-- **Template:** `./templates/Changelog_template.md`
+- **STATE:** `./STATE.md`
+- **ADRs:** `./adr/README.md`
 ```
 
 ### Minimal DEVLOG.md
@@ -1326,37 +1232,18 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications  
+📋 **[PRD](../project/specs/PRD.md)** - Product requirements and specifications  
 📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history  
-⚖️ **[ADRs](../adr/README.md)** - Architectural decision records
+🗂️ **[STATE](./STATE.md)** - Current context and session handoff  
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file tells the story of *why* decisions were made. For technical details of *what* changed, see CHANGELOG.md. For architectural decisions, see ADRs.
-
----
-
-## Current Context
-
-**Version:** v0.1.0  
-**Branch:** main  
-**Phase:** Initial development
-
-**Stack:**
-- [Your tech stack here]
-
-**Key Architectural Decisions:**
-- [Link to ADRs as they're created]
-
-**Current Objectives:**
-- [What you're working on now]
-
-**Entry Points:**
-- [Key files/modules here]
+> **For AI Agents:** This file tells the story of *why* decisions were made. For current version/branch/objectives, read STATE.md first. For technical details of *what* changed, see CHANGELOG.md. For architectural decisions, see ADRs.
 
 ---
 
 ## Decisions (ADR Index) - Newest First
 
-- **ADR-001 (YYYY-MM-DD):** [Decision Title] - [One-line summary] [→ Full ADR](../adr/001-decision-title.md)
+- **ADR-001 (YYYY-MM-DD):** [Decision Title] - [One-line summary] [→ Full ADR](./adr/001-decision-title.md)
 
 ---
 
@@ -1384,10 +1271,10 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 
 ## References
 
-- **PRD:** `../specs/PRD.md`
+- **PRD:** `../project/specs/PRD.md`
 - **CHANGELOG:** `./CHANGELOG.md`
-- **ADRs:** `../adr/README.md`
-- **Template:** `./templates/Devlog_template.md`
+- **STATE:** `./STATE.md`
+- **ADRs:** `./adr/README.md`
 ```
 
 ### Minimal STATE.md
@@ -1402,12 +1289,29 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 
 ## Related Documents
 
-📋 **[PRD](../specs/PRD.md)** - Product requirements and specifications
+📋 **[PRD](../project/specs/PRD.md)** - Product requirements and specifications
 📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
 📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
-⚖️ **[ADRs](../adr/README.md)** - Architectural decision records
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file provides at-a-glance status for multi-agent coordination. Read this FIRST before starting work to avoid conflicts and duplicate effort. Update at the START and END of each work session.
+> **For AI Agents:** Read this FIRST before starting any work. This file owns Current Context (version, branch, phase, objectives) and Last Session handoff. Update at the START and END of each work session.
+
+---
+
+## Current Context
+
+**Version:** v0.1.0
+**Branch:** main
+**Phase:** Initial development
+
+**Stack:**
+- [Your tech stack here]
+
+**Current Objectives:**
+- [What you're working on now]
+
+**Entry Points:**
+- [Key files/modules here]
 
 ---
 
@@ -1444,12 +1348,22 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 
 ---
 
+## Last Session
+
+**Date:** YYYY-MM-DD
+**Completed:** [What was finished]
+**In Progress:** [What was left in flight]
+**Next:** [Recommended starting point]
+**Notes:** [Any context to carry forward]
+
+---
+
 ## Notes
 
-- Keep this file under 500 tokens
+- Keep this file under 500 tokens total
 - Update every 30-60 minutes during active work
 - Archive "Recently Completed" items older than 24 hours to CHANGELOG
-- Optional for single-developer projects (use DEVLOG Current Context instead)
+- Current Context is owned here, not in CHANGELOG or DEVLOG
 ```
 
 ### Minimal ADR README.md
@@ -1483,7 +1397,7 @@ Create an ADR for decisions that:
 
 ## Template
 
-See [ADR_template.md](../planning/templates/ADR_template.md) for the standard format.
+See [ADR_template.md](../templates/ADR_template.md) for the standard format (path may vary; check your `.logfile-config.yml`).
 
 ## References
 
@@ -1495,12 +1409,12 @@ See [ADR_template.md](../planning/templates/ADR_template.md) for the standard fo
 
 ## Quick Start Checklist
 
-- [ ] Create directory structure (`docs/planning/`, `docs/adr/`, `docs/specs/`)
-- [ ] Copy starter templates (CHANGELOG.md, DEVLOG.md, ADR README.md)
-- [ ] Create template files (`templates/Changelog_template.md`, etc.)
+- [ ] Create directory structure (`logs/`, `logs/adr/`, `project/specs/`)
+- [ ] Copy starter templates (CHANGELOG.md, DEVLOG.md, STATE.md, ADR README.md)
+- [ ] Set token budget targets (CHANGELOG <10k, DEVLOG <15k, combined <25k, STATE <500)
+- [ ] Add cross-links to all documents (frontmatter with relative paths)
 - [ ] Set up monitoring script (`product/scripts/check_token_counts.py`)
-- [ ] Add cross-links to all documents
-- [ ] Set token budget targets (CHANGELOG <2k, DEVLOG <4k)
+- [ ] Configure `.logfile-config.yml` with your `paths` if not using `logs/` default
 - [ ] Schedule quarterly maintenance (calendar reminder)
 - [ ] Document project-specific conventions in templates
 
@@ -1511,7 +1425,7 @@ See [ADR_template.md](../planning/templates/ADR_template.md) for the standard fo
 | Task | Frequency | Action |
 |------|-----------|--------|
 | Check token counts | Monthly | Run `check_token_counts.py` |
-| Condense if needed | As needed | When >10k tokens combined |
+| Condense if needed | As needed | When >25k tokens combined (CHANGELOG + DEVLOG) |
 | Archive old entries | Quarterly | Move entries >6 months old |
 | Review ADR index | Quarterly | Update status, add cross-links |
 | Update templates | Annually | Refine based on experience |
@@ -1520,7 +1434,7 @@ See [ADR_template.md](../planning/templates/ADR_template.md) for the standard fo
 
 ## Success Metrics
 
-- ✅ Combined CHANGELOG + DEVLOG < 10,000 tokens
+- ✅ CHANGELOG < 10,000 tokens; DEVLOG < 15,000 tokens; combined < 25,000 tokens
 - ✅ AI agents can load full project history in <5% of context window
 - ✅ All cross-links working
 - ✅ Narrative preserved in DEVLOG

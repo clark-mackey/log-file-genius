@@ -13,6 +13,9 @@
 .PARAMETER Devlog
     Run only DEVLOG validation
 
+.PARAMETER State
+    Run only STATE validation
+
 .PARAMETER Tokens
     Run only token count validation
 
@@ -35,13 +38,16 @@
 param(
     [switch]$Changelog,
     [switch]$Devlog,
+    [switch]$State,
     [switch]$Tokens,
-    [switch]$Verbose
+    [switch]$Verbose,
+    [switch]$PrintConfig
 )
 
 # Configuration - Standard paths (all logs in /logs/ folder)
 $CHANGELOG_PATH = "logs/CHANGELOG.md"
 $DEVLOG_PATH = "logs/DEVLOG.md"
+$STATE_PATH = "logs/STATE.md"
 
 # Default token targets (can be overridden by profile)
 $CHANGELOG_TOKEN_WARNING = 8000
@@ -53,8 +59,9 @@ $COMBINED_TOKEN_ERROR = 25000
 $VALIDATION_STRICTNESS = "errors"  # Options: strict, errors, warnings-only, disabled
 $FAIL_ON_WARNINGS = $false
 
-# Note: STATE and ADR validation not yet implemented
-# Future: Add STATE_TOKEN_WARNING = 400, STATE_TOKEN_ERROR = 500
+# STATE token targets
+$STATE_TOKEN_WARNING = 400
+$STATE_TOKEN_ERROR = 500
 
 # Colors
 $COLOR_SUCCESS = "Green"
@@ -126,6 +133,27 @@ function Get-PercentageOfTarget {
     return [math]::Round(($Current / $Target) * 100)
 }
 
+function Read-NestedConfig {
+    param([string]$Content, [string]$Parent, [string]$Key)
+    $lines = $Content -split "`r?`n"
+    $inBlock = $false
+    foreach ($line in $lines) {
+        if ($line -match '^[A-Za-z_]+:') {
+            # Match the parent header without a strict end-anchor so a trailing
+            # comment (token_targets:  # budgets) still opens the block, matching
+            # the bash validator's behavior.
+            $inBlock = ($line -match ('^' + [regex]::Escape($Parent) + ':'))
+            continue
+        }
+        if ($inBlock -and $line -match ('^\s+' + [regex]::Escape($Key) + ':\s*(\S+)')) {
+            # Strip one layer of surrounding quotes so quoted scalars match the
+            # canonical config_parser.py.
+            return $Matches[1].Trim('"').Trim("'")
+        }
+    }
+    return $null
+}
+
 function Load-ProfileConfig {
     # Check for config file in standard locations
     $configPaths = @(
@@ -153,48 +181,38 @@ function Load-ProfileConfig {
         Write-Host "Loading profile config from: $configFile" -ForegroundColor $COLOR_INFO
     }
 
-    # Simple YAML parsing for our limited use case
-    # We only need to read profile name and overrides.token_targets
-    $content = Get-Content $configFile -Raw
+    $cfg = Get-Content $configFile -Raw
 
-    # Extract profile name
-    if ($content -match 'profile:\s*(\S+)') {
-        $profileName = $matches[1]
-        if ($Verbose) {
-            Write-Host "Profile: $profileName" -ForegroundColor $COLOR_INFO
-        }
-    }
+    # Read nested paths block
+    $v = Read-NestedConfig $cfg "paths" "changelog"
+    if ($v) { $script:CHANGELOG_PATH = $v }
+    $v = Read-NestedConfig $cfg "paths" "devlog"
+    if ($v) { $script:DEVLOG_PATH = $v }
+    $v = Read-NestedConfig $cfg "paths" "state"
+    if ($v) { $script:STATE_PATH = $v }
 
-    # Extract token target overrides if present
-    if ($content -match 'changelog_warning:\s*(\d+)') {
-        $script:CHANGELOG_TOKEN_WARNING = [int]$matches[1]
+    # Read nested token_targets block; derive warnings at 80%
+    $v = Read-NestedConfig $cfg "token_targets" "changelog"
+    if ($v) {
+        $script:CHANGELOG_TOKEN_ERROR = [int]$v
+        $script:CHANGELOG_TOKEN_WARNING = [int]([int]$v * 0.8)
     }
-    if ($content -match 'changelog_error:\s*(\d+)') {
-        $script:CHANGELOG_TOKEN_ERROR = [int]$matches[1]
-    }
-    if ($content -match 'devlog_warning:\s*(\d+)') {
-        $script:DEVLOG_TOKEN_WARNING = [int]$matches[1]
-    }
-    if ($content -match 'devlog_error:\s*(\d+)') {
-        $script:DEVLOG_TOKEN_ERROR = [int]$matches[1]
-    }
-    if ($content -match 'combined_warning:\s*(\d+)') {
-        $script:COMBINED_TOKEN_WARNING = [int]$matches[1]
-    }
-    if ($content -match 'combined_error:\s*(\d+)') {
-        $script:COMBINED_TOKEN_ERROR = [int]$matches[1]
+    $v = Read-NestedConfig $cfg "token_targets" "devlog"
+    if ($v) {
+        $script:DEVLOG_TOKEN_ERROR = [int]$v
+        $script:DEVLOG_TOKEN_WARNING = [int]([int]$v * 0.8)
     }
 
     # Extract validation strictness
-    if ($content -match 'strictness:\s*(\S+)') {
+    if ($cfg -match 'strictness:\s*(\S+)') {
         $script:VALIDATION_STRICTNESS = $matches[1]
     }
-    if ($content -match 'fail_on_warnings:\s*(true|false)') {
+    if ($cfg -match 'fail_on_warnings:\s*(true|false)') {
         $script:FAIL_ON_WARNINGS = $matches[1] -eq 'true'
     }
 
     # Extract version and check for updates
-    if ($content -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
+    if ($cfg -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
         $configVersion = $matches[1]
         $latestVersion = "0.2.0"  # Current version
 
@@ -295,25 +313,12 @@ function Test-Devlog {
     $content = Get-Content $DEVLOG_PATH -Raw
     $lines = Get-Content $DEVLOG_PATH
     $errors = @()
-    
-    # Check for Current Context section
-    if ($content -notmatch '##\s+Current Context') {
-        $errors += "Missing '## Current Context' section"
-    }
-    
-    # Check for Daily Log section
+
+    # Check for Daily Log section (DEVLOG is narrative only; Current Context lives in STATE.md)
     if ($content -notmatch '##\s+Daily Log') {
         $errors += "Missing '## Daily Log' section"
     }
-    
-    # Check for required Current Context fields
-    $requiredFields = @('Version', 'Active Branch', 'Phase')
-    foreach ($field in $requiredFields) {
-        if ($content -notmatch "\*\*$field") {
-            $errors += "Missing required field in Current Context: $field"
-        }
-    }
-    
+
     # Check entry date formats (### YYYY-MM-DD: Title)
     $entryPattern = '###\s+\d{4}-\d{2}-\d{2}:'
     $invalidEntries = $lines | Where-Object { 
@@ -335,6 +340,52 @@ function Test-Devlog {
         return $EXIT_SUCCESS
     } else {
         Write-ValidationResult "DEVLOG" "ERROR" "$($errors.Count) issue(s) found"
+        if ($Verbose) {
+            foreach ($error in $errors) {
+                Write-Host "  - $error" -ForegroundColor $COLOR_ERROR
+            }
+        }
+        return $EXIT_ERROR
+    }
+}
+
+#endregion
+
+#region STATE Validation
+
+function Test-State {
+    if ($Verbose) {
+        Write-Host "`n=== STATE Validation ===" -ForegroundColor $COLOR_INFO
+    }
+
+    # STATE is first-class but optional in existing flows; warn if missing, don't hard-error
+    if (-not (Test-Path $STATE_PATH)) {
+        Write-ValidationResult "STATE" "WARNING" "File not found: $STATE_PATH (create STATE.md for current context + session handoff)"
+        return $EXIT_WARNING
+    }
+
+    $content = Get-Content $STATE_PATH -Raw
+    $errors = @()
+
+    # Check for Current Context section (STATE owns Version/Branch/Phase)
+    if ($content -notmatch '##\s+Current Context') {
+        $errors += "Missing '## Current Context' section"
+    }
+
+    # Check for required fields in Current Context
+    $requiredFields = @('Version', 'Active Branch', 'Phase')
+    foreach ($field in $requiredFields) {
+        if ($content -notmatch "\*\*$field") {
+            $errors += "Missing required field in Current Context: $field"
+        }
+    }
+
+    # Report results
+    if ($errors.Count -eq 0) {
+        Write-ValidationResult "STATE" "PASSED"
+        return $EXIT_SUCCESS
+    } else {
+        Write-ValidationResult "STATE" "ERROR" "$($errors.Count) issue(s) found"
         if ($Verbose) {
             foreach ($error in $errors) {
                 Write-Host "  - $error" -ForegroundColor $COLOR_ERROR
@@ -435,10 +486,23 @@ Write-Host "" -ForegroundColor $COLOR_INFO
 # Load profile configuration
 Load-ProfileConfig
 
+if ($PrintConfig) {
+    Write-Output "CHANGELOG_PATH=$CHANGELOG_PATH"
+    Write-Output "DEVLOG_PATH=$DEVLOG_PATH"
+    Write-Output "STATE_PATH=$STATE_PATH"
+    Write-Output "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
+    Write-Output "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
+    Write-Output "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
+    Write-Output "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    Write-Output "STATE_TOKEN_ERROR=$STATE_TOKEN_ERROR"
+    Write-Output "STATE_TOKEN_WARNING=$STATE_TOKEN_WARNING"
+    exit 0
+}
+
 $exitCode = $EXIT_SUCCESS
 
 # Determine which validations to run
-$runAll = -not ($Changelog -or $Devlog -or $Tokens)
+$runAll = -not ($Changelog -or $Devlog -or $State -or $Tokens)
 
 if ($runAll -or $Changelog) {
     $result = Test-Changelog
@@ -447,6 +511,11 @@ if ($runAll -or $Changelog) {
 
 if ($runAll -or $Devlog) {
     $result = Test-Devlog
+    if ($result -gt $exitCode) { $exitCode = $result }
+}
+
+if ($runAll -or $State) {
+    $result = Test-State
     if ($result -gt $exitCode) { $exitCode = $result }
 }
 

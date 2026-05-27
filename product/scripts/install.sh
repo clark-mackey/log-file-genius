@@ -365,18 +365,23 @@ cat > .logfile-config.yml << EOF
 # Log File Genius Configuration
 # All log files are in /logs/ folder (standard structure)
 
-# Version tracking
 log_file_genius_version: "$VERSION"
-
-# Profile selection
 profile: $PROFILE
-
-# AI assistant
 ai_assistant: $AI_ASSISTANT
 
-# For customization options, see:
-# - .log-file-genius/docs/profile-selection-guide.md
-# - .log-file-genius/profiles/*.yml
+paths:
+  changelog: logs/CHANGELOG.md
+  devlog: logs/DEVLOG.md
+  state: logs/STATE.md
+  adr_dir: logs/adr/
+
+token_targets:
+  changelog: 10000
+  devlog: 15000
+  combined: 25000
+  state: 500
+
+# Presets and customization: .log-file-genius/product/profiles/*.yml
 EOF
 
 CREATED_ITEMS+=(".logfile-config.yml")
