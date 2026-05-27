@@ -110,11 +110,10 @@ get_token_count() {
         return
     fi
     
-    # Count words and estimate tokens (word_count * 1.3)
-    local word_count=$(wc -w < "$file_path")
-    local token_estimate=$(awk "BEGIN {print int($word_count * 1.3 + 0.5)}")
-    
-    echo "$token_estimate"
+    # Estimate tokens at ~4 characters per token — the documented canonical
+    # heuristic, matching lint-logs.py (len//4) and the rule files.
+    local char_count=$(wc -m < "$file_path")
+    echo $(( char_count / 4 ))
 }
 
 get_percentage() {
@@ -332,6 +331,16 @@ validate_state() {
             errors+=("Missing required field in Current Context: $field")
         fi
     done
+
+    # Token budget: STATE should stay lean (the now), default <500. This is a
+    # WARNING not an error — STATE has no archival (you trim it), and a freshly
+    # installed template carries removable guidance that exceeds the budget.
+    local state_tokens=$(get_token_count "$STATE_PATH")
+    if [ "$state_tokens" -gt "$STATE_TOKEN_ERROR" ]; then
+        write_validation_result "STATE" "WARNING" "Over token target ($state_tokens > $STATE_TOKEN_ERROR) — trim to the now (remove template guidance)"
+    elif [ "$state_tokens" -gt "$STATE_TOKEN_WARNING" ]; then
+        write_validation_result "STATE" "WARNING" "Approaching token target ($state_tokens/$STATE_TOKEN_ERROR)"
+    fi
 
     # Report results
     if [ ${#errors[@]} -eq 0 ]; then

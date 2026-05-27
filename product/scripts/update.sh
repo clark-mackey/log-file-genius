@@ -39,8 +39,22 @@ print_info() {
 }
 
 migrate_devlog_to_state() {
+    local config=".logfile-config.yml"
     local devlog="logs/DEVLOG.md"
     local state="logs/STATE.md"
+
+    # Resolve paths from config (block-aware: devlog/state appear under paths:),
+    # matching how the validators read them. Fall back to logs/.
+    if [ -f "$config" ]; then
+        local d s
+        d=$(awk '/^[A-Za-z_]+:/{inblk=($0 ~ /^paths:/)} inblk && $1=="devlog:"{print $2; exit}' "$config")
+        s=$(awk '/^[A-Za-z_]+:/{inblk=($0 ~ /^paths:/)} inblk && $1=="state:"{print $2; exit}' "$config")
+        d="${d%\"}"; d="${d#\"}"; d="${d%\'}"; d="${d#\'}"
+        s="${s%\"}"; s="${s#\"}"; s="${s%\'}"; s="${s#\'}"
+        [ -n "$d" ] && devlog="$d"
+        [ -n "$s" ] && state="$s"
+    fi
+
     [ -f "$devlog" ] || return 0
     if ! grep -q "## Current Context" "$devlog"; then return 0; fi
     if [ -f "$state" ]; then
@@ -49,12 +63,20 @@ migrate_devlog_to_state() {
         return 0
     fi
     print_info "Migrating DEVLOG Current Context / Last Session into new STATE.md"
+    # Capture ONLY the Current Context and Last Session sections (by their own
+    # headings), stopping at any other top-level heading — avoids sweeping in
+    # intervening sections (e.g. an ADR index) or, when no Daily Log exists,
+    # the entire rest of the file.
     {
         echo "# Current State"
         echo ""
-        awk '/^## Current Context/{f=1} /^## Daily Log/{f=0} f' "$devlog"
+        awk '
+          /^## (Current Context|Last Session)/ { f=1; print; next }
+          /^## / { f=0 }
+          f { print }
+        ' "$devlog"
     } > "$state"
-    print_success "Created logs/STATE.md from legacy DEVLOG sections (review it)."
+    print_success "Created STATE from legacy DEVLOG sections at $state (review it)."
 }
 
 if [ "${LFG_MIGRATE_ONLY:-0}" = "1" ]; then

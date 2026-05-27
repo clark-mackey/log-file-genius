@@ -117,11 +117,11 @@ function Get-TokenCount {
         return 0
     }
     
+    # Estimate tokens at ~4 characters per token — the documented canonical
+    # heuristic, matching lint-logs.py (len//4) and the rule files.
     $content = Get-Content $FilePath -Raw
-    $wordCount = ($content -split '\s+').Count
-    $tokenEstimate = [math]::Ceiling($wordCount * 1.3)
-    
-    return $tokenEstimate
+    if (-not $content) { return 0 }
+    return [math]::Floor($content.Length / 4)
 }
 
 function Get-PercentageOfTarget {
@@ -378,6 +378,15 @@ function Test-State {
         if ($content -notmatch "\*\*$field") {
             $errors += "Missing required field in Current Context: $field"
         }
+    }
+
+    # Token budget: STATE should stay lean (the now), default <500. WARNING not
+    # error — STATE has no archival, and a fresh template carries removable guidance.
+    $stateTokens = Get-TokenCount $STATE_PATH
+    if ($stateTokens -gt $STATE_TOKEN_ERROR) {
+        Write-ValidationResult "STATE" "WARNING" "Over token target ($stateTokens > $STATE_TOKEN_ERROR) - trim to the now (remove template guidance)"
+    } elseif ($stateTokens -gt $STATE_TOKEN_WARNING) {
+        Write-ValidationResult "STATE" "WARNING" "Approaching token target ($stateTokens/$STATE_TOKEN_ERROR)"
     }
 
     # Report results

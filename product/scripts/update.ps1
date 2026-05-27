@@ -35,9 +35,27 @@ function Print-Info {
     Write-Host "[INFO] $Message" -ForegroundColor Blue
 }
 
+function Get-ConfigPath {
+    param([string]$ConfigFile, [string]$Key)
+    if (-not (Test-Path $ConfigFile)) { return $null }
+    $inBlock = $false
+    foreach ($line in (Get-Content $ConfigFile)) {
+        if ($line -match '^[A-Za-z_]+:') { $inBlock = ($line -match '^paths:'); continue }
+        if ($inBlock -and $line -match ('^\s+' + [regex]::Escape($Key) + ':\s*(\S+)')) {
+            return $Matches[1].Trim('"').Trim("'")
+        }
+    }
+    return $null
+}
+
 function Migrate-DevlogToState {
+    $config = Join-Path $ProjectRoot ".logfile-config.yml"
     $devlog = Join-Path $ProjectRoot "logs\DEVLOG.md"
     $state  = Join-Path $ProjectRoot "logs\STATE.md"
+    # Resolve paths from config (fall back to logs/), matching the validators.
+    $d = Get-ConfigPath $config "devlog"; if ($d) { $devlog = Join-Path $ProjectRoot $d }
+    $s = Get-ConfigPath $config "state";  if ($s) { $state  = Join-Path $ProjectRoot $s }
+
     if (-not (Test-Path $devlog)) { return }
     $devlogContent = Get-Content $devlog -Raw
     if ($devlogContent -notmatch "## Current Context") { return }
@@ -47,20 +65,22 @@ function Migrate-DevlogToState {
         return
     }
     Print-Info "Migrating DEVLOG Current Context / Last Session into new STATE.md"
+    # Capture ONLY Current Context + Last Session (by their own headings),
+    # stopping at any other top-level heading.
     $lines = Get-Content $devlog
     $capturing = $false
     $output = [System.Collections.Generic.List[string]]::new()
     $output.Add("# Current State")
     $output.Add("")
     foreach ($line in $lines) {
-        if ($line -match "^## Current Context") { $capturing = $true }
-        if ($line -match "^## Daily Log")       { $capturing = $false }
+        if ($line -match "^## (Current Context|Last Session)") { $capturing = $true; $output.Add($line); continue }
+        elseif ($line -match "^## ") { $capturing = $false }
         if ($capturing) { $output.Add($line) }
     }
-    $logsDir = Join-Path $ProjectRoot "logs"
-    if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force | Out-Null }
+    $stateDir = Split-Path -Parent $state
+    if ($stateDir -and -not (Test-Path $stateDir)) { New-Item -ItemType Directory -Path $stateDir -Force | Out-Null }
     $output | Out-File -FilePath $state -Encoding utf8
-    Print-Success "Created logs\STATE.md from legacy DEVLOG sections (review it)."
+    Print-Success "Created STATE from legacy DEVLOG sections at $state (review it)."
 }
 
 if ($env:LFG_MIGRATE_ONLY -eq "1") {

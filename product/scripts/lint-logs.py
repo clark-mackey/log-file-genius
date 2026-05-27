@@ -454,10 +454,12 @@ class LogLinter:
         with open(self.state_path, 'r', encoding='utf-8') as f:
             text = f.read()
         token_count = self._estimate_tokens(text)
+        # WARNING not error: STATE has no archival (you trim it), and a freshly
+        # installed template carries removable guidance that exceeds the budget.
         if token_count > self.state_target:
-            result.add_issue('error', None,
-                           f"STATE exceeds token target ({token_count} > {self.state_target})",
-                           "Trim STATE to the now; move history into CHANGELOG/DEVLOG")
+            result.add_issue('warning', None,
+                           f"STATE over token target ({token_count} > {self.state_target})",
+                           "Trim STATE to the now (remove template guidance)")
         elif token_count > self.state_target * 0.8:
             result.add_issue('warning', None,
                            f"STATE approaching token target ({token_count}/{self.state_target})")
