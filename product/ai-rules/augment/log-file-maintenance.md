@@ -10,17 +10,17 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 **⛔ STOP - DO NOT run `git commit` until ALL steps complete:**
 
-1. **Update CHANGELOG.md** → `logs/CHANGELOG.md`
+1. **Update CHANGELOG.md** — read `.logfile-config.yml` → `paths.changelog` (fallback `logs/CHANGELOG.md`)
    - Add entry under "Unreleased" → category (Added/Changed/Fixed/Deprecated/Removed/Security)
    - Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\``
 
-2. **Update DEVLOG.md** (if milestone/decision)
+2. **Update DEVLOG.md** (if milestone/decision) — read `.logfile-config.yml` → `paths.devlog` (fallback `logs/DEVLOG.md`)
    - Only for: completed epics, major milestones, architectural decisions
-   - Add to `logs/DEVLOG.md` → "Daily Log" section (newest first)
+   - Add to "Daily Log" section (newest first)
 
 3. **Stage log files**
-   - `git add logs/CHANGELOG.md`
-   - `git add logs/DEVLOG.md` (if updated)
+   - `git add <changelog-path>`
+   - `git add <devlog-path>` (if updated)
 
 4. **Show checklist to user:**
    ```
@@ -45,8 +45,7 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 **If ANY answer is "no" or "unsure" → IMMEDIATELY FIX:**
 - Amend commit: `git commit --amend`
-- Correct the entry
-- Explain to user what was wrong
+- Correct the entry; explain to user what was wrong
 
 4. **Show verification to user:**
    ```
@@ -78,12 +77,11 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 ## 🔄 SESSION START
 
 **At start of EVERY session:**
-1. Read `logs/DEVLOG.md` → "Last Session" section (if exists) for handoff context
-2. Read `logs/DEVLOG.md` → "Current Context" section
-3. **Staleness check:** If `Last Updated` date is >7 days old, update Current Context BEFORE other work
-   - Tell user: "Current Context is X days old. Updating before proceeding."
-   - Update: version, phase, objectives, recent changes
-   - Set new `Last Updated` date
+1. Read `.logfile-config.yml` → `paths.state` (fallback `logs/STATE.md`)
+2. Read STATE → "Current Context" + "Last Session" sections
+3. **Staleness check:** If STATE's `Last Updated` is >7 days old, update STATE BEFORE other work
+   - Tell user: "STATE is X days old. Updating before proceeding."
+   - Update: version, phase, objectives, recent changes; set new `Last Updated` date
 4. Acknowledge: "Context read. Version [x], Phase [y], Objectives: [z]"
 
 ---
@@ -94,7 +92,7 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 
 **Before ending a session, write a handoff note:**
 
-1. Update `logs/DEVLOG.md` → "Last Session" section (overwrite previous)
+1. Update STATE → "Last Session" section (overwrite previous) — path from `.logfile-config.yml` → `paths.state` (fallback `logs/STATE.md`)
 2. Format (3 bullets max, <150 tokens):
    ```
    ## Last Session
