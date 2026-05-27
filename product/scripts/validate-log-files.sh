@@ -9,6 +9,7 @@
 #   ./scripts/validate-log-files.sh              # Run all validations
 #   ./scripts/validate-log-files.sh --changelog  # Run only CHANGELOG validation
 #   ./scripts/validate-log-files.sh --devlog     # Run only DEVLOG validation
+#   ./scripts/validate-log-files.sh --state      # Run only STATE validation
 #   ./scripts/validate-log-files.sh --tokens     # Run only token count validation
 #   ./scripts/validate-log-files.sh --verbose    # Show detailed output
 #
@@ -21,6 +22,7 @@
 # Configuration - Standard paths (all logs in /logs/ folder)
 CHANGELOG_PATH="logs/CHANGELOG.md"
 DEVLOG_PATH="logs/DEVLOG.md"
+STATE_PATH="logs/STATE.md"
 
 # Default token targets (can be overridden by profile)
 CHANGELOG_TOKEN_WARNING=8000
@@ -32,8 +34,9 @@ COMBINED_TOKEN_ERROR=25000
 VALIDATION_STRICTNESS="errors"  # Options: strict, errors, warnings-only, disabled
 FAIL_ON_WARNINGS=false
 
-# Note: STATE and ADR validation not yet implemented
-# Future: Add STATE_TOKEN_WARNING=400, STATE_TOKEN_ERROR=500
+# STATE token targets
+STATE_TOKEN_WARNING=400
+STATE_TOKEN_ERROR=500
 
 # Exit codes
 EXIT_SUCCESS=0
@@ -48,6 +51,7 @@ ERRORS=0
 # Parse command-line arguments
 RUN_CHANGELOG=false
 RUN_DEVLOG=false
+RUN_STATE=false
 RUN_TOKENS=false
 VERBOSE=false
 PRINT_CONFIG=false
@@ -56,21 +60,23 @@ for arg in "$@"; do
     case $arg in
         --changelog) RUN_CHANGELOG=true ;;
         --devlog) RUN_DEVLOG=true ;;
+        --state) RUN_STATE=true ;;
         --tokens) RUN_TOKENS=true ;;
         --verbose) VERBOSE=true ;;
         --print-config) PRINT_CONFIG=true ;;
         *)
             echo "Unknown option: $arg"
-            echo "Usage: $0 [--changelog] [--devlog] [--tokens] [--verbose] [--print-config]"
+            echo "Usage: $0 [--changelog] [--devlog] [--state] [--tokens] [--verbose] [--print-config]"
             exit 1
             ;;
     esac
 done
 
 # If no specific validation flags, run all
-if [ "$RUN_CHANGELOG" = false ] && [ "$RUN_DEVLOG" = false ] && [ "$RUN_TOKENS" = false ]; then
+if [ "$RUN_CHANGELOG" = false ] && [ "$RUN_DEVLOG" = false ] && [ "$RUN_STATE" = false ] && [ "$RUN_TOKENS" = false ]; then
     RUN_CHANGELOG=true
     RUN_DEVLOG=true
+    RUN_STATE=true
     RUN_TOKENS=true
 fi
 
@@ -157,6 +163,7 @@ load_profile_config() {
     local v
     v=$(strip_q "$(read_nested "paths" "changelog")"); [ -n "$v" ] && CHANGELOG_PATH="$v"
     v=$(strip_q "$(read_nested "paths" "devlog")");    [ -n "$v" ] && DEVLOG_PATH="$v"
+    v=$(strip_q "$(read_nested "paths" "state")");     [ -n "$v" ] && STATE_PATH="$v"
 
     v=$(strip_q "$(read_nested "token_targets" "changelog")")
     if [ -n "$v" ]; then
@@ -268,25 +275,12 @@ validate_devlog() {
     fi
     
     local errors=()
-    
-    # Check for Current Context section
-    if ! grep -q "^## Current Context" "$DEVLOG_PATH"; then
-        errors+=("Missing '## Current Context' section")
-    fi
-    
-    # Check for Daily Log section
+
+    # Check for Daily Log section (DEVLOG is narrative only; Current Context lives in STATE.md)
     if ! grep -q "^## Daily Log" "$DEVLOG_PATH"; then
         errors+=("Missing '## Daily Log' section")
     fi
-    
-    # Check for required fields in Current Context
-    local required_fields=("Version" "Active Branch" "Phase")
-    for field in "${required_fields[@]}"; do
-        if ! grep -q "\*\*$field" "$DEVLOG_PATH"; then
-            errors+=("Missing required field in Current Context: $field")
-        fi
-    done
-    
+
     # Check entry date format (### YYYY-MM-DD: Title)
     local invalid_entries=$(grep -E "^### [0-9]" "$DEVLOG_PATH" | grep -v -E "^### [0-9]{4}-[0-9]{2}-[0-9]{2}:" || true)
     if [ -n "$invalid_entries" ]; then
@@ -304,6 +298,46 @@ validate_devlog() {
         write_validation_result "DEVLOG" "PASSED"
     else
         write_validation_result "DEVLOG" "ERROR" "${#errors[@]} issue(s) found"
+        if [ "$VERBOSE" = true ]; then
+            for error in "${errors[@]}"; do
+                echo -e "\033[31m  - $error\033[0m"
+            done
+        fi
+    fi
+}
+
+# STATE Validation
+validate_state() {
+    if [ "$VERBOSE" = true ]; then
+        echo -e "\n\033[36m=== STATE Validation ===\033[0m"
+    fi
+
+    # STATE is first-class but optional in existing flows; warn if missing, don't hard-error
+    if [ ! -f "$STATE_PATH" ]; then
+        write_validation_result "STATE" "WARNING" "File not found: $STATE_PATH (create STATE.md for current context + session handoff)"
+        return
+    fi
+
+    local errors=()
+
+    # Check for Current Context section (STATE owns Version/Branch/Phase)
+    if ! grep -q "^## Current Context" "$STATE_PATH"; then
+        errors+=("Missing '## Current Context' section")
+    fi
+
+    # Check for required fields in Current Context
+    local required_fields=("Version" "Active Branch" "Phase")
+    for field in "${required_fields[@]}"; do
+        if ! grep -q "\*\*$field" "$STATE_PATH"; then
+            errors+=("Missing required field in Current Context: $field")
+        fi
+    done
+
+    # Report results
+    if [ ${#errors[@]} -eq 0 ]; then
+        write_validation_result "STATE" "PASSED"
+    else
+        write_validation_result "STATE" "ERROR" "${#errors[@]} issue(s) found"
         if [ "$VERBOSE" = true ]; then
             for error in "${errors[@]}"; do
                 echo -e "\033[31m  - $error\033[0m"
@@ -392,10 +426,13 @@ load_profile_config
 if [ "${PRINT_CONFIG:-false}" = true ]; then
     echo "CHANGELOG_PATH=$CHANGELOG_PATH"
     echo "DEVLOG_PATH=$DEVLOG_PATH"
+    echo "STATE_PATH=$STATE_PATH"
     echo "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
     echo "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
     echo "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
     echo "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    echo "STATE_TOKEN_ERROR=$STATE_TOKEN_ERROR"
+    echo "STATE_TOKEN_WARNING=$STATE_TOKEN_WARNING"
     exit 0
 fi
 
@@ -406,6 +443,10 @@ fi
 
 if [ "$RUN_DEVLOG" = true ]; then
     validate_devlog
+fi
+
+if [ "$RUN_STATE" = true ]; then
+    validate_state
 fi
 
 if [ "$RUN_TOKENS" = true ]; then

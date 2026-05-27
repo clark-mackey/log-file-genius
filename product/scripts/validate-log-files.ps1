@@ -13,6 +13,9 @@
 .PARAMETER Devlog
     Run only DEVLOG validation
 
+.PARAMETER State
+    Run only STATE validation
+
 .PARAMETER Tokens
     Run only token count validation
 
@@ -35,6 +38,7 @@
 param(
     [switch]$Changelog,
     [switch]$Devlog,
+    [switch]$State,
     [switch]$Tokens,
     [switch]$Verbose,
     [switch]$PrintConfig
@@ -43,6 +47,7 @@ param(
 # Configuration - Standard paths (all logs in /logs/ folder)
 $CHANGELOG_PATH = "logs/CHANGELOG.md"
 $DEVLOG_PATH = "logs/DEVLOG.md"
+$STATE_PATH = "logs/STATE.md"
 
 # Default token targets (can be overridden by profile)
 $CHANGELOG_TOKEN_WARNING = 8000
@@ -54,8 +59,9 @@ $COMBINED_TOKEN_ERROR = 25000
 $VALIDATION_STRICTNESS = "errors"  # Options: strict, errors, warnings-only, disabled
 $FAIL_ON_WARNINGS = $false
 
-# Note: STATE and ADR validation not yet implemented
-# Future: Add STATE_TOKEN_WARNING = 400, STATE_TOKEN_ERROR = 500
+# STATE token targets
+$STATE_TOKEN_WARNING = 400
+$STATE_TOKEN_ERROR = 500
 
 # Colors
 $COLOR_SUCCESS = "Green"
@@ -182,6 +188,8 @@ function Load-ProfileConfig {
     if ($v) { $script:CHANGELOG_PATH = $v }
     $v = Read-NestedConfig $cfg "paths" "devlog"
     if ($v) { $script:DEVLOG_PATH = $v }
+    $v = Read-NestedConfig $cfg "paths" "state"
+    if ($v) { $script:STATE_PATH = $v }
 
     # Read nested token_targets block; derive warnings at 80%
     $v = Read-NestedConfig $cfg "token_targets" "changelog"
@@ -305,25 +313,12 @@ function Test-Devlog {
     $content = Get-Content $DEVLOG_PATH -Raw
     $lines = Get-Content $DEVLOG_PATH
     $errors = @()
-    
-    # Check for Current Context section
-    if ($content -notmatch '##\s+Current Context') {
-        $errors += "Missing '## Current Context' section"
-    }
-    
-    # Check for Daily Log section
+
+    # Check for Daily Log section (DEVLOG is narrative only; Current Context lives in STATE.md)
     if ($content -notmatch '##\s+Daily Log') {
         $errors += "Missing '## Daily Log' section"
     }
-    
-    # Check for required Current Context fields
-    $requiredFields = @('Version', 'Active Branch', 'Phase')
-    foreach ($field in $requiredFields) {
-        if ($content -notmatch "\*\*$field") {
-            $errors += "Missing required field in Current Context: $field"
-        }
-    }
-    
+
     # Check entry date formats (### YYYY-MM-DD: Title)
     $entryPattern = '###\s+\d{4}-\d{2}-\d{2}:'
     $invalidEntries = $lines | Where-Object { 
@@ -345,6 +340,52 @@ function Test-Devlog {
         return $EXIT_SUCCESS
     } else {
         Write-ValidationResult "DEVLOG" "ERROR" "$($errors.Count) issue(s) found"
+        if ($Verbose) {
+            foreach ($error in $errors) {
+                Write-Host "  - $error" -ForegroundColor $COLOR_ERROR
+            }
+        }
+        return $EXIT_ERROR
+    }
+}
+
+#endregion
+
+#region STATE Validation
+
+function Test-State {
+    if ($Verbose) {
+        Write-Host "`n=== STATE Validation ===" -ForegroundColor $COLOR_INFO
+    }
+
+    # STATE is first-class but optional in existing flows; warn if missing, don't hard-error
+    if (-not (Test-Path $STATE_PATH)) {
+        Write-ValidationResult "STATE" "WARNING" "File not found: $STATE_PATH (create STATE.md for current context + session handoff)"
+        return $EXIT_WARNING
+    }
+
+    $content = Get-Content $STATE_PATH -Raw
+    $errors = @()
+
+    # Check for Current Context section (STATE owns Version/Branch/Phase)
+    if ($content -notmatch '##\s+Current Context') {
+        $errors += "Missing '## Current Context' section"
+    }
+
+    # Check for required fields in Current Context
+    $requiredFields = @('Version', 'Active Branch', 'Phase')
+    foreach ($field in $requiredFields) {
+        if ($content -notmatch "\*\*$field") {
+            $errors += "Missing required field in Current Context: $field"
+        }
+    }
+
+    # Report results
+    if ($errors.Count -eq 0) {
+        Write-ValidationResult "STATE" "PASSED"
+        return $EXIT_SUCCESS
+    } else {
+        Write-ValidationResult "STATE" "ERROR" "$($errors.Count) issue(s) found"
         if ($Verbose) {
             foreach ($error in $errors) {
                 Write-Host "  - $error" -ForegroundColor $COLOR_ERROR
@@ -448,17 +489,20 @@ Load-ProfileConfig
 if ($PrintConfig) {
     Write-Output "CHANGELOG_PATH=$CHANGELOG_PATH"
     Write-Output "DEVLOG_PATH=$DEVLOG_PATH"
+    Write-Output "STATE_PATH=$STATE_PATH"
     Write-Output "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
     Write-Output "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
     Write-Output "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
     Write-Output "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    Write-Output "STATE_TOKEN_ERROR=$STATE_TOKEN_ERROR"
+    Write-Output "STATE_TOKEN_WARNING=$STATE_TOKEN_WARNING"
     exit 0
 }
 
 $exitCode = $EXIT_SUCCESS
 
 # Determine which validations to run
-$runAll = -not ($Changelog -or $Devlog -or $Tokens)
+$runAll = -not ($Changelog -or $Devlog -or $State -or $Tokens)
 
 if ($runAll -or $Changelog) {
     $result = Test-Changelog
@@ -467,6 +511,11 @@ if ($runAll -or $Changelog) {
 
 if ($runAll -or $Devlog) {
     $result = Test-Devlog
+    if ($result -gt $exitCode) { $exitCode = $result }
+}
+
+if ($runAll -or $State) {
+    $result = Test-State
     if ($result -gt $exitCode) { $exitCode = $result }
 }
 
