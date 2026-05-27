@@ -38,6 +38,30 @@ print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
 
+migrate_devlog_to_state() {
+    local devlog="logs/DEVLOG.md"
+    local state="logs/STATE.md"
+    [ -f "$devlog" ] || return 0
+    if ! grep -q "## Current Context" "$devlog"; then return 0; fi
+    if [ -f "$state" ]; then
+        print_warning "DEVLOG has a legacy Current Context, but STATE.md already exists."
+        print_info "Review and move it manually if needed; leaving files unchanged."
+        return 0
+    fi
+    print_info "Migrating DEVLOG Current Context / Last Session into new STATE.md"
+    {
+        echo "# Current State"
+        echo ""
+        awk '/^## Current Context/{f=1} /^## Daily Log/{f=0} f' "$devlog"
+    } > "$state"
+    print_success "Created logs/STATE.md from legacy DEVLOG sections (review it)."
+}
+
+if [ "${LFG_MIGRATE_ONLY:-0}" = "1" ]; then
+    migrate_devlog_to_state
+    exit 0
+fi
+
 # Check if .log-file-genius exists
 if [[ ! -d "$PROJECT_ROOT/.log-file-genius" ]]; then
     print_error "Log File Genius not found!"
@@ -171,6 +195,9 @@ if [[ "$AI_ASSISTANT" != "unknown" ]]; then
         done
     fi
 fi
+
+# Migrate legacy DEVLOG context into STATE.md for existing installs
+migrate_devlog_to_state
 
 # Update validation scripts
 print_info "Checking validation scripts..."
