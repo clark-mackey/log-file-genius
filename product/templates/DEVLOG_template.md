@@ -134,11 +134,11 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 ### Best Practices for AI Efficiency
 
 1. **Keep daily entries focused** - One main story per day, not multiple mini-stories
-3. **Use ADRs for decisions** - Link to them, don't duplicate the full rationale
-4. **Archive aggressively** - Move entries >14 days to `/archive/DEVLOG-YYYY-MM-Wn.md`
-5. **Link to files** - Help AI locate relevant code
-6. **Preserve the narrative** - This is a story, not a bullet list
-7. **But be concise** - Aim for 150-250 words per entry, not 500+
+2. **Use ADRs for decisions** - Link to them, don't duplicate the full rationale
+3. **Archive aggressively** - Move entries >14 days to `/archive/DEVLOG-YYYY-MM-Wn.md`
+4. **Link to files** - Help AI locate relevant code
+5. **Preserve the narrative** - This is a story, not a bullet list
+6. **But be concise** - Aim for 150-250 words per entry, not 500+
 
 ### What Belongs in DEVLOG vs CHANGELOG
 
