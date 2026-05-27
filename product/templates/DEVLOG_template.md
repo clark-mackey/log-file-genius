@@ -1,3 +1,11 @@
+---
+doc: DEVLOG
+related:
+  changelog: ./CHANGELOG.md
+  state: ./STATE.md
+  adr_index: ./adr/README.md
+---
+
 # Development Log
 
 A narrative chronicle of the project journey - the decisions, discoveries, and pivots that shaped the work.
@@ -7,38 +15,10 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ## Related Documents
 
 📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
-📈 **[STATE](./STATE.md)** - Current project state and metrics
+📈 **[STATE](./STATE.md)** - Current project state (the now)
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** section. For technical details of *what* changed, see CHANGELOG.md.
-
----
-
-## Current Context
-
-**Last Updated:** [Current Date]
-
-### Project State
-- **Project:** [Your Project Name]
-- **Version:** v0.1.0-dev
-- **Active Branch:** `main`
-- **Phase:** Initial setup
-
-### Current Objectives
-- [ ] Set up initial project structure
-- [ ] Configure development environment
-- [ ] Document architectural decisions
-
-### Known Risks & Blockers
-- None yet
-
----
-
-## Last Session
-
-- **Done:** [Initial project setup, installed Log File Genius]
-- **In Progress:** [None]
-- **Next:** [Begin development work, document first decisions]
-- **Branch:** `main` | **Last Commit:** `initial`
+> **For AI Agents:** This file tells the story of *why* decisions were made. For current project state and session handoff, read **STATE.md** (the now). For technical details of *what* changed, see CHANGELOG.md.
 
 ---
 
@@ -153,8 +133,7 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 
 ### Best Practices for AI Efficiency
 
-1. **Current Context is sacred** - Update it weekly or when major changes occur
-2. **Keep daily entries focused** - One main story per day, not multiple mini-stories
+1. **Keep daily entries focused** - One main story per day, not multiple mini-stories
 3. **Use ADRs for decisions** - Link to them, don't duplicate the full rationale
 4. **Archive aggressively** - Move entries >14 days to `/archive/DEVLOG-YYYY-MM-Wn.md`
 5. **Link to files** - Help AI locate relevant code
@@ -184,7 +163,6 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 
 ### Token Efficiency Targets
 
-- **Current Context section:** ~500-800 tokens (updated weekly)
 - **ADR Index:** ~50-100 tokens (grows slowly)
 - **Daily entry:** ~150-250 tokens each
 - **Entire file:** <15,000 tokens with 14-day archive strategy

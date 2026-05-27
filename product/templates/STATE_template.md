@@ -1,3 +1,11 @@
+---
+doc: STATE
+related:
+  changelog: ./CHANGELOG.md
+  devlog: ./DEVLOG.md
+  adr_index: ./adr/README.md
+---
+
 # Current State
 
 **Last Updated:** [Current Date and Time]
@@ -12,6 +20,27 @@
 ⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
 > **For AI Agents:** This file provides at-a-glance status for multi-agent coordination. Read this FIRST before starting work to avoid conflicts and duplicate effort. Update at the START and END of each work session.
+
+---
+
+## Current Context
+
+- **Project:** [Your Project Name]
+- **Version:** v0.1.0-dev
+- **Active Branch:** `main`
+- **Phase:** Initial setup
+- **Current Objectives:**
+  - [ ] [First objective]
+- **Known Risks/Blockers:** None yet
+
+---
+
+## Last Session
+
+- **Done:** [What was completed]
+- **In Progress:** [What's partially done]
+- **Next:** [What to start next]
+- **Branch:** `main` | **Last Commit:** `initial`
 
 ---
 
@@ -97,7 +126,6 @@
 - Narrative of project evolution
 - Lessons learned
 - Context for future reference
-- Current Context section (updated weekly)
 
 **CHANGELOG:**
 - What changed (facts only)
