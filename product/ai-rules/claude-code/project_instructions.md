@@ -5,7 +5,7 @@ This project uses the **Log File Genius** system - a token-efficient documentati
 ## Core Principles
 
 1. **Read Configuration First:**
-   - **ALWAYS** read `.logfile-config.yml` to find log file locations
+   - **ALWAYS** read `.logfile-config.yml` → `paths` to find log file locations
    - Default paths (if config not found):
      - CHANGELOG: `logs/CHANGELOG.md`
      - DEVLOG: `logs/DEVLOG.md`
@@ -15,12 +15,12 @@ This project uses the **Log File Genius** system - a token-efficient documentati
 2. **Maintain the Five-Document System:**
    - **PRD** - What we're building and why
    - **CHANGELOG** - What changed (facts)
-   - **DEVLOG** - Why it changed (narrative)
-   - **STATE** - What's happening now (optional)
+   - **DEVLOG** - Why it changed (narrative only)
+   - **STATE** — What's happening now; the single source for current state + session handoff
    - **ADRs** - How we decided (architectural decisions)
 
 3. **Token Efficiency:**
-   - Keep CHANGELOG + DEVLOG + STATE under 10,000 tokens combined
+   - CHANGELOG <10k, DEVLOG <15k, combined <25k tokens; STATE <500 tokens.
    - Use single-line entries in CHANGELOG
    - Use structured format (Situation/Challenge/Decision/Impact/Files) in DEVLOG
    - Archive old entries when files exceed token budgets
@@ -29,7 +29,7 @@ This project uses the **Log File Genius** system - a token-efficient documentati
    - Follow the log file maintenance rules in `.claude/rules/log-file-maintenance.md`
    - Update CHANGELOG after every commit
    - Update DEVLOG after milestones/decisions
-   - Read DEVLOG Current Context before starting work
+   - Read STATE (Current Context + Last Session) before starting work
 
 ## Available Commands
 
@@ -43,7 +43,7 @@ When the user invokes these commands, follow the corresponding rule file:
 - **Configuration:** `.logfile-config.yml` (log file paths)
 - **Full methodology:** `.log-file-genius/product/docs/log_file_how_to.md`
 - **Templates:** `.log-file-genius/product/templates/` directory
-- **Validation:** `.log-file-genius/product/scripts/validate-log-files.sh`
+- **Validation:** `scripts/validate-log-files.sh`
 
 ## Important Notes
 
