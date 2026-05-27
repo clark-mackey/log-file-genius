@@ -1,3 +1,11 @@
+---
+doc: DEVLOG
+related:
+  changelog: ./CHANGELOG.md
+  state: ./STATE.md
+  adr_index: ./adr/README.md
+---
+
 # Development Log
 
 A narrative chronicle of the project journey - the decisions, discoveries, and pivots that shaped the work.
@@ -8,22 +16,17 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 📋 **[PRD](../project/specs/prd.md)** - Product requirements and specifications
 📊 **[CHANGELOG](CHANGELOG.md)** - Technical changes and version history
+📈 **[STATE](STATE.md)** - Current project state and session handoff (the now)
 ⚖️ **[ADRs](adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** and **Decisions (ADR)** sections. For technical details of *what* changed, see CHANGELOG.md.
+> **For AI Agents:** This file tells the story of *why* decisions were made. For current project state and session handoff read **STATE.md**; for *what* changed see CHANGELOG.md. Before starting work, also scan the **Decisions (ADR)** index.
 
 ---
 
-## Current Context (Source of Truth)
+## Project Reference
 
-**Last Updated:** 2026-02-01
-
-### Project State
-- **Project:** Log File Genius
-- **Current Version:** v0.2.0
-- **Active Branch:** `development`
-- **Phase:** AI Context Optimization - Epic 8 (refocused after code-police review)
-- **Repository:** https://github.com/clark-mackey/log-file-genius
+> Stable project facts. Current state (version, branch, phase, objectives, risks)
+> now lives in **[STATE.md](STATE.md)**, the single source for "the now."
 
 ### Stack & Tools
 - **Repository Type:** Documentation/Template Repository
@@ -40,52 +43,20 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Safety First:** Never delete existing files in brownfield installations
 
 ### Key Architectural Decisions
-- **ADR-008:** Product/Project Directory Separation - Separate product/ (distributable) from project/ (development) to eliminate AI agent confusion
+- **ADR-008:** Product/Project Directory Separation - separate product/ (distributable) from project/ (development) to eliminate AI agent confusion
 
 ### Constraints & Requirements
-- **Token Efficiency:** CHANGELOG + DEVLOG combined must be <25,000 tokens
-- **Simplicity:** No build process, no dependencies, just clone and use
+- **Token Efficiency:** CHANGELOG <10k, DEVLOG <15k, combined <25k tokens; STATE <500
+- **Simplicity:** No build process, no third-party dependencies, just clone and use
 - **Compatibility:** Must work with Augment, Claude Code, Cursor, GitHub Copilot
 - **Safety:** Brownfield installation must preserve existing documentation
-- **Accessibility:** Clear documentation for both greenfield and brownfield use cases
-
-### Current Objectives (February 2026)
-
-**Source of Truth:** See [prd.md](../project/specs/prd.md) for all epics, stories, and requirements.
-
-**🎯 Mission:** Help AI agents not get lost, not waste tokens.
-
-**Next Steps (in priority order):**
-1. **Epic 7: Core Reliability** - Start with Story 7.2 (Rule Adherence), then 7.3, 7.1, 7.4, 7.5
-2. **Epic 8: AI Context Optimization** - After Epic 7 complete
-
-**Planned (P0-P1):**
-- [ ] Epic 12: Security & Secrets Detection (P0) - Spec: `project/specs/EPIC-12-security-secrets-detection.md`
-- [ ] Epic 13: Validation & Reliability (P0) - Spec: `project/specs/EPIC-13-validation-reliability.md`
-- [ ] Epic 17: Incident Reports & Learning (P1) - Spec: `project/specs/EPIC-17-incident-reports-learning.md`
-
-**Completed (Nov 2025 - Jan 2026):**
-- [x] Epic 19: Dogfooding /logs/ migration
-- [x] Product/project directory separation (ADR-008)
-- [x] Two-branch strategy (ADR-009)
-- [x] PRD v0.5/v0.6 refocus - rejected mission drift (Epics 9, 10, 11, 18)
-- [x] Planning files cleanup - archived obsolete roadmaps and research
-
-**Deferred:**
-- Epic 15: Governance & Review (team process, not AI benefit)
-
-
-### Known Risks & Blockers
-- **Risk:** Success metrics (500 stars in 6 months) are ambitious for a niche developer tool
-- **Risk:** Multi-platform AI assistant support requires testing across 4 different platforms
-- **Opportunity:** Early adoption by AI coding community could drive viral growth
 
 ### Entry Points (For Code Navigation)
-- **PRD:** `docs/prd.md` - Complete product requirements
-- **Templates:** `templates/` - Distribution templates for users
-- **Working Logs:** `docs/planning/` - This project's own logs (dogfooding)
-- **Documentation:** `docs/` - User-facing guides and how-tos
-- **ADRs:** `docs/adr/` - Architectural decision records
+- **PRD:** `project/specs/prd.md` - Complete product requirements
+- **Distributable templates:** `product/templates/`
+- **Working Logs:** `logs/` - This project's own logs (dogfooding)
+- **Docs:** `product/docs/` - User-facing guides and how-tos
+- **ADRs:** `logs/adr/` - Architectural decision records
 
 ---
 
