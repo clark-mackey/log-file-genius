@@ -50,10 +50,22 @@ def test_tabs_fail_loudly(tmp_path):
         parse_config(str(p))
 
 
-def test_real_profiles_parse(tmp_path):
-    # The preset profile files are documentation, but must at least not crash
-    # the parser on their top-level scalar keys we rely on.
-    profiles = Path(__file__).resolve().parents[1] / "profiles"
-    for f in profiles.glob("*.yml"):
-        # Should not raise on the top-level scalar keys we rely on.
-        parse_config(str(f))
+def test_template_config_parses():
+    # The shipped config template (.logfile-config.yml) is the real shape this
+    # parser must handle: flat scalars plus commented-out blocks. The full
+    # profiles/*.yml files are documentation using YAML features (block scalars,
+    # lists, deep nesting) deliberately outside this parser's subset, so they are
+    # NOT parsed at runtime and are not exercised here.
+    template = Path(__file__).resolve().parents[1] / "templates" / ".logfile-config.yml"
+    cfg = parse_config(str(template))
+    assert cfg["profile"] == "solo-developer"
+    assert cfg["log_file_genius_version"] == "0.2.0"
+
+
+def test_out_of_subset_content_fails_loudly(tmp_path):
+    # Documents the boundary: full-YAML constructs (list items) raise, never
+    # silently mis-parse.
+    p = tmp_path / ".logfile-config.yml"
+    p.write_text("required_files:\n  - CHANGELOG\n", encoding="utf-8")
+    with pytest.raises(ConfigError):
+        parse_config(str(p))
