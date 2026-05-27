@@ -199,9 +199,8 @@ def find_rule_files(rules_dir: Path) -> List[Path]:
     rule_files = list(rules_dir.glob('**/*.md'))
     rule_files = [f for f in rule_files if f.is_file()]
 
-    # Deduplicate by filename - if same filename appears in multiple dirs,
-    # keep only the first occurrence (prevents ai-rules/augment and
-    # starter-packs/augment from both being scanned)
+    # Deduplicate by filename - if the same filename appears in multiple dirs,
+    # keep only the first occurrence.
     seen_names: Set[str] = set()
     unique_files = []
     for f in rule_files:

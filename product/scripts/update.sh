@@ -141,31 +141,34 @@ prompt_update() {
 
 # Update AI assistant rules
 if [[ "$AI_ASSISTANT" != "unknown" ]]; then
-    RULES_SRC="$SOURCE_ROOT/product/starter-packs/$AI_ASSISTANT"
-    
+    RULES_SRC="$SOURCE_ROOT/product/ai-rules/$AI_ASSISTANT"
+
     if [[ "$AI_ASSISTANT" == "augment" ]]; then
-        # Update Augment rules
-        for rule_file in "$RULES_SRC/.augment/rules/"*.md; do
-            if [[ -f "$rule_file" ]]; then
-                rule_name=$(basename "$rule_file")
-                dest_file="$PROJECT_ROOT/.augment/rules/$rule_name"
-                
-                if prompt_update "Augment rule: $rule_name" "$rule_file" "$dest_file"; then
-                    mkdir -p "$PROJECT_ROOT/.augment/rules"
-                    cp "$rule_file" "$dest_file"
-                    print_success "Updated: $rule_name"
-                fi
+        for rule_file in "$RULES_SRC/"*.md; do
+            [[ -f "$rule_file" ]] || continue
+            rule_name=$(basename "$rule_file")
+            dest_file="$PROJECT_ROOT/.augment/rules/$rule_name"
+            if prompt_update "Augment rule: $rule_name" "$rule_file" "$dest_file"; then
+                mkdir -p "$PROJECT_ROOT/.augment/rules"
+                cp "$rule_file" "$dest_file"
+                print_success "Updated: $rule_name"
             fi
         done
     elif [[ "$AI_ASSISTANT" == "claude-code" ]]; then
-        # Update Claude Code instructions
-        if prompt_update "Claude Code instructions" \
-            "$RULES_SRC/.claude/project_instructions.md" \
-            "$PROJECT_ROOT/.claude/project_instructions.md"; then
-            mkdir -p "$PROJECT_ROOT/.claude"
-            cp "$RULES_SRC/.claude/project_instructions.md" "$PROJECT_ROOT/.claude/"
-            print_success "Updated: project_instructions.md"
-        fi
+        for rule_file in "$RULES_SRC/"*.md; do
+            [[ -f "$rule_file" ]] || continue
+            rule_name=$(basename "$rule_file")
+            if [[ "$rule_name" == "project_instructions.md" ]]; then
+                dest_file="$PROJECT_ROOT/.claude/project_instructions.md"
+            else
+                dest_file="$PROJECT_ROOT/.claude/rules/$rule_name"
+            fi
+            if prompt_update "Claude rule: $rule_name" "$rule_file" "$dest_file"; then
+                mkdir -p "$(dirname "$dest_file")"
+                cp "$rule_file" "$dest_file"
+                print_success "Updated: $rule_name"
+            fi
+        done
     fi
 fi
 

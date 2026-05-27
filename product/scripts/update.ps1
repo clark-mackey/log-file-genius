@@ -153,39 +153,33 @@ function Prompt-Update {
 
 # Update AI assistant rules
 if ($AiAssistant -ne "unknown") {
-    $RulesSrc = Join-Path $SourceRoot "product\starter-packs\$AiAssistant"
-    
+    $RulesSrc = Join-Path $SourceRoot "product\ai-rules\$AiAssistant"
+
     if ($AiAssistant -eq "augment") {
-        # Update Augment rules
-        $rulesPath = Join-Path $RulesSrc ".augment\rules"
-        if (Test-Path $rulesPath) {
-            Get-ChildItem -Path $rulesPath -Filter "*.md" | ForEach-Object {
-                $ruleName = $_.Name
-                $srcFile = $_.FullName
-                $destFile = Join-Path $ProjectRoot ".augment\rules\$ruleName"
-                
-                if (Prompt-Update "Augment rule: $ruleName" $srcFile $destFile) {
-                    $destDir = Split-Path -Parent $destFile
-                    if (-not (Test-Path $destDir)) {
-                        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-                    }
-                    Copy-Item -Path $srcFile -Destination $destFile -Force
-                    Print-Success "Updated: $ruleName"
-                }
+        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
+            $ruleName = $_.Name
+            $destFile = Join-Path $ProjectRoot ".augment\rules\$ruleName"
+            if (Prompt-Update "Augment rule: $ruleName" $_.FullName $destFile) {
+                $destDir = Split-Path -Parent $destFile
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                Copy-Item -Path $_.FullName -Destination $destFile -Force
+                Print-Success "Updated: $ruleName"
             }
         }
     } elseif ($AiAssistant -eq "claude-code") {
-        # Update Claude Code instructions
-        $srcFile = Join-Path $RulesSrc ".claude\project_instructions.md"
-        $destFile = Join-Path $ProjectRoot ".claude\project_instructions.md"
-        
-        if (Prompt-Update "Claude Code instructions" $srcFile $destFile) {
-            $destDir = Split-Path -Parent $destFile
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
+            $ruleName = $_.Name
+            if ($ruleName -eq "project_instructions.md") {
+                $destFile = Join-Path $ProjectRoot ".claude\project_instructions.md"
+            } else {
+                $destFile = Join-Path $ProjectRoot ".claude\rules\$ruleName"
             }
-            Copy-Item -Path $srcFile -Destination $destFile -Force
-            Print-Success "Updated: project_instructions.md"
+            if (Prompt-Update "Claude rule: $ruleName" $_.FullName $destFile) {
+                $destDir = Split-Path -Parent $destFile
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                Copy-Item -Path $_.FullName -Destination $destFile -Force
+                Print-Success "Updated: $ruleName"
+            }
         }
     }
 }
