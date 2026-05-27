@@ -43,7 +43,7 @@ When the user invokes these commands, follow the corresponding rule file:
 - **Configuration:** `.logfile-config.yml` (log file paths)
 - **Full methodology:** `.log-file-genius/product/docs/log_file_how_to.md`
 - **Templates:** `.log-file-genius/product/templates/` directory
-- **Validation:** `scripts/validate-log-files.sh`
+- **Validation:** `.log-file-genius/product/scripts/validate-log-files.sh`
 
 ## Important Notes
 

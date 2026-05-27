@@ -36,7 +36,7 @@ Please specify (1-5):
 
 1. Ask: "What changed? (files, features, fixes)"
 2. Determine category: Added, Changed, Fixed, Deprecated, Removed, Security
-3. Open `logs/CHANGELOG.md`
+3. Open CHANGELOG (path from `.logfile-config.yml` → `paths.changelog`, default `logs/CHANGELOG.md`)
 4. Add entry under "Unreleased" section in appropriate category
 5. Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\` (if available)`
 6. Show the entry to user for confirmation
@@ -57,7 +57,7 @@ Please specify (1-5):
    - Why does it matter?
    - What was the result?
    - What files changed?
-3. Open `logs/DEVLOG.md`
+3. Open DEVLOG (path from `.logfile-config.yml` → `paths.devlog`, default `logs/DEVLOG.md`)
 4. Add entry to "Daily Log" section (newest first)
 5. Use format: Situation/Challenge/Decision/Why/Result/Files
 6. Keep entry 150-250 words
