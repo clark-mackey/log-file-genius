@@ -3,11 +3,13 @@ $tmp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid())
 New-Item -ItemType Directory -Path $tmp | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $tmp "alt") | Out-Null
 Push-Location $tmp
+# Quoted path + a trailing comment on the token_targets header exercise
+# quote-stripping and the relaxed parent-header match.
 @"
 paths:
-  changelog: alt/CHANGELOG.md
+  changelog: "alt/CHANGELOG.md"
   devlog: alt/DEVLOG.md
-token_targets:
+token_targets:  # budgets
   changelog: 9000
   devlog: 13000
 "@ | Set-Content -Path ".logfile-config.yml" -Encoding utf8

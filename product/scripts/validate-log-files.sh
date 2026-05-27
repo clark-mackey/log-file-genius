@@ -150,16 +150,20 @@ load_profile_config() {
         ' "$config_file"
     }
 
-    local v
-    v=$(read_nested "paths" "changelog"); [ -n "$v" ] && CHANGELOG_PATH="$v"
-    v=$(read_nested "paths" "devlog");    [ -n "$v" ] && DEVLOG_PATH="$v"
+    # Strip one layer of surrounding quotes so quoted scalars (e.g.
+    # changelog: "logs/CHANGELOG.md") match the canonical config_parser.py.
+    strip_q() { local s="$1"; s="${s#[\"\']}"; s="${s%[\"\']}"; printf '%s' "$s"; }
 
-    v=$(read_nested "token_targets" "changelog")
+    local v
+    v=$(strip_q "$(read_nested "paths" "changelog")"); [ -n "$v" ] && CHANGELOG_PATH="$v"
+    v=$(strip_q "$(read_nested "paths" "devlog")");    [ -n "$v" ] && DEVLOG_PATH="$v"
+
+    v=$(strip_q "$(read_nested "token_targets" "changelog")")
     if [ -n "$v" ]; then
         CHANGELOG_TOKEN_ERROR="$v"
         CHANGELOG_TOKEN_WARNING=$((v * 80 / 100))
     fi
-    v=$(read_nested "token_targets" "devlog")
+    v=$(strip_q "$(read_nested "token_targets" "devlog")")
     if [ -n "$v" ]; then
         DEVLOG_TOKEN_ERROR="$v"
         DEVLOG_TOKEN_WARNING=$((v * 80 / 100))

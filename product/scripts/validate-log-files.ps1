@@ -133,11 +133,16 @@ function Read-NestedConfig {
     $inBlock = $false
     foreach ($line in $lines) {
         if ($line -match '^[A-Za-z_]+:') {
-            $inBlock = ($line -match ('^' + [regex]::Escape($Parent) + ':\s*$'))
+            # Match the parent header without a strict end-anchor so a trailing
+            # comment (token_targets:  # budgets) still opens the block, matching
+            # the bash validator's behavior.
+            $inBlock = ($line -match ('^' + [regex]::Escape($Parent) + ':'))
             continue
         }
         if ($inBlock -and $line -match ('^\s+' + [regex]::Escape($Key) + ':\s*(\S+)')) {
-            return $Matches[1]
+            # Strip one layer of surrounding quotes so quoted scalars match the
+            # canonical config_parser.py.
+            return $Matches[1].Trim('"').Trim("'")
         }
     }
     return $null

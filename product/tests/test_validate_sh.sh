@@ -4,12 +4,13 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cd "$TMP"
 mkdir -p logs alt
+# Quoted path + trailing comment exercise quote-stripping and comment tolerance.
 cat > .logfile-config.yml <<'EOF'
 paths:
-  changelog: alt/CHANGELOG.md
+  changelog: "alt/CHANGELOG.md"
   devlog: alt/DEVLOG.md
 token_targets:
-  changelog: 9000
+  changelog: 9000  # tight
   devlog: 13000
 EOF
 printf '# x\n' > alt/CHANGELOG.md
