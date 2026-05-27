@@ -28,7 +28,8 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
-import yaml
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config_parser import parse_config, ConfigError
 
 
 @dataclass
@@ -280,11 +281,10 @@ class LogLinter:
             return {}
 
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f) or {}
-        except Exception as e:
-            print(f"Warning: Could not load config: {e}", file=sys.stderr)
-            return {}
+            return parse_config(config_path)
+        except ConfigError as e:
+            print(f"ERROR: Invalid .logfile-config.yml: {e}", file=sys.stderr)
+            sys.exit(2)
 
     def _validate_frontmatter_links(self, file_path: str, lines: List[str], result: ValidationResult):
         """Validate frontmatter links point to existing files"""
