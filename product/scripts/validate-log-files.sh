@@ -517,6 +517,11 @@ else
         echo ""
         echo -e "\033[33m[!] Validation warnings present. Commit allowed.\033[0m"
         echo ""
+        # "Commit allowed" means exit 0 — warnings are non-blocking in default
+        # (errors-only) mode. Without this, the script exits 1 and contradicts
+        # its own message, which breaks CI on a fresh install (STATE template
+        # legitimately warns until guidance is trimmed).
+        EXIT_CODE=$EXIT_SUCCESS
     else
         echo ""
         echo -e "\033[32m[OK] All validations passed!\033[0m"

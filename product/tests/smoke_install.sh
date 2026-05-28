@@ -49,4 +49,11 @@ if grep -q 'starter-packs' "$REPO/product/scripts/update.sh"; then
     echo "FAIL: update.sh still references starter-packs"; exit 1
 fi
 
+# --- Validator exits 0 on a fresh install ---
+# Mirrors what CI runs (`validate-log-files.sh --verbose` after install). The
+# STATE template legitimately warns (over budget until guidance is trimmed);
+# in default mode warnings must be non-blocking — anything else breaks CI.
+bash "$REPO/product/scripts/validate-log-files.sh" --verbose >/dev/null 2>&1 \
+    || { echo "FAIL: validator exits non-zero on a clean install (CI regression)"; exit 1; }
+
 echo "PASS (bash)"
