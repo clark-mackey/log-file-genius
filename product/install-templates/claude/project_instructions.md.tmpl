@@ -7,10 +7,10 @@ This project uses the **Log File Genius** system - a token-efficient documentati
 1. **Read Configuration First:**
    - **ALWAYS** read `.logfile-config.yml` → `paths` to find log file locations
    - Default paths (if config not found):
-     - CHANGELOG: `logs/CHANGELOG.md`
-     - DEVLOG: `logs/DEVLOG.md`
-     - ADR: `logs/adr/`
-     - STATE: `logs/STATE.md`
+     - CHANGELOG: `{{paths.changelog}}`
+     - DEVLOG: `{{paths.devlog}}`
+     - ADR: `{{paths.adr_dir}}`
+     - STATE: `{{paths.state}}`
 
 2. **Maintain the Five-Document System:**
    - **PRD** - What we're building and why
