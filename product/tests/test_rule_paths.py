@@ -11,10 +11,10 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# Spec 2 canonical-fragments layout: product/ai-rules/ deleted in T22;
+# only the canonical fragment directory needs scanning.
 RULE_DIRS = [
-    ROOT / "product/ai-rules/claude-code",
-    ROOT / "product/ai-rules/augment",
-    ROOT / "product/ai-rules",  # top-level README references
+    ROOT / "product/rules",
 ]
 # Any path under .log-file-genius/ that targets a known subdir must go through
 # /product/. The repo-root `.log-file-genius/.git` etc. are not targets.
@@ -49,16 +49,10 @@ def test_installer_doc_link_points_at_product():
         )
 
 
-def test_installer_skips_project_instructions_in_rules_copy():
-    # project_instructions.md is Claude Code's top-level config, copied
-    # separately to .claude/. It must NOT also be duplicated into .claude/rules/.
-    sh = (ROOT / "product/scripts/install.sh").read_text(encoding="utf-8")
-    assert 'rel_path" = "project_instructions.md' in sh, (
-        "install.sh no longer skips project_instructions.md when populating "
-        ".claude/rules/ — fresh installs will get a duplicate copy"
-    )
-    ps = (ROOT / "product/scripts/install.ps1").read_text(encoding="utf-8")
-    assert '$relativePath -eq "project_instructions.md"' in ps, (
-        "install.ps1 no longer skips project_instructions.md when populating "
-        ".claude/rules/ — fresh installs will get a duplicate copy"
-    )
+# Spec 1 had a test asserting install.sh/.ps1 skip project_instructions.md when
+# copying .claude/rules/ contents — that whole copy pattern was replaced in
+# Spec 2 (install.sh now walks product/rules/ fragments and routes by frontmatter
+# `targets`; project_instructions is rendered from a template, not copied). The
+# semantic replacement — "no duplicate project_instructions in .claude/rules/" —
+# is asserted end-to-end by T18's cross-platform smoke tests against a real
+# install. Test removed to keep the guard meaningful.

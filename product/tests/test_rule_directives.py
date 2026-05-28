@@ -8,11 +8,12 @@ Snapshot of required directives: docs/superpowers/specs/2026-05-27-rule-directiv
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# Spec 2 collapsed the per-tool rule dirs into one canonical fragment set.
+# The directive-completeness guard now targets that single set.
 RULES = [
-    ROOT / "product/ai-rules/claude-code/log-file-maintenance.md",
-    ROOT / "product/ai-rules/augment/log-file-maintenance.md",
+    ROOT / "product/rules/log-file-maintenance.md",
 ]
-RULE_DIRS = [ROOT / "product/ai-rules/claude-code", ROOT / "product/ai-rules/augment"]
+RULE_DIRS = [ROOT / "product/rules"]
 
 REQUIRED_HEADINGS = [
     "MANDATORY RULE",

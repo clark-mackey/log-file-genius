@@ -264,101 +264,56 @@ fi
 
 print_info "Installing AI assistant rules..."
 
-if [ "$AI_ASSISTANT" = "augment" ]; then
-    # Track if .augment existed before we started
-    AUGMENT_EXISTED=false
-    [ -d ".augment" ] && AUGMENT_EXISTED=true
+# Map AI_ASSISTANT to its rules-dir target name in fragment frontmatter.
+case "$AI_ASSISTANT" in
+    augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
+    claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
+    *)           rollback_installation "Unknown assistant: $AI_ASSISTANT" ;;
+esac
 
-    mkdir -p .augment/rules
+mkdir -p "$RULES_DEST"
+CREATED_ITEMS+=("$RULES_DEST")
 
-    # Track directory creation for rollback
-    if [ "$AUGMENT_EXISTED" = false ]; then
-        CREATED_ITEMS+=(".augment")
-    else
-        CREATED_ITEMS+=(".augment/rules")
-    fi
+# Walk fragments; copy each whose `targets` includes our RULES_TARGET.
+for frag in "$SOURCE_ROOT/rules/"*.md; do
+    [ -f "$frag" ] || continue
+    # Pull the `targets:` line from the YAML frontmatter (between the first two '---' lines).
+    targets=$(awk '
+        /^---$/{count++; if(count==2)exit; next}
+        count==1 && /^targets:/{ sub(/^targets:[[:space:]]*/,""); print; exit }
+    ' "$frag")
+    case ",$(echo "$targets" | tr -d '[] ')," in
+        *",$RULES_TARGET,"*)
+            cp "$frag" "$RULES_DEST/$(basename "$frag")"
+            CREATED_ITEMS+=("$RULES_DEST/$(basename "$frag")")
+            print_success "Installed $(basename "$frag")"
+            ;;
+    esac
+done
 
-    if [ -d "$SOURCE_ROOT/ai-rules/augment" ]; then
-        # Copy all .md files recursively, preserving directory structure
-        if find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" -print -quit | grep -q .; then
-            # Use process substitution to avoid subshell issues with CREATED_ITEMS
-            while IFS= read -r -d '' file; do
-                rel_path="${file#$SOURCE_ROOT/ai-rules/augment/}"
-                dest_dir=".augment/rules/$(dirname "$rel_path")"
-                dest_file=".augment/rules/$rel_path"
+# Render Claude project_instructions template (if installing for claude-code).
+if [ "$AI_ASSISTANT" = "claude-code" ]; then
+    TMPL="$SOURCE_ROOT/install-templates/claude/project_instructions.md.tmpl"
+    DEST="$PROJECT_ROOT/.claude/project_instructions.md"
+    # Substitute {{paths.X}} tokens. Defaults match Spec 1's canonical.
+    sed \
+        -e 's|{{paths.changelog}}|logs/CHANGELOG.md|g' \
+        -e 's|{{paths.devlog}}|logs/DEVLOG.md|g' \
+        -e 's|{{paths.state}}|logs/STATE.md|g' \
+        -e 's|{{paths.adr_dir}}|logs/adr/|g' \
+        "$TMPL" > "$DEST"
+    CREATED_ITEMS+=("$DEST")
+    print_success "Rendered .claude/project_instructions.md"
+fi
 
-                mkdir -p "$dest_dir"
-
-                if cp "$file" "$dest_file" 2>/dev/null; then
-                    CREATED_ITEMS+=("$dest_file")
-                else
-                    rollback_installation "Failed to copy AI rule: $file"
-                fi
-            done < <(find "$SOURCE_ROOT/ai-rules/augment" -name "*.md" -type f -print0)
-
-            print_success "Installed .augment/rules/"
-        else
-            rollback_installation "No .md files found in ai-rules/augment/"
-        fi
-    else
-        rollback_installation "ai-rules/augment/ directory not found"
-    fi
-
-elif [ "$AI_ASSISTANT" = "claude-code" ]; then
-    # Track if .claude existed before we started
-    CLAUDE_EXISTED=false
-    [ -d ".claude" ] && CLAUDE_EXISTED=true
-
-    mkdir -p .claude/rules
-
-    # Track directory creation for rollback
-    if [ "$CLAUDE_EXISTED" = false ]; then
-        CREATED_ITEMS+=(".claude")
-    else
-        CREATED_ITEMS+=(".claude/rules")
-    fi
-
-    if [ -d "$SOURCE_ROOT/ai-rules/claude-code" ]; then
-        # Copy all .md files recursively, preserving directory structure
-        if find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" -print -quit | grep -q .; then
-            # Use process substitution to avoid subshell issues with CREATED_ITEMS
-            while IFS= read -r -d '' file; do
-                rel_path="${file#$SOURCE_ROOT/ai-rules/claude-code/}"
-                # project_instructions.md is Claude Code's top-level config and
-                # is copied separately to .claude/. Skip it here so it isn't
-                # also duplicated into .claude/rules/.
-                if [ "$rel_path" = "project_instructions.md" ]; then
-                    continue
-                fi
-                dest_dir=".claude/rules/$(dirname "$rel_path")"
-                dest_file=".claude/rules/$rel_path"
-
-                mkdir -p "$dest_dir"
-
-                if cp "$file" "$dest_file" 2>/dev/null; then
-                    CREATED_ITEMS+=("$dest_file")
-                else
-                    rollback_installation "Failed to copy AI rule: $file"
-                fi
-            done < <(find "$SOURCE_ROOT/ai-rules/claude-code" -name "*.md" -type f -print0)
-
-            print_success "Installed .claude/rules/"
-        else
-            rollback_installation "No .md files found in ai-rules/claude-code/"
-        fi
-    else
-        rollback_installation "ai-rules/claude-code/ directory not found"
-    fi
-
-    # Copy project_instructions.md if it exists
-    if [ -f "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" ]; then
-        if cp "$SOURCE_ROOT/ai-rules/claude-code/project_instructions.md" .claude/ 2>/dev/null; then
-            CREATED_ITEMS+=(".claude/project_instructions.md")
-            print_success "Installed .claude/project_instructions.md"
-        else
-            rollback_installation "Failed to copy project_instructions.md"
-        fi
-    fi
+# Drop AGENTS.md at the project root for tools that read it natively.
+# Strip CRLF in case the source was checked out on Windows with autocrlf — the
+# generator's contract is LF-only, and tools shouldn't see a mixed-line-ending
+# file just because of where the user cloned the repo.
+if [ -f "$SOURCE_ROOT/AGENTS.md" ]; then
+    tr -d '\r' < "$SOURCE_ROOT/AGENTS.md" > "$PROJECT_ROOT/AGENTS.md"
+    CREATED_ITEMS+=("$PROJECT_ROOT/AGENTS.md")
+    print_success "Installed AGENTS.md at project root"
 fi
 
 # ============================================================================

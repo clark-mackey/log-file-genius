@@ -1,8 +1,8 @@
 # product/tests/smoke_install.ps1
 # Cross-platform installer smoke test (PowerShell).
-# Asserts a fresh install produces the expected files, config blocks, and
-# frontmatter, and that the installed rule equals the canonical ai-rules source
-# (install==update parity).
+# Asserts a fresh install produces the expected files, config blocks,
+# frontmatter, AGENTS.md (LF + no BOM), and that the installed rule equals
+# the canonical fragment (install==update parity).
 
 $ErrorActionPreference = "Stop"
 
@@ -55,20 +55,26 @@ try {
         throw "FAIL: CHANGELOG.md missing frontmatter (first line is '$firstLine')"
     }
 
-    # --- install==canonical parity ---
-    # update.ps1 requires a git remote, so we verify the property directly:
-    # installed rule must be byte-for-byte identical to the canonical source.
-    $installedHash = (Get-FileHash ".claude\rules\log-file-maintenance.md" -Algorithm SHA256).Hash
-    $canonicalHash = (Get-FileHash "$REPO\product\ai-rules\claude-code\log-file-maintenance.md" -Algorithm SHA256).Hash
-    if ($installedHash -ne $canonicalHash) {
-        throw "FAIL: installed rule != canonical ai-rules source (hash mismatch)"
-    }
+    # Spec 2: AGENTS.md at project root with frontmatter.
+    if (-not (Test-Path "AGENTS.md")) { Write-Host "FAIL: AGENTS.md missing at project root"; exit 1 }
+    $firstLine = (Get-Content "AGENTS.md" -TotalCount 1)
+    if ($firstLine -ne "---") { Write-Host "FAIL: AGENTS.md missing frontmatter"; exit 1 }
 
-    # update.sh must source from ai-rules, not starter-packs
-    $updateSh = Get-Content "$REPO\product\scripts\update.sh" -Raw
-    if ($updateSh -notmatch 'product/ai-rules/\$AI_ASSISTANT') {
-        throw "FAIL: update.sh does not source from ai-rules"
+    # Spec 2: AGENTS.md must be LF + no BOM.
+    $bytes = [System.IO.File]::ReadAllBytes("$pwd\AGENTS.md")
+    if ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        Write-Host "FAIL: AGENTS.md has UTF-8 BOM"; exit 1
     }
+    $text = [System.IO.File]::ReadAllText("$pwd\AGENTS.md")
+    if ($text.Contains("`r`n")) { Write-Host "FAIL: AGENTS.md has CRLF line endings"; exit 1 }
+
+    # Spec 2: installed rule == canonical fragment.
+    $installed = (Get-FileHash ".claude\rules\log-file-maintenance.md").Hash
+    $canonical = (Get-FileHash "$REPO\product\rules\log-file-maintenance.md").Hash
+    if ($installed -ne $canonical) { Write-Host "FAIL: installed rule != canonical fragment"; exit 1 }
+
+    # update.sh must not reference starter-packs
+    $updateSh = Get-Content "$REPO\product\scripts\update.sh" -Raw
     if ($updateSh -match 'starter-packs') {
         throw "FAIL: update.sh still references starter-packs"
     }

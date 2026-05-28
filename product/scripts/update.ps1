@@ -205,36 +205,65 @@ function Prompt-Update {
 }
 
 # Update AI assistant rules
-if ($AiAssistant -ne "unknown") {
-    $RulesSrc = Join-Path $SourceRoot "product\ai-rules\$AiAssistant"
+switch ($AiAssistant) {
+    "augment"     { $rulesTarget = "augment_rules"; $rulesDest = Join-Path $ProjectRoot ".augment\rules" }
+    "claude-code" { $rulesTarget = "claude_rules";  $rulesDest = Join-Path $ProjectRoot ".claude\rules"  }
+    default       { Print-Warning "Unknown assistant: $AiAssistant"; $AiAssistant = "unknown" }
+}
 
-    if ($AiAssistant -eq "augment") {
-        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
-            $ruleName = $_.Name
-            $destFile = Join-Path $ProjectRoot ".augment\rules\$ruleName"
-            if (Prompt-Update "Augment rule: $ruleName" $_.FullName $destFile) {
-                $destDir = Split-Path -Parent $destFile
-                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
-                Copy-Item -Path $_.FullName -Destination $destFile -Force
-                Print-Success "Updated: $ruleName"
-            }
-        }
-    } elseif ($AiAssistant -eq "claude-code") {
-        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
-            $ruleName = $_.Name
-            if ($ruleName -eq "project_instructions.md") {
-                $destFile = Join-Path $ProjectRoot ".claude\project_instructions.md"
-            } else {
-                $destFile = Join-Path $ProjectRoot ".claude\rules\$ruleName"
-            }
-            if (Prompt-Update "Claude rule: $ruleName" $_.FullName $destFile) {
-                $destDir = Split-Path -Parent $destFile
-                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
-                Copy-Item -Path $_.FullName -Destination $destFile -Force
-                Print-Success "Updated: $ruleName"
+if ($AiAssistant -ne "unknown") {
+    if (-not (Test-Path $rulesDest)) {
+        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
+    }
+
+    Get-ChildItem -Path (Join-Path $SourceRoot "product\rules") -Filter "*.md" | ForEach-Object {
+        $text = Get-Content $_.FullName -Raw
+        if ($text -match "(?ms)^---\s*\r?\n(.*?)\r?\n---") {
+            $fm = $Matches[1]
+            if ($fm -match "(?m)^targets:\s*(.+)$") {
+                $targets = ($Matches[1] -replace '\[|\]','' -split ',' | ForEach-Object { $_.Trim() })
+                if ($targets -contains $rulesTarget) {
+                    $dest = Join-Path $rulesDest $_.Name
+                    if (Prompt-Update "Rule: $($_.Name)" $_.FullName $dest) {
+                        Copy-Item -Path $_.FullName -Destination $dest -Force
+                        Print-Success "Updated: $($_.Name)"
+                    }
+                }
             }
         }
     }
+
+    if ($AiAssistant -eq "claude-code") {
+        $tmpl = Join-Path $SourceRoot "product\install-templates\claude\project_instructions.md.tmpl"
+        $dest = Join-Path $ProjectRoot ".claude\project_instructions.md"
+        if (Test-Path $tmpl) {
+            $rendered = (Get-Content $tmpl -Raw) `
+                -replace '\{\{paths\.changelog\}\}','logs/CHANGELOG.md' `
+                -replace '\{\{paths\.devlog\}\}','logs/DEVLOG.md' `
+                -replace '\{\{paths\.state\}\}','logs/STATE.md' `
+                -replace '\{\{paths\.adr_dir\}\}','logs/adr/'
+            $tmp = [System.IO.Path]::GetTempFileName()
+            [System.IO.File]::WriteAllText($tmp, $rendered, (New-Object System.Text.UTF8Encoding $false))
+            if (Prompt-Update "Claude project_instructions.md" $tmp $dest) {
+                [System.IO.File]::WriteAllText($dest, $rendered, (New-Object System.Text.UTF8Encoding $false))
+                Print-Success "Updated: project_instructions.md"
+            }
+            Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+$agentsSrc = Join-Path $SourceRoot "product\AGENTS.md"
+if (Test-Path $agentsSrc) {
+    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
+    $tmp = [System.IO.Path]::GetTempFileName()
+    [System.IO.File]::WriteAllText($tmp, $agentsText, (New-Object System.Text.UTF8Encoding $false))
+    $dest = Join-Path $ProjectRoot "AGENTS.md"
+    if (Prompt-Update "AGENTS.md" $tmp $dest) {
+        [System.IO.File]::WriteAllText($dest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
+        Print-Success "Updated: AGENTS.md"
+    }
+    Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
 }
 
 # Migrate legacy DEVLOG context into STATE.md for existing installs
