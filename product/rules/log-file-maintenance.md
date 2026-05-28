@@ -1,3 +1,10 @@
+---
+fragment: log-file-maintenance
+order: 10
+targets: agents_md, claude_rules, augment_rules
+summary: Always-active rules for log maintenance (commits, sessions, archival, formats).
+---
+
 # log-file-maintenance (Always Active - Non-Negotiable)
 
 ## ⛔ MANDATORY RULE - NO EXCEPTIONS
