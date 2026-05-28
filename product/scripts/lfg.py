@@ -190,6 +190,19 @@ def cmd_generate(args):
     return 0
 
 
+def cmd_prime(args):
+    """Emit a subagent context digest (STATE + last N CHANGELOG entries)."""
+    from primer import build_prime
+    out = build_prime(project_root=Path.cwd(), n=args.n, as_json=args.json)
+    # STATE/CHANGELOG content can include non-ASCII (emoji in templates,
+    # Unicode in entries). On Windows, the console default is cp1252, so
+    # `print()` raises UnicodeEncodeError. Write UTF-8 bytes directly to
+    # bypass the encoding layer.
+    sys.stdout.buffer.write(out.encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -279,6 +292,12 @@ def main():
                        help='Exit non-zero if AGENTS.md would change (CI mode)')
     p_gen.add_argument('--out', help='Write to a non-default path (testing)')
 
+    # prime command
+    p_prime = subparsers.add_parser('prime', help='Emit a subagent context digest')
+    p_prime.add_argument('--n', type=int, default=5,
+                         help='Number of CHANGELOG Unreleased entries to include (default 5)')
+    p_prime.add_argument('--json', action='store_true', help='JSON output')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -295,6 +314,7 @@ def main():
         'status': cmd_status,
         'install-hooks': cmd_install_hooks,
         'generate': cmd_generate,
+        'prime': cmd_prime,
     }
 
     return handlers[args.command](args)
