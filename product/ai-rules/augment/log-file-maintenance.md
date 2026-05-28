@@ -193,7 +193,7 @@ Hints are optional - only add when a cross-reference exists.
 
 ## 📝 TEMPLATES
 
-Templates in `.log-file-genius/templates/` are **READ-ONLY REFERENCE**.
+Templates in `.log-file-genius/product/templates/` are **READ-ONLY REFERENCE**.
 - ✅ Read to understand structure
 - ✅ Create new files in `logs/`
 - ❌ Never copy example entries

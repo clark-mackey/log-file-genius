@@ -324,6 +324,12 @@ elif [ "$AI_ASSISTANT" = "claude-code" ]; then
             # Use process substitution to avoid subshell issues with CREATED_ITEMS
             while IFS= read -r -d '' file; do
                 rel_path="${file#$SOURCE_ROOT/ai-rules/claude-code/}"
+                # project_instructions.md is Claude Code's top-level config and
+                # is copied separately to .claude/. Skip it here so it isn't
+                # also duplicated into .claude/rules/.
+                if [ "$rel_path" = "project_instructions.md" ]; then
+                    continue
+                fi
                 dest_dir=".claude/rules/$(dirname "$rel_path")"
                 dest_file=".claude/rules/$rel_path"
 
@@ -457,6 +463,6 @@ echo "  - Create your first log entries"
 echo "  - Document the architectural decision"
 echo "  - Validate that AI rules are working"
 echo ""
-print_info "Documentation: .log-file-genius/docs/log_file_how_to.md"
+print_info "Documentation: .log-file-genius/product/docs/log_file_how_to.md"
 echo ""
 

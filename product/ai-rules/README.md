@@ -36,6 +36,6 @@ All platforms include:
 ## Documentation
 
 For more information on how these rules work, see:
-- `.log-file-genius/docs/log_file_how_to.md` - Complete guide to the log file system
-- `.log-file-genius/templates/` - Template files for all log types
+- `.log-file-genius/product/docs/log_file_how_to.md` - Complete guide to the log file system
+- `.log-file-genius/product/templates/` - Template files for all log types
 
