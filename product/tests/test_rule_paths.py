@@ -11,10 +11,13 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# Spec 2 canonical-fragments layout: scan product/rules/ for stale paths.
+# product/ai-rules/claude-code/project_instructions.md is retained transiently
+# until the install-template task; include it in the scan so we catch any stale
+# paths it still has.
 RULE_DIRS = [
+    ROOT / "product/rules",
     ROOT / "product/ai-rules/claude-code",
-    ROOT / "product/ai-rules/augment",
-    ROOT / "product/ai-rules",  # top-level README references
 ]
 # Any path under .log-file-genius/ that targets a known subdir must go through
 # /product/. The repo-root `.log-file-genius/.git` etc. are not targets.
