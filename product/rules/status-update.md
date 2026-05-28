@@ -1,4 +1,8 @@
 ---
+fragment: status-update
+order: 20
+targets: agents_md, claude_rules, augment_rules
+summary: "@status update" command — concise project state summary.
 type: "manual"
 ---
 

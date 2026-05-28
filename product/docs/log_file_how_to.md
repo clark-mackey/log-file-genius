@@ -1407,6 +1407,22 @@ See [ADR_template.md](../templates/ADR_template.md) for the standard format (pat
 
 ---
 
+## AI Assistant Rules — How They're Built
+
+LFG ships AI assistant rules as **canonical fragments** in `product/rules/`. Each
+fragment carries YAML frontmatter with a `targets` list (e.g., `claude-code`,
+`augment`) that tells the installer which per-tool directories to write the rule
+into. The installer walks every fragment and routes it automatically — no
+per-tool copies to maintain.
+
+The top-level `product/AGENTS.md` is **generated** (not hand-edited) by running
+`python product/scripts/lfg.py generate`. Contributors edit fragments under
+`product/rules/`, then regenerate; CI enforces this with `lfg generate --check`
+on every PR. If you want per-tool output to change, edit the fragment and
+regenerate — that's the only command you need.
+
+---
+
 ## Quick Start Checklist
 
 - [ ] Create directory structure (`logs/`, `logs/adr/`, `project/specs/`)

@@ -147,6 +147,71 @@ def cmd_status(args):
     return 0
 
 
+def cmd_generate(args):
+    """Regenerate product/AGENTS.md from rules fragments"""
+    from generator import parse_fragment, render_agents_md, GeneratorError
+    rules_dir = Path(__file__).resolve().parent.parent / "rules"
+    if not rules_dir.is_dir():
+        print(f"ERROR: rules dir not found at {rules_dir}", file=sys.stderr)
+        return 2
+
+    fragments = []
+    for p in sorted(rules_dir.glob("*.md")):
+        try:
+            fragments.append(parse_fragment(p))
+        except GeneratorError as e:
+            print(f"ERROR: {p.name}: {e}", file=sys.stderr)
+            return 2
+
+    try:
+        rendered = render_agents_md(fragments)
+    except GeneratorError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+
+    # Default output: product/AGENTS.md, unless --out specified.
+    default_out = Path(__file__).resolve().parent.parent / "AGENTS.md"
+    out_path = Path(args.out) if getattr(args, "out", None) else default_out
+
+    if getattr(args, "check", False):
+        existing = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
+        if existing == rendered:
+            return 0
+        print(f"DRIFT: {out_path} would change after `lfg generate`.", file=sys.stderr)
+        print("Run `python product/scripts/lfg.py generate` and commit the result.",
+              file=sys.stderr)
+        return 1
+
+    # Write with explicit LF + UTF-8, no BOM.
+    out_path.write_bytes(rendered.encode("utf-8"))
+    tokens = len(rendered) // 4
+    from generator import AGENTS_TOKEN_BUDGET
+    print(f"Wrote {out_path} ({tokens} tokens, budget {AGENTS_TOKEN_BUDGET})")
+    return 0
+
+
+def cmd_prime(args):
+    """Emit a subagent context digest (STATE + last N CHANGELOG entries)."""
+    from primer import build_prime
+    if args.n < 1:
+        print(f"ERROR: --n must be >= 1 (got {args.n})", file=sys.stderr)
+        return 2
+    out = build_prime(project_root=Path.cwd(), n=args.n, as_json=args.json)
+    # STATE/CHANGELOG content can include non-ASCII (emoji in templates,
+    # Unicode in entries). On Windows, the console default is cp1252, so
+    # `print()` raises UnicodeEncodeError. Write UTF-8 bytes directly to
+    # bypass the encoding layer.
+    sys.stdout.buffer.write(out.encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
+    return 0
+
+
+def cmd_promote(args):
+    """Promote a subagent's staged entries into canonical CHANGELOG/DEVLOG."""
+    from promoter import promote
+    return promote(Path.cwd(), args.subagent_id)
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -230,6 +295,24 @@ def main():
     p_hooks = subparsers.add_parser('install-hooks', help='Install git pre-commit hooks')
     p_hooks.add_argument('--force', action='store_true', help='Overwrite existing hook')
 
+    # generate command
+    p_gen = subparsers.add_parser('generate', help='Regenerate AGENTS.md from fragments')
+    p_gen.add_argument('--check', action='store_true',
+                       help='Exit non-zero if AGENTS.md would change (CI mode)')
+    p_gen.add_argument('--out', help='Write to a non-default path (testing)')
+
+    # prime command
+    p_prime = subparsers.add_parser('prime', help='Emit a subagent context digest')
+    p_prime.add_argument('--n', type=int, default=5,
+                         help='Number of CHANGELOG Unreleased entries to include (default 5)')
+    p_prime.add_argument('--json', action='store_true', help='JSON output')
+
+    # promote command
+    p_prom = subparsers.add_parser(
+        'promote', help="Promote a subagent's staged entries into canonical CHANGELOG/DEVLOG")
+    p_prom.add_argument('subagent_id',
+                        help='Subagent id matching the .lfg/staged/<id>/ directory')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -245,6 +328,9 @@ def main():
         'check-rules': cmd_check_rules,
         'status': cmd_status,
         'install-hooks': cmd_install_hooks,
+        'generate': cmd_generate,
+        'prime': cmd_prime,
+        'promote': cmd_promote,
     }
 
     return handlers[args.command](args)

@@ -211,3 +211,16 @@ jobs:
           fi
           echo "✓ .gitattributes correctly enforces LF for *.sh files"
 
+
+  verify-agents-md:
+    name: Verify AGENTS.md is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify AGENTS.md matches fragments
+        run: python product/scripts/lfg.py generate --check

@@ -1,4 +1,8 @@
 ---
+fragment: update-planning-docs
+order: 30
+targets: agents_md, claude_rules, augment_rules
+summary: "@update planning docs" command — guided CHANGELOG/DEVLOG/ADR/STATE updates.
 type: "manual"
 ---
 
