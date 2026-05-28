@@ -16,9 +16,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROJECT_ROOT="$(pwd)"
 
-echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   Log File Genius Update Script       ║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
+echo -e "${BLUE}===========================================${NC}"
+echo -e "${BLUE}|   Log File Genius Update Script       |${NC}"
+echo -e "${BLUE}===========================================${NC}"
 echo ""
 
 # Helper functions
@@ -288,13 +288,12 @@ for template in "$SOURCE_ROOT/product/templates/"*.md; do
 done
 
 echo ""
-echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║   Update Complete! ✓                   ║${NC}"
-echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
+echo -e "${GREEN}===========================================${NC}"
+echo -e "${GREEN}|   Update Complete! ✓                   |${NC}"
+echo -e "${GREEN}===========================================${NC}"
 echo ""
 print_info "Your Log File Genius installation is up to date!"
 echo ""
 print_info "Documentation: .log-file-genius/product/docs/"
 print_info "Run validation: ./scripts/validate-log-files.sh"
 echo ""
-

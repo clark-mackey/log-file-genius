@@ -11,7 +11,11 @@
 #   -Force          Skip confirmation prompts (validation still runs)
 
 param(
-    [string]$Profile = "",
+    # -Profile remains the public CLI flag for backward compatibility; the
+    # internal variable is renamed to $ProjectProfile so it doesn't shadow
+    # PowerShell's $Profile automatic variable (path to the user profile script).
+    [Alias('Profile')]
+    [string]$ProjectProfile = "",
     [string]$AiAssistant = "",
     [switch]$Force = $false,
     [switch]$Help = $false
@@ -100,9 +104,9 @@ function Rollback-Installation {
 # ============================================================================
 
 Write-Host ""
-Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║   Log File Genius Installer v$VERSION      ║" -ForegroundColor Blue
-Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Blue
+Write-Host "+========================================+" -ForegroundColor Blue
+Write-Host "|   Log File Genius Installer v$VERSION      |" -ForegroundColor Blue
+Write-Host "+========================================+" -ForegroundColor Blue
 Write-Host ""
 
 # ============================================================================
@@ -143,7 +147,7 @@ if (-not $AiAssistant) {
 # SELECT PROFILE
 # ============================================================================
 
-if (-not $Profile) {
+if (-not $ProjectProfile) {
     Write-Host ""
     Write-Host "Select your project profile:"
     Write-Host "  1) solo-developer  - Individual developers (flexible, minimal overhead)"
@@ -154,10 +158,10 @@ if (-not $Profile) {
     $choice = Read-Host "Enter choice (1-4)"
     
     switch ($choice) {
-        "1" { $Profile = "solo-developer" }
-        "2" { $Profile = "team" }
-        "3" { $Profile = "open-source" }
-        "4" { $Profile = "startup" }
+        "1" { $ProjectProfile = "solo-developer" }
+        "2" { $ProjectProfile = "team" }
+        "3" { $ProjectProfile = "open-source" }
+        "4" { $ProjectProfile = "startup" }
         default {
             Print-Error "Invalid choice. Exiting."
             exit 1
@@ -165,7 +169,7 @@ if (-not $Profile) {
     }
 }
 
-Print-Success "Profile: $Profile"
+Print-Success "Profile: $ProjectProfile"
 Print-Success "AI Assistant: $AiAssistant"
 
 # ============================================================================
@@ -319,7 +323,7 @@ $configContent = @"
 # All log files are in /logs/ folder (standard structure)
 
 log_file_genius_version: "$VERSION"
-profile: $Profile
+profile: $ProjectProfile
 ai_assistant: $AiAssistant
 
 paths:
@@ -405,4 +409,3 @@ Write-Host "  - Validate that AI rules are working" -ForegroundColor Gray
 Write-Host ""
 Print-Info "Documentation: .log-file-genius/product/docs/log_file_how_to.md"
 Write-Host ""
-

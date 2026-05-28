@@ -193,6 +193,9 @@ def cmd_generate(args):
 def cmd_prime(args):
     """Emit a subagent context digest (STATE + last N CHANGELOG entries)."""
     from primer import build_prime
+    if args.n < 1:
+        print(f"ERROR: --n must be >= 1 (got {args.n})", file=sys.stderr)
+        return 2
     out = build_prime(project_root=Path.cwd(), n=args.n, as_json=args.json)
     # STATE/CHANGELOG content can include non-ASCII (emoji in templates,
     # Unicode in entries). On Windows, the console default is cp1252, so

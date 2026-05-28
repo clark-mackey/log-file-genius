@@ -9,9 +9,9 @@ param(
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Get-Location
 
-Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║   Log File Genius Update Script       ║" -ForegroundColor Blue
-Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Blue
+Write-Host "+========================================+" -ForegroundColor Blue
+Write-Host "|   Log File Genius Update Script       |" -ForegroundColor Blue
+Write-Host "+========================================+" -ForegroundColor Blue
 Write-Host ""
 
 # Helper functions
@@ -317,13 +317,12 @@ if (Test-Path $templatesPath) {
 }
 
 Write-Host ""
-Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║   Update Complete!                     ║" -ForegroundColor Green
-Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "+========================================+" -ForegroundColor Green
+Write-Host "|   Update Complete!                     |" -ForegroundColor Green
+Write-Host "+========================================+" -ForegroundColor Green
 Write-Host ""
 Print-Info "Your Log File Genius installation is up to date!"
 Write-Host ""
 Print-Info "Documentation: .log-file-genius\product\docs\"
 Print-Info "Run validation: .\scripts\validate-log-files.ps1"
 Write-Host ""
-
