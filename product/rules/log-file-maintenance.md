@@ -20,6 +20,7 @@ This rule is ALWAYS active. Violations require immediate self-correction.
 1. **Update CHANGELOG.md** — read `.logfile-config.yml` → `paths.changelog` (fallback `logs/CHANGELOG.md`)
    - Add entry under "Unreleased" → category (Added/Changed/Fixed/Deprecated/Removed/Security)
    - Format: `- Description. Files: \`path/to/file\`. Commit: \`hash\``
+   - **Fragment edits:** when changing files under `product/rules/`, the CHANGELOG entry references only the fragment path. The regenerated `product/AGENTS.md` and the per-tool rule files at install-time are implicit and need not be listed.
 
 2. **Update DEVLOG.md** (if milestone/decision) — read `.logfile-config.yml` → `paths.devlog` (fallback `logs/DEVLOG.md`)
    - Only for: completed epics, major milestones, architectural decisions
@@ -205,6 +206,23 @@ Templates in `.log-file-genius/product/templates/` are **READ-ONLY REFERENCE**.
 - ✅ Create new files in `logs/`
 - ❌ Never copy example entries
 - ❌ Never edit template files
+
+---
+
+## 🤖 SUBAGENT CONTRACT
+
+**Identity:** Context contains `LFG_SUBAGENT_PRIME` → you are a **subagent**.
+
+**Reading:** Use the primed digest in context. Do NOT load STATE.md / CHANGELOG.md / DEVLOG.md unless the lead says to.
+
+**Writing — staged, never direct:**
+- Never write to `STATE.md` (SESSION END is lead-only), `CHANGELOG.md`, or `DEVLOG.md`.
+- Stage entries under `.lfg/staged/<your-id>/`:
+  - `changelog.md` — `- Description. Files: \`x\`. Commit: \`pending\``
+  - `devlog.md` — fully formatted DEVLOG entry
+- Report: "Staged at `.lfg/staged/<your-id>/`." Lead runs `lfg promote <your-id>`.
+
+**Context:** Do NOT call `lfg prime`. Ask the lead for more.
 
 ---
 
