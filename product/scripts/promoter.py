@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
 
@@ -117,7 +117,8 @@ def _append_to_devlog(devlog_path: Path, new_entry: str) -> None:
         # Append at end if no Daily Log heading exists.
         insert_at = len(lines)
     new_lines = lines[:insert_at] + [""] + new_entry.rstrip().splitlines() + lines[insert_at:]
-    devlog_path.write_text("\n".join(new_lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
+    # Always normalize to exactly one trailing newline (matches _append_under_unreleased).
+    devlog_path.write_text("\n".join(new_lines).rstrip("\n") + "\n", encoding="utf-8")
 
 
 def promote(project_root: Path, subagent_id: str) -> int:
@@ -142,7 +143,8 @@ def promote(project_root: Path, subagent_id: str) -> int:
     # Audit trail
     audit = project_root / ".lfg" / "promoted.log"
     audit.parent.mkdir(parents=True, exist_ok=True)
-    ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # datetime.utcnow() is deprecated in Python 3.12+; use timezone-aware UTC.
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     audit_line = f"{ts}  {subagent_id}  {'; '.join(actions) if actions else 'no-op'}\n"
     with audit.open("a", encoding="utf-8") as f:
         f.write(audit_line)

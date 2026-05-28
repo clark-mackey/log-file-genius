@@ -26,6 +26,22 @@ class GeneratorError(ValueError):
 
 
 def _parse_frontmatter(text: str) -> Dict[str, Any]:
+    """Parse the supported fragment-frontmatter subset.
+
+    Supported:
+      key: scalar          # plain string/integer
+      key: "quoted string" # single or double quotes
+      key: a, b, c         # inline comma-separated list (used for `targets`)
+      key: [a, b, c]       # inline bracketed list (also accepted for `targets`)
+      # comment            # full-line comments only
+
+    NOT supported (use inline list instead):
+      key:
+        - a
+        - b
+    A YAML block list will be silently parsed as an empty string. Fragments
+    must use the inline form; `test_fragments.py` enforces frontmatter shape.
+    """
     fm: Dict[str, Any] = {}
     for line in text.splitlines():
         s = line.strip()

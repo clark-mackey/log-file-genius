@@ -1,5 +1,5 @@
 import textwrap
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -68,7 +68,7 @@ def test_promote_writes_audit_trail(tmp_path):
     promote(root, "sub42")
     audit = (root / ".lfg" / "promoted.log").read_text(encoding="utf-8")
     assert "sub42" in audit
-    assert datetime.utcnow().strftime("%Y") in audit
+    assert datetime.now(timezone.utc).strftime("%Y") in audit
 
 
 def test_promote_routes_entries_to_their_declared_category(tmp_path):
