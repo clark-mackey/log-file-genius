@@ -1,3 +1,11 @@
+---
+doc: CHANGELOG
+related:
+  devlog: ./DEVLOG.md
+  state: ./STATE.md
+  adr_index: ./adr/README.md
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -10,10 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Related Documents
 
 📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
-📐 **[ADRs](./adr/README.md)** - Architectural decision records
-📊 **[STATE](./STATE.md)** - Current project state and metrics
+📈 **[STATE](./STATE.md)** - Current project state (the now)
+⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
 
-> **For AI Agents:** This file is a concise technical record of changes. For context on *why* decisions were made, see DEVLOG.md. For current project state, see DEVLOG.md → Current Context section.
+> **For AI Agents:** This file is a concise technical record of changes. For context on *why* decisions were made, see DEVLOG.md. For current project state, see STATE.md.
 
 ---
 

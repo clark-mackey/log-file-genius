@@ -319,6 +319,10 @@ elseif ($AiAssistant -eq "claude-code") {
     try {
         Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse -ErrorAction Stop | ForEach-Object {
             $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
+            # project_instructions.md is Claude Code's top-level config and is
+            # copied separately to .claude/. Skip it here so it isn't also
+            # duplicated into .claude/rules/.
+            if ($relativePath -eq "project_instructions.md") { return }
             $destPath = Join-Path $rulesDest $relativePath
             $destDir = Split-Path -Parent $destPath
 
@@ -354,18 +358,23 @@ $configContent = @"
 # Log File Genius Configuration
 # All log files are in /logs/ folder (standard structure)
 
-# Version tracking
 log_file_genius_version: "$VERSION"
-
-# Profile selection
 profile: $Profile
-
-# AI assistant
 ai_assistant: $AiAssistant
 
-# For customization options, see:
-# - .log-file-genius/docs/profile-selection-guide.md
-# - .log-file-genius/profiles/*.yml
+paths:
+  changelog: logs/CHANGELOG.md
+  devlog: logs/DEVLOG.md
+  state: logs/STATE.md
+  adr_dir: logs/adr/
+
+token_targets:
+  changelog: 10000
+  devlog: 15000
+  combined: 25000
+  state: 500
+
+# Presets and customization: .log-file-genius/product/profiles/*.yml
 "@
 
 Set-Content -Path ".logfile-config.yml" -Value $configContent -Force
@@ -434,6 +443,6 @@ Write-Host "  - Create your first log entries" -ForegroundColor Gray
 Write-Host "  - Document the architectural decision" -ForegroundColor Gray
 Write-Host "  - Validate that AI rules are working" -ForegroundColor Gray
 Write-Host ""
-Print-Info "Documentation: .log-file-genius/docs/log_file_how_to.md"
+Print-Info "Documentation: .log-file-genius/product/docs/log_file_how_to.md"
 Write-Host ""
 

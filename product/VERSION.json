@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "release_date": "2025-01-22",
   "components": {
-    "installer": "0.1.0",
+    "installer": "0.2.0",
     "validator": "0.2.0",
     "linter": "0.2.0",
-    "ai-rules": "0.1.0",
-    "templates": "0.1.0",
-    "profiles": "0.1.0",
+    "ai-rules": "0.2.0",
+    "templates": "0.2.0",
+    "profiles": "0.2.0",
     "secrets": "0.2.0",
     "cli": "0.2.0"
   },
@@ -17,10 +17,10 @@
     "min_bash": "4.0"
   },
   "checksums": {
-    "install.ps1": "de07c9808fef32b1",
-    "install.sh": "603a3101e174506a",
-    "lint-logs.py": "0350e9020efb8acb",
-    "validate-log-files.ps1": "92ad0cba4e8ba2a5",
-    "validate-log-files.sh": "dc2bfc4fcd457c2b"
+    "install.ps1": "7da27c9f4be414ca",
+    "install.sh": "a0c96d4b073c9e31",
+    "lint-logs.py": "2ee7aa98349acf06",
+    "validate-log-files.ps1": "59d608fe174b13b8",
+    "validate-log-files.sh": "12dbe32c3537cb3b"
   }
 }

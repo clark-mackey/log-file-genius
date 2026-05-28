@@ -9,6 +9,7 @@
 #   ./scripts/validate-log-files.sh              # Run all validations
 #   ./scripts/validate-log-files.sh --changelog  # Run only CHANGELOG validation
 #   ./scripts/validate-log-files.sh --devlog     # Run only DEVLOG validation
+#   ./scripts/validate-log-files.sh --state      # Run only STATE validation
 #   ./scripts/validate-log-files.sh --tokens     # Run only token count validation
 #   ./scripts/validate-log-files.sh --verbose    # Show detailed output
 #
@@ -21,6 +22,7 @@
 # Configuration - Standard paths (all logs in /logs/ folder)
 CHANGELOG_PATH="logs/CHANGELOG.md"
 DEVLOG_PATH="logs/DEVLOG.md"
+STATE_PATH="logs/STATE.md"
 
 # Default token targets (can be overridden by profile)
 CHANGELOG_TOKEN_WARNING=8000
@@ -32,8 +34,9 @@ COMBINED_TOKEN_ERROR=25000
 VALIDATION_STRICTNESS="errors"  # Options: strict, errors, warnings-only, disabled
 FAIL_ON_WARNINGS=false
 
-# Note: STATE and ADR validation not yet implemented
-# Future: Add STATE_TOKEN_WARNING=400, STATE_TOKEN_ERROR=500
+# STATE token targets
+STATE_TOKEN_WARNING=400
+STATE_TOKEN_ERROR=500
 
 # Exit codes
 EXIT_SUCCESS=0
@@ -48,27 +51,32 @@ ERRORS=0
 # Parse command-line arguments
 RUN_CHANGELOG=false
 RUN_DEVLOG=false
+RUN_STATE=false
 RUN_TOKENS=false
 VERBOSE=false
+PRINT_CONFIG=false
 
 for arg in "$@"; do
     case $arg in
         --changelog) RUN_CHANGELOG=true ;;
         --devlog) RUN_DEVLOG=true ;;
+        --state) RUN_STATE=true ;;
         --tokens) RUN_TOKENS=true ;;
         --verbose) VERBOSE=true ;;
+        --print-config) PRINT_CONFIG=true ;;
         *)
             echo "Unknown option: $arg"
-            echo "Usage: $0 [--changelog] [--devlog] [--tokens] [--verbose]"
+            echo "Usage: $0 [--changelog] [--devlog] [--state] [--tokens] [--verbose] [--print-config]"
             exit 1
             ;;
     esac
 done
 
 # If no specific validation flags, run all
-if [ "$RUN_CHANGELOG" = false ] && [ "$RUN_DEVLOG" = false ] && [ "$RUN_TOKENS" = false ]; then
+if [ "$RUN_CHANGELOG" = false ] && [ "$RUN_DEVLOG" = false ] && [ "$RUN_STATE" = false ] && [ "$RUN_TOKENS" = false ]; then
     RUN_CHANGELOG=true
     RUN_DEVLOG=true
+    RUN_STATE=true
     RUN_TOKENS=true
 fi
 
@@ -102,11 +110,10 @@ get_token_count() {
         return
     fi
     
-    # Count words and estimate tokens (word_count * 1.3)
-    local word_count=$(wc -w < "$file_path")
-    local token_estimate=$(awk "BEGIN {print int($word_count * 1.3 + 0.5)}")
-    
-    echo "$token_estimate"
+    # Estimate tokens at ~4 characters per token — the documented canonical
+    # heuristic, matching lint-logs.py (len//4) and the rule files.
+    local char_count=$(wc -m < "$file_path")
+    echo $(( char_count / 4 ))
 }
 
 get_percentage() {
@@ -138,33 +145,34 @@ load_profile_config() {
         echo -e "\033[36mLoading profile config from: $config_file\033[0m"
     fi
 
-    # Simple YAML parsing for our limited use case
-    # Extract profile name
-    if grep -q "^profile:" "$config_file"; then
-        local profile_name=$(grep "^profile:" "$config_file" | awk '{print $2}')
-        if [ "$VERBOSE" = true ]; then
-            echo -e "\033[36mProfile: $profile_name\033[0m"
-        fi
-    fi
+    # Block-aware YAML extraction: reads nested keys without ambiguity.
+    # Sets inblk=1 only while inside the named top-level block; resets on
+    # any new top-level key so sibling blocks are never misread.
+    read_nested() {
+        awk -v parent="$1" -v key="$2" '
+            /^[A-Za-z_]+:/ { inblk = ($0 ~ "^" parent ":") }
+            inblk && $1 == key":" { print $2; exit }
+        ' "$config_file"
+    }
 
-    # Extract token target overrides if present
-    if grep -q "changelog_warning:" "$config_file"; then
-        CHANGELOG_TOKEN_WARNING=$(grep "changelog_warning:" "$config_file" | awk '{print $2}')
+    # Strip one layer of surrounding quotes so quoted scalars (e.g.
+    # changelog: "logs/CHANGELOG.md") match the canonical config_parser.py.
+    strip_q() { local s="$1"; s="${s#[\"\']}"; s="${s%[\"\']}"; printf '%s' "$s"; }
+
+    local v
+    v=$(strip_q "$(read_nested "paths" "changelog")"); [ -n "$v" ] && CHANGELOG_PATH="$v"
+    v=$(strip_q "$(read_nested "paths" "devlog")");    [ -n "$v" ] && DEVLOG_PATH="$v"
+    v=$(strip_q "$(read_nested "paths" "state")");     [ -n "$v" ] && STATE_PATH="$v"
+
+    v=$(strip_q "$(read_nested "token_targets" "changelog")")
+    if [ -n "$v" ]; then
+        CHANGELOG_TOKEN_ERROR="$v"
+        CHANGELOG_TOKEN_WARNING=$((v * 80 / 100))
     fi
-    if grep -q "changelog_error:" "$config_file"; then
-        CHANGELOG_TOKEN_ERROR=$(grep "changelog_error:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "devlog_warning:" "$config_file"; then
-        DEVLOG_TOKEN_WARNING=$(grep "devlog_warning:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "devlog_error:" "$config_file"; then
-        DEVLOG_TOKEN_ERROR=$(grep "devlog_error:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "combined_warning:" "$config_file"; then
-        COMBINED_TOKEN_WARNING=$(grep "combined_warning:" "$config_file" | awk '{print $2}')
-    fi
-    if grep -q "combined_error:" "$config_file"; then
-        COMBINED_TOKEN_ERROR=$(grep "combined_error:" "$config_file" | awk '{print $2}')
+    v=$(strip_q "$(read_nested "token_targets" "devlog")")
+    if [ -n "$v" ]; then
+        DEVLOG_TOKEN_ERROR="$v"
+        DEVLOG_TOKEN_WARNING=$((v * 80 / 100))
     fi
 
     # Extract validation strictness
@@ -266,25 +274,12 @@ validate_devlog() {
     fi
     
     local errors=()
-    
-    # Check for Current Context section
-    if ! grep -q "^## Current Context" "$DEVLOG_PATH"; then
-        errors+=("Missing '## Current Context' section")
-    fi
-    
-    # Check for Daily Log section
+
+    # Check for Daily Log section (DEVLOG is narrative only; Current Context lives in STATE.md)
     if ! grep -q "^## Daily Log" "$DEVLOG_PATH"; then
         errors+=("Missing '## Daily Log' section")
     fi
-    
-    # Check for required fields in Current Context
-    local required_fields=("Version" "Active Branch" "Phase")
-    for field in "${required_fields[@]}"; do
-        if ! grep -q "\*\*$field" "$DEVLOG_PATH"; then
-            errors+=("Missing required field in Current Context: $field")
-        fi
-    done
-    
+
     # Check entry date format (### YYYY-MM-DD: Title)
     local invalid_entries=$(grep -E "^### [0-9]" "$DEVLOG_PATH" | grep -v -E "^### [0-9]{4}-[0-9]{2}-[0-9]{2}:" || true)
     if [ -n "$invalid_entries" ]; then
@@ -302,6 +297,56 @@ validate_devlog() {
         write_validation_result "DEVLOG" "PASSED"
     else
         write_validation_result "DEVLOG" "ERROR" "${#errors[@]} issue(s) found"
+        if [ "$VERBOSE" = true ]; then
+            for error in "${errors[@]}"; do
+                echo -e "\033[31m  - $error\033[0m"
+            done
+        fi
+    fi
+}
+
+# STATE Validation
+validate_state() {
+    if [ "$VERBOSE" = true ]; then
+        echo -e "\n\033[36m=== STATE Validation ===\033[0m"
+    fi
+
+    # STATE is first-class but optional in existing flows; warn if missing, don't hard-error
+    if [ ! -f "$STATE_PATH" ]; then
+        write_validation_result "STATE" "WARNING" "File not found: $STATE_PATH (create STATE.md for current context + session handoff)"
+        return
+    fi
+
+    local errors=()
+
+    # Check for Current Context section (STATE owns Version/Branch/Phase)
+    if ! grep -q "^## Current Context" "$STATE_PATH"; then
+        errors+=("Missing '## Current Context' section")
+    fi
+
+    # Check for required fields in Current Context
+    local required_fields=("Version" "Active Branch" "Phase")
+    for field in "${required_fields[@]}"; do
+        if ! grep -q "\*\*$field" "$STATE_PATH"; then
+            errors+=("Missing required field in Current Context: $field")
+        fi
+    done
+
+    # Token budget: STATE should stay lean (the now), default <500. This is a
+    # WARNING not an error — STATE has no archival (you trim it), and a freshly
+    # installed template carries removable guidance that exceeds the budget.
+    local state_tokens=$(get_token_count "$STATE_PATH")
+    if [ "$state_tokens" -gt "$STATE_TOKEN_ERROR" ]; then
+        write_validation_result "STATE" "WARNING" "Over token target ($state_tokens > $STATE_TOKEN_ERROR) — trim to the now (remove template guidance)"
+    elif [ "$state_tokens" -gt "$STATE_TOKEN_WARNING" ]; then
+        write_validation_result "STATE" "WARNING" "Approaching token target ($state_tokens/$STATE_TOKEN_ERROR)"
+    fi
+
+    # Report results
+    if [ ${#errors[@]} -eq 0 ]; then
+        write_validation_result "STATE" "PASSED"
+    else
+        write_validation_result "STATE" "ERROR" "${#errors[@]} issue(s) found"
         if [ "$VERBOSE" = true ]; then
             for error in "${errors[@]}"; do
                 echo -e "\033[31m  - $error\033[0m"
@@ -386,6 +431,20 @@ echo ""
 # Load profile configuration
 load_profile_config
 
+# Debug: print resolved config and exit (no validation runs)
+if [ "${PRINT_CONFIG:-false}" = true ]; then
+    echo "CHANGELOG_PATH=$CHANGELOG_PATH"
+    echo "DEVLOG_PATH=$DEVLOG_PATH"
+    echo "STATE_PATH=$STATE_PATH"
+    echo "CHANGELOG_TOKEN_ERROR=$CHANGELOG_TOKEN_ERROR"
+    echo "CHANGELOG_TOKEN_WARNING=$CHANGELOG_TOKEN_WARNING"
+    echo "DEVLOG_TOKEN_ERROR=$DEVLOG_TOKEN_ERROR"
+    echo "DEVLOG_TOKEN_WARNING=$DEVLOG_TOKEN_WARNING"
+    echo "STATE_TOKEN_ERROR=$STATE_TOKEN_ERROR"
+    echo "STATE_TOKEN_WARNING=$STATE_TOKEN_WARNING"
+    exit 0
+fi
+
 # Run validations
 if [ "$RUN_CHANGELOG" = true ]; then
     validate_changelog
@@ -393,6 +452,10 @@ fi
 
 if [ "$RUN_DEVLOG" = true ]; then
     validate_devlog
+fi
+
+if [ "$RUN_STATE" = true ]; then
+    validate_state
 fi
 
 if [ "$RUN_TOKENS" = true ]; then
@@ -454,6 +517,11 @@ else
         echo ""
         echo -e "\033[33m[!] Validation warnings present. Commit allowed.\033[0m"
         echo ""
+        # "Commit allowed" means exit 0 — warnings are non-blocking in default
+        # (errors-only) mode. Without this, the script exits 1 and contradicts
+        # its own message, which breaks CI on a fresh install (STATE template
+        # legitimately warns until guidance is trimmed).
+        EXIT_CODE=$EXIT_SUCCESS
     else
         echo ""
         echo -e "\033[32m[OK] All validations passed!\033[0m"

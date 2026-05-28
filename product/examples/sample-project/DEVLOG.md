@@ -11,19 +11,11 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 📐 **[ADRs](adr/README.md)** - Architectural decision records  
 🔄 **[STATE](STATE.md)** - Current project state and active work
 
-> **For AI Agents:** This file tells the story of *why* decisions were made. Before starting work, read **Current Context** and **Decisions (ADR)** sections. For technical details of *what* changed, see CHANGELOG.md.
+> **For AI Agents:** This file tells the story of *why* decisions were made. Read **STATE.md** first for current context (version, branch, phase, active work). Then read **Decisions (ADR)** below for architectural rationale. For technical details of *what* changed, see CHANGELOG.md.
 
 ---
 
-## Current Context (Source of Truth)
-
-**Last Updated:** 2025-10-28
-
-### Project State
-- **Project:** Task Management API
-- **Current Version:** v0.4.0-dev
-- **Active Branch:** `feature/websocket-pooling`
-- **Phase:** Beta (real-time features in testing)
+## Project Reference
 
 ### Stack & Tools
 - **Backend:** Python 3.11, FastAPI 0.104, Uvicorn
@@ -39,29 +31,6 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Decisions:** ADRs required for architectural choices
 - **Testing:** All new features require tests before merge
 - **API:** RESTful v1, follows RFC 7807 for errors
-
-### Key Architectural Decisions
-- **ADR-003 (2025-10-27):** Optimistic Locking for Task Updates [→ Full ADR](adr/003-optimistic-locking.md)
-- **ADR-002 (2025-10-21):** JWT Authentication with Refresh Tokens [→ Full ADR](adr/002-jwt-authentication.md)
-- **ADR-001 (2025-10-15):** PostgreSQL Over MongoDB [→ Full ADR](adr/001-postgresql-choice.md)
-
-### Constraints & Requirements
-- **Performance:** P95 latency < 200ms for API endpoints, < 100ms for WebSocket messages
-- **Security:** All endpoints require authentication except `/health` and `/docs`
-- **Data:** Soft deletes only, never hard delete user data
-- **Compatibility:** Support mobile apps (iOS/Android) via REST + WebSocket
-
-### Current Objectives (Week of Oct 27)
-- [x] Fix WebSocket memory leak (v0.3.2)
-- [x] Implement optimistic locking for task updates (v0.3.1)
-- [ ] Complete WebSocket connection pooling (v0.4.0)
-- [ ] Add bulk task operations endpoint (v0.4.0)
-- [ ] Performance testing with 1000+ concurrent WebSocket connections
-
-### Known Risks & Blockers
-- **Risk:** WebSocket connection pooling may not scale beyond 5000 concurrent connections. Need to test with load testing tools.
-- **Risk:** Database query performance degrading with >100k tasks per user. May need partitioning strategy.
-- **Blocker:** Mobile app team waiting for bulk operations endpoint before starting sync feature.
 
 ### Entry Points (For Code Navigation)
 - **Backend Main:** `src/main.py`

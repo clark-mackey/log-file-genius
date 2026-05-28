@@ -35,6 +35,59 @@ function Print-Info {
     Write-Host "[INFO] $Message" -ForegroundColor Blue
 }
 
+function Get-ConfigPath {
+    param([string]$ConfigFile, [string]$Key)
+    if (-not (Test-Path $ConfigFile)) { return $null }
+    $inBlock = $false
+    foreach ($line in (Get-Content $ConfigFile)) {
+        if ($line -match '^[A-Za-z_]+:') { $inBlock = ($line -match '^paths:'); continue }
+        if ($inBlock -and $line -match ('^\s+' + [regex]::Escape($Key) + ':\s*(\S+)')) {
+            return $Matches[1].Trim('"').Trim("'")
+        }
+    }
+    return $null
+}
+
+function Migrate-DevlogToState {
+    $config = Join-Path $ProjectRoot ".logfile-config.yml"
+    $devlog = Join-Path $ProjectRoot "logs\DEVLOG.md"
+    $state  = Join-Path $ProjectRoot "logs\STATE.md"
+    # Resolve paths from config (fall back to logs/), matching the validators.
+    $d = Get-ConfigPath $config "devlog"; if ($d) { $devlog = Join-Path $ProjectRoot $d }
+    $s = Get-ConfigPath $config "state";  if ($s) { $state  = Join-Path $ProjectRoot $s }
+
+    if (-not (Test-Path $devlog)) { return }
+    $devlogContent = Get-Content $devlog -Raw
+    if ($devlogContent -notmatch "## Current Context") { return }
+    if (Test-Path $state) {
+        Print-Warning "DEVLOG has a legacy Current Context, but STATE.md already exists."
+        Print-Info "Review and move it manually if needed; leaving files unchanged."
+        return
+    }
+    Print-Info "Migrating DEVLOG Current Context / Last Session into new STATE.md"
+    # Capture ONLY Current Context + Last Session (by their own headings),
+    # stopping at any other top-level heading.
+    $lines = Get-Content $devlog
+    $capturing = $false
+    $output = [System.Collections.Generic.List[string]]::new()
+    $output.Add("# Current State")
+    $output.Add("")
+    foreach ($line in $lines) {
+        if ($line -match "^## (Current Context|Last Session)") { $capturing = $true; $output.Add($line); continue }
+        elseif ($line -match "^## ") { $capturing = $false }
+        if ($capturing) { $output.Add($line) }
+    }
+    $stateDir = Split-Path -Parent $state
+    if ($stateDir -and -not (Test-Path $stateDir)) { New-Item -ItemType Directory -Path $stateDir -Force | Out-Null }
+    $output | Out-File -FilePath $state -Encoding utf8
+    Print-Success "Created STATE from legacy DEVLOG sections at $state (review it)."
+}
+
+if ($env:LFG_MIGRATE_ONLY -eq "1") {
+    Migrate-DevlogToState
+    exit 0
+}
+
 # Check if .log-file-genius exists
 $SourceRoot = Join-Path $ProjectRoot ".log-file-genius"
 if (-not (Test-Path $SourceRoot)) {
@@ -153,42 +206,39 @@ function Prompt-Update {
 
 # Update AI assistant rules
 if ($AiAssistant -ne "unknown") {
-    $RulesSrc = Join-Path $SourceRoot "product\starter-packs\$AiAssistant"
-    
+    $RulesSrc = Join-Path $SourceRoot "product\ai-rules\$AiAssistant"
+
     if ($AiAssistant -eq "augment") {
-        # Update Augment rules
-        $rulesPath = Join-Path $RulesSrc ".augment\rules"
-        if (Test-Path $rulesPath) {
-            Get-ChildItem -Path $rulesPath -Filter "*.md" | ForEach-Object {
-                $ruleName = $_.Name
-                $srcFile = $_.FullName
-                $destFile = Join-Path $ProjectRoot ".augment\rules\$ruleName"
-                
-                if (Prompt-Update "Augment rule: $ruleName" $srcFile $destFile) {
-                    $destDir = Split-Path -Parent $destFile
-                    if (-not (Test-Path $destDir)) {
-                        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-                    }
-                    Copy-Item -Path $srcFile -Destination $destFile -Force
-                    Print-Success "Updated: $ruleName"
-                }
+        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
+            $ruleName = $_.Name
+            $destFile = Join-Path $ProjectRoot ".augment\rules\$ruleName"
+            if (Prompt-Update "Augment rule: $ruleName" $_.FullName $destFile) {
+                $destDir = Split-Path -Parent $destFile
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                Copy-Item -Path $_.FullName -Destination $destFile -Force
+                Print-Success "Updated: $ruleName"
             }
         }
     } elseif ($AiAssistant -eq "claude-code") {
-        # Update Claude Code instructions
-        $srcFile = Join-Path $RulesSrc ".claude\project_instructions.md"
-        $destFile = Join-Path $ProjectRoot ".claude\project_instructions.md"
-        
-        if (Prompt-Update "Claude Code instructions" $srcFile $destFile) {
-            $destDir = Split-Path -Parent $destFile
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        Get-ChildItem -Path $RulesSrc -Filter "*.md" | ForEach-Object {
+            $ruleName = $_.Name
+            if ($ruleName -eq "project_instructions.md") {
+                $destFile = Join-Path $ProjectRoot ".claude\project_instructions.md"
+            } else {
+                $destFile = Join-Path $ProjectRoot ".claude\rules\$ruleName"
             }
-            Copy-Item -Path $srcFile -Destination $destFile -Force
-            Print-Success "Updated: project_instructions.md"
+            if (Prompt-Update "Claude rule: $ruleName" $_.FullName $destFile) {
+                $destDir = Split-Path -Parent $destFile
+                if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+                Copy-Item -Path $_.FullName -Destination $destFile -Force
+                Print-Success "Updated: $ruleName"
+            }
         }
     }
 }
+
+# Migrate legacy DEVLOG context into STATE.md for existing installs
+Migrate-DevlogToState
 
 # Update validation scripts
 Print-Info "Checking validation scripts..."

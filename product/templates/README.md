@@ -42,7 +42,7 @@ This directory contains templates for the token-efficient log file system. Copy 
 
 **Key features:**
 - Situation/Challenge/Decision/Impact/Files structure
-- Current Context section (source of truth for project state)
+- Narrative-only — current project state lives in STATE.md, not here
 - ADR index for quick reference
 - Narrative entries (150-250 words each)
 
@@ -50,7 +50,6 @@ This directory contains templates for the token-efficient log file system. Copy 
 
 **When to update:**
 - After significant milestones or decisions
-- Weekly update to Current Context section
 - When completing epics or major features
 
 ---
@@ -84,30 +83,26 @@ This directory contains templates for the token-efficient log file system. Copy 
 
 ### 4. STATE_template.md
 
-**Purpose:** At-a-glance snapshot of current project state
+**Purpose:** The single source for "the now" — current project state and session handoff
 
 **What it's for:**
-- Multi-agent coordination
-- Preventing duplicate work and merge conflicts
-- Showing active work, blockers, and priorities
-- Quick status checks
+- Current Context (version, branch, phase, objectives) — the source of truth for project state
+- Session handoff (Last Session: done / in progress / next)
+- Multi-agent coordination: active work, blockers, priorities
+- Quick status checks without loading DEVLOG or CHANGELOG
 
 **Key features:**
 - Ultra-lightweight (<500 tokens)
-- Updated at start and end of work sessions
-- Shows last 2-4 hours of activity
+- Read FIRST at session start; updated at start and end of each session
+- Owns Current Context + Last Session (these are NOT in DEVLOG)
 - Includes branch status for git workflows
-- Recently completed items archived to CHANGELOG after 24 hours
 
 **Token target:** <500 tokens
 
 **When to update:**
-- Start of work session (add to Active Work)
-- Every 30-60 minutes during active work
+- Start of work session (read Current Context + Last Session; add to Active Work)
 - When blocked (add to Blockers)
-- End of work session (move to Recently Completed)
-
-**Note:** STATE.md is optional for single-developer projects. For multi-agent environments, it's highly recommended.
+- End of work session (update Last Session handoff; move work to Recently Completed)
 
 ---
 
@@ -117,11 +112,12 @@ This directory contains templates for the token-efficient log file system. Copy 
 
 1. **Copy templates to your project:**
    ```bash
-   cp templates/CHANGELOG_template.md docs/planning/CHANGELOG.md
-   cp templates/DEVLOG_template.md docs/planning/DEVLOG.md
-   cp templates/STATE_template.md docs/planning/STATE.md
-   cp templates/ADR_template.md docs/adr/ADR_template.md
+   cp templates/CHANGELOG_template.md logs/CHANGELOG.md
+   cp templates/DEVLOG_template.md logs/DEVLOG.md
+   cp templates/STATE_template.md logs/STATE.md
+   cp templates/ADR_template.md logs/adr/TEMPLATE.md
    ```
+   (Or just run the installer, which places these in `logs/` for you.)
 
 2. **Customize the frontmatter:**
    - Update cross-links to match your directory structure
@@ -143,17 +139,14 @@ Recommended file locations:
 
 ```
 project-root/
-├── docs/
-│   ├── planning/
-│   │   ├── CHANGELOG.md
-│   │   ├── DEVLOG.md
-│   │   └── STATE.md (optional)
-│   ├── adr/
-│   │   ├── README.md
-│   │   └── 001-first-decision.md
-│   └── specs/
-│       └── PRD.md
-└── templates/ (optional - keep for reference)
+├── logs/
+│   ├── CHANGELOG.md
+│   ├── DEVLOG.md
+│   ├── STATE.md
+│   └── adr/
+│       ├── README.md
+│       └── 001-first-decision.md
+└── .logfile-config.yml   # paths: block points here
 ```
 
 ---
@@ -186,16 +179,16 @@ Adapt to your team's workflow:
 **Solo developer:**
 - CHANGELOG: After each commit
 - DEVLOG: After milestones
-- STATE: Optional (use DEVLOG Current Context instead)
+- STATE: Update Current Context as state changes; light Last Session handoff
 
 **Small team (2-5 people):**
 - CHANGELOG: After each commit
-- DEVLOG: Weekly Current Context updates, entries after milestones
-- STATE: Optional but helpful
+- DEVLOG: Entries after milestones
+- STATE: Keep Current Context + Last Session current each session
 
 **Multi-agent environment:**
 - CHANGELOG: After each commit
-- DEVLOG: Weekly Current Context updates, entries after milestones
+- DEVLOG: Entries after milestones
 - STATE: Critical - update every 30-60 minutes during active work
 
 ---
@@ -237,9 +230,9 @@ Key sections:
   - Not for bug fixes or minor implementation details
 
 - **Do I need STATE.md?**
-  - Optional for solo developers (use DEVLOG Current Context instead)
-  - Recommended for teams and multi-agent environments
-  - Critical for preventing conflicts in concurrent workflows
+  - Yes — it's the single home for "the now" (Current Context + Last Session). Read it first each session.
+  - Lightweight for solo developers; critical for teams and multi-agent environments
+  - Prevents conflicts in concurrent workflows
 
 - **How often should I archive old entries?**
   - CHANGELOG: Archive entries older than 30 days

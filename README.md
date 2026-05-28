@@ -73,7 +73,7 @@ This isn't just documentation. It's an operating system for AI agent performance
 
 - **📊 Up to 93% Token Reduction:** Sheds old context like a snake sheds its skin. Complete project history in <5% of the context window, leaving the rest for what matters: the code you're writing *right now*.
 
-- **🔒 Safety Built In:** Secret detection, log validation, and pre-commit hooks catch problems before they hit the repo. Your agent won't accidentally leak API keys into a DEVLOG entry.
+- **🔒 Safety Tools Available:** Optional secret detection and log validation, plus a pre-commit hook you can enable, catch problems before they hit the repo. These are opt-in — run them manually or copy the hook into `.git/hooks/`. Your agent won't accidentally leak API keys into a DEVLOG entry.
 
 - **🔧 Tool Agnostic:** Works with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant. Your toaster will probably be running it soon.
 

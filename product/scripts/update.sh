@@ -38,6 +38,52 @@ print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
 
+migrate_devlog_to_state() {
+    local config=".logfile-config.yml"
+    local devlog="logs/DEVLOG.md"
+    local state="logs/STATE.md"
+
+    # Resolve paths from config (block-aware: devlog/state appear under paths:),
+    # matching how the validators read them. Fall back to logs/.
+    if [ -f "$config" ]; then
+        local d s
+        d=$(awk '/^[A-Za-z_]+:/{inblk=($0 ~ /^paths:/)} inblk && $1=="devlog:"{print $2; exit}' "$config")
+        s=$(awk '/^[A-Za-z_]+:/{inblk=($0 ~ /^paths:/)} inblk && $1=="state:"{print $2; exit}' "$config")
+        d="${d%\"}"; d="${d#\"}"; d="${d%\'}"; d="${d#\'}"
+        s="${s%\"}"; s="${s#\"}"; s="${s%\'}"; s="${s#\'}"
+        [ -n "$d" ] && devlog="$d"
+        [ -n "$s" ] && state="$s"
+    fi
+
+    [ -f "$devlog" ] || return 0
+    if ! grep -q "## Current Context" "$devlog"; then return 0; fi
+    if [ -f "$state" ]; then
+        print_warning "DEVLOG has a legacy Current Context, but STATE.md already exists."
+        print_info "Review and move it manually if needed; leaving files unchanged."
+        return 0
+    fi
+    print_info "Migrating DEVLOG Current Context / Last Session into new STATE.md"
+    # Capture ONLY the Current Context and Last Session sections (by their own
+    # headings), stopping at any other top-level heading — avoids sweeping in
+    # intervening sections (e.g. an ADR index) or, when no Daily Log exists,
+    # the entire rest of the file.
+    {
+        echo "# Current State"
+        echo ""
+        awk '
+          /^## (Current Context|Last Session)/ { f=1; print; next }
+          /^## / { f=0 }
+          f { print }
+        ' "$devlog"
+    } > "$state"
+    print_success "Created STATE from legacy DEVLOG sections at $state (review it)."
+}
+
+if [ "${LFG_MIGRATE_ONLY:-0}" = "1" ]; then
+    migrate_devlog_to_state
+    exit 0
+fi
+
 # Check if .log-file-genius exists
 if [[ ! -d "$PROJECT_ROOT/.log-file-genius" ]]; then
     print_error "Log File Genius not found!"
@@ -141,33 +187,39 @@ prompt_update() {
 
 # Update AI assistant rules
 if [[ "$AI_ASSISTANT" != "unknown" ]]; then
-    RULES_SRC="$SOURCE_ROOT/product/starter-packs/$AI_ASSISTANT"
-    
+    RULES_SRC="$SOURCE_ROOT/product/ai-rules/$AI_ASSISTANT"
+
     if [[ "$AI_ASSISTANT" == "augment" ]]; then
-        # Update Augment rules
-        for rule_file in "$RULES_SRC/.augment/rules/"*.md; do
-            if [[ -f "$rule_file" ]]; then
-                rule_name=$(basename "$rule_file")
-                dest_file="$PROJECT_ROOT/.augment/rules/$rule_name"
-                
-                if prompt_update "Augment rule: $rule_name" "$rule_file" "$dest_file"; then
-                    mkdir -p "$PROJECT_ROOT/.augment/rules"
-                    cp "$rule_file" "$dest_file"
-                    print_success "Updated: $rule_name"
-                fi
+        for rule_file in "$RULES_SRC/"*.md; do
+            [[ -f "$rule_file" ]] || continue
+            rule_name=$(basename "$rule_file")
+            dest_file="$PROJECT_ROOT/.augment/rules/$rule_name"
+            if prompt_update "Augment rule: $rule_name" "$rule_file" "$dest_file"; then
+                mkdir -p "$PROJECT_ROOT/.augment/rules"
+                cp "$rule_file" "$dest_file"
+                print_success "Updated: $rule_name"
             fi
         done
     elif [[ "$AI_ASSISTANT" == "claude-code" ]]; then
-        # Update Claude Code instructions
-        if prompt_update "Claude Code instructions" \
-            "$RULES_SRC/.claude/project_instructions.md" \
-            "$PROJECT_ROOT/.claude/project_instructions.md"; then
-            mkdir -p "$PROJECT_ROOT/.claude"
-            cp "$RULES_SRC/.claude/project_instructions.md" "$PROJECT_ROOT/.claude/"
-            print_success "Updated: project_instructions.md"
-        fi
+        for rule_file in "$RULES_SRC/"*.md; do
+            [[ -f "$rule_file" ]] || continue
+            rule_name=$(basename "$rule_file")
+            if [[ "$rule_name" == "project_instructions.md" ]]; then
+                dest_file="$PROJECT_ROOT/.claude/project_instructions.md"
+            else
+                dest_file="$PROJECT_ROOT/.claude/rules/$rule_name"
+            fi
+            if prompt_update "Claude rule: $rule_name" "$rule_file" "$dest_file"; then
+                mkdir -p "$(dirname "$dest_file")"
+                cp "$rule_file" "$dest_file"
+                print_success "Updated: $rule_name"
+            fi
+        done
     fi
 fi
+
+# Migrate legacy DEVLOG context into STATE.md for existing installs
+migrate_devlog_to_state
 
 # Update validation scripts
 print_info "Checking validation scripts..."

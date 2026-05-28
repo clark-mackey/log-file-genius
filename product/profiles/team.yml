@@ -88,7 +88,7 @@ team_guidance: |
   4. **Review Process:** Should planning files be reviewed in PRs? (recommended: yes)
   5. **Archival Cadence:** Who archives old entries? (monthly, quarterly, automated)
   
-  Document your team's conventions in DEVLOG "Current Context" section.
+  Document your team's conventions in STATE.md (Current Context section) or your project's shared docs.
 
 # Customization tips
 customization_tips: |

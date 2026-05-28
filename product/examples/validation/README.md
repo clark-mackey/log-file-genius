@@ -15,11 +15,10 @@ This directory contains example CHANGELOG and DEVLOG files for testing the valid
   - Includes file references and commit hashes
 
 - **`valid-devlog.md`** - Properly formatted DEVLOG
-  - Has `## Current Context (Source of Truth)` section
-  - Has `## Daily Log - Newest First` section
-  - Has all required fields (Current Version, Active Branch, Phase)
+  - Has `## Daily Log - Newest First` section (narrative only — no Current Context)
   - Uses `### YYYY-MM-DD: Title` format for entries
   - Includes proper entry structure (Situation, Challenge, Decision, Why, Result)
+  - Note: Current Context (Version, Active Branch, Phase) belongs in **STATE.md**, not DEVLOG
 
 ### Invalid Examples
 
@@ -29,8 +28,7 @@ This directory contains example CHANGELOG and DEVLOG files for testing the valid
   - Missing file references
 
 - **`invalid-devlog.md`** - DEVLOG with common errors
-  - Wrong section names
-  - Missing required fields
+  - Missing `## Daily Log` section (has wrong section name)
   - Invalid entry date formats
   - Missing entry structure
 
@@ -43,7 +41,7 @@ This directory contains example CHANGELOG and DEVLOG files for testing the valid
 **PowerShell:**
 ```powershell
 # Copy valid file to test location
-Copy-Item examples/validation/valid-changelog.md docs/planning/CHANGELOG.md
+Copy-Item examples/validation/valid-changelog.md logs/CHANGELOG.md
 
 # Run validation (should pass)
 .\scripts\validate-log-files.ps1 -Changelog -Verbose
@@ -59,7 +57,7 @@ Copy-Item examples/validation/valid-changelog.md docs/planning/CHANGELOG.md
 **PowerShell:**
 ```powershell
 # Copy invalid file to test location
-Copy-Item examples/validation/invalid-changelog.md docs/planning/CHANGELOG.md
+Copy-Item examples/validation/invalid-changelog.md logs/CHANGELOG.md
 
 # Run validation (should fail)
 .\scripts\validate-log-files.ps1 -Changelog -Verbose
@@ -92,21 +90,23 @@ Copy-Item examples/validation/invalid-changelog.md docs/planning/CHANGELOG.md
 
 ### DEVLOG Errors
 
-1. **Missing Current Context**
-   - Error: `Missing 'Current Context' section`
-   - Fix: Add `## Current Context (Source of Truth)` section
-
-2. **Missing Daily Log**
-   - Error: `Missing 'Daily Log' section`
+1. **Missing Daily Log**
+   - Error: `Missing '## Daily Log' section`
    - Fix: Add `## Daily Log - Newest First` section
 
-3. **Missing required fields**
-   - Error: `Missing required field: Version`
-   - Fix: Add all required fields (Current Version, Active Branch, Phase)
-
-4. **Invalid entry date**
+2. **Invalid entry date**
    - Error: `Invalid entry date format`
    - Fix: Use `### YYYY-MM-DD: Title` format
+
+### STATE Errors
+
+1. **Missing Current Context**
+   - Error: `Missing '## Current Context' section`
+   - Fix: Add `## Current Context` section with Version, Active Branch, Phase fields
+
+2. **Missing required fields**
+   - Error: `Missing required field in Current Context: Version`
+   - Fix: Add `**Version**`, `**Active Branch**`, and `**Phase**` fields in Current Context
 
 ---
 
@@ -116,8 +116,8 @@ After testing, restore your original files:
 
 ```powershell
 # Restore from git
-git checkout docs/planning/CHANGELOG.md
-git checkout docs/planning/DEVLOG.md
+git checkout logs/CHANGELOG.md
+git checkout logs/DEVLOG.md
 ```
 
 ---
