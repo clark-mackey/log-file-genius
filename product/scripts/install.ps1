@@ -255,97 +255,57 @@ if ($templateErrors.Count -gt 0) {
 
 Print-Info "Installing AI assistant rules..."
 
-if ($AiAssistant -eq "augment") {
-    $rulesSource = Join-Path $SourceRoot "ai-rules/augment"
-    $rulesDest = ".augment/rules"
+switch ($AiAssistant) {
+    "augment"     { $rulesTarget = "augment_rules"; $rulesDest = Join-Path $ProjectRoot ".augment\rules" }
+    "claude-code" { $rulesTarget = "claude_rules";  $rulesDest = Join-Path $ProjectRoot ".claude\rules"  }
+    default       { Rollback-Installation "Unknown assistant: $AiAssistant" }
+}
 
-    # Track if .augment existed before we started
-    $augmentExisted = Test-Path ".augment"
+if (-not (Test-Path $rulesDest)) {
+    New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
+}
+$CreatedItems += $rulesDest
 
-    if (-not (Test-Path ".augment")) {
-        New-Item -ItemType Directory -Path ".augment" -Force | Out-Null
-    }
-    if (-not (Test-Path $rulesDest)) {
-        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
-    }
-
-    # Track directory creation for rollback
-    if (-not $augmentExisted) {
-        $CreatedItems += ".augment"
-    } else {
-        $CreatedItems += ".augment/rules"
-    }
-
-    try {
-        Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse -ErrorAction Stop | ForEach-Object {
-            $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
-            $destPath = Join-Path $rulesDest $relativePath
-            $destDir = Split-Path -Parent $destPath
-
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+Get-ChildItem -Path (Join-Path $SourceRoot "rules") -Filter "*.md" | ForEach-Object {
+    $text = Get-Content $_.FullName -Raw
+    # Extract frontmatter block (between the first two '---' lines).
+    if ($text -match "(?ms)^---\s*\r?\n(.*?)\r?\n---") {
+        $fm = $Matches[1]
+        if ($fm -match "(?m)^targets:\s*(.+)$") {
+            $targets = ($Matches[1] -replace '\[|\]','' -split ',' | ForEach-Object { $_.Trim() })
+            if ($targets -contains $rulesTarget) {
+                $dest = Join-Path $rulesDest $_.Name
+                Copy-Item -Path $_.FullName -Destination $dest -Force
+                $CreatedItems += $dest
+                Print-Success "Installed $($_.Name)"
             }
-
-            Copy-Item -Path $_.FullName -Destination $destPath -Force -ErrorAction Stop
-            $CreatedItems += $destPath
-            Print-Success "Installed .augment/rules/$relativePath"
         }
-    }
-    catch {
-        Rollback-Installation "Failed to copy AI rules: $($_.Exception.Message)"
     }
 }
-elseif ($AiAssistant -eq "claude-code") {
-    $rulesSource = Join-Path $SourceRoot "ai-rules/claude-code"
-    $rulesDest = ".claude/rules"
 
-    # Track if .claude existed before we started
-    $claudeExisted = Test-Path ".claude"
+if ($AiAssistant -eq "claude-code") {
+    $tmpl = Join-Path $SourceRoot "install-templates\claude\project_instructions.md.tmpl"
+    $dest = Join-Path $ProjectRoot ".claude\project_instructions.md"
+    $rendered = (Get-Content $tmpl -Raw) `
+        -replace '\{\{paths\.changelog\}\}','logs/CHANGELOG.md' `
+        -replace '\{\{paths\.devlog\}\}','logs/DEVLOG.md' `
+        -replace '\{\{paths\.state\}\}','logs/STATE.md' `
+        -replace '\{\{paths\.adr_dir\}\}','logs/adr/'
+    # Spec requires no BOM. Windows PowerShell 5.1's `Set-Content -Encoding utf8`
+    # writes UTF-8 *with* BOM, so use .NET directly with a no-BOM encoding.
+    [System.IO.File]::WriteAllText($dest, $rendered, (New-Object System.Text.UTF8Encoding $false))
+    $CreatedItems += $dest
+    Print-Success "Rendered .claude/project_instructions.md"
+}
 
-    if (-not (Test-Path ".claude")) {
-        New-Item -ItemType Directory -Path ".claude" -Force | Out-Null
-    }
-    if (-not (Test-Path $rulesDest)) {
-        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
-    }
-
-    # Track directory creation for rollback
-    if (-not $claudeExisted) {
-        $CreatedItems += ".claude"
-    } else {
-        $CreatedItems += ".claude/rules"
-    }
-
-    try {
-        Get-ChildItem -Path $rulesSource -Filter "*.md" -Recurse -ErrorAction Stop | ForEach-Object {
-            $relativePath = $_.FullName.Substring($rulesSource.Length + 1)
-            # project_instructions.md is Claude Code's top-level config and is
-            # copied separately to .claude/. Skip it here so it isn't also
-            # duplicated into .claude/rules/.
-            if ($relativePath -eq "project_instructions.md") { return }
-            $destPath = Join-Path $rulesDest $relativePath
-            $destDir = Split-Path -Parent $destPath
-
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-            }
-
-            Copy-Item -Path $_.FullName -Destination $destPath -Force -ErrorAction Stop
-            $CreatedItems += $destPath
-            Print-Success "Installed .claude/rules/$relativePath"
-        }
-
-        # Copy project_instructions.md if it exists
-        $projectInstructions = Join-Path $rulesSource "project_instructions.md"
-        if (Test-Path $projectInstructions) {
-            Copy-Item -Path $projectInstructions -Destination ".claude/" -Force -ErrorAction Stop
-            $CreatedItems += ".claude/project_instructions.md"
-            Print-Success "Installed .claude/project_instructions.md"
-        }
-    }
-    catch {
-        Rollback-Installation "Failed to copy AI rules: $($_.Exception.Message)"
-    }
+$agentsSrc = Join-Path $SourceRoot "AGENTS.md"
+if (Test-Path $agentsSrc) {
+    # Re-emit with LF + no BOM in case the source was checked out CRLF.
+    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
+    $agentsDest = Join-Path $ProjectRoot "AGENTS.md"
+    [System.IO.File]::WriteAllText($agentsDest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
+    $CreatedItems += $agentsDest
+    Print-Success "Installed AGENTS.md at project root"
 }
 
 # ============================================================================
