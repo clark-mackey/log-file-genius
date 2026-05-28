@@ -186,36 +186,67 @@ prompt_update() {
 }
 
 # Update AI assistant rules
-if [[ "$AI_ASSISTANT" != "unknown" ]]; then
-    RULES_SRC="$SOURCE_ROOT/product/ai-rules/$AI_ASSISTANT"
+# Map AI_ASSISTANT to target name in fragment frontmatter.
+case "$AI_ASSISTANT" in
+    augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
+    claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
+    *)           print_warning "Unknown assistant: $AI_ASSISTANT"; AI_ASSISTANT="unknown" ;;
+esac
 
-    if [[ "$AI_ASSISTANT" == "augment" ]]; then
-        for rule_file in "$RULES_SRC/"*.md; do
-            [[ -f "$rule_file" ]] || continue
-            rule_name=$(basename "$rule_file")
-            dest_file="$PROJECT_ROOT/.augment/rules/$rule_name"
-            if prompt_update "Augment rule: $rule_name" "$rule_file" "$dest_file"; then
-                mkdir -p "$PROJECT_ROOT/.augment/rules"
-                cp "$rule_file" "$dest_file"
-                print_success "Updated: $rule_name"
+if [ "$AI_ASSISTANT" != "unknown" ]; then
+    mkdir -p "$RULES_DEST"
+
+    # Walk fragments; route by frontmatter `targets`.
+    for frag in "$SOURCE_ROOT/product/rules/"*.md; do
+        [ -f "$frag" ] || continue
+        targets=$(awk '
+            /^---$/{count++; if(count==2)exit; next}
+            count==1 && /^targets:/{ sub(/^targets:[[:space:]]*/,""); print; exit }
+        ' "$frag")
+        case ",$(echo "$targets" | tr -d '[] ')," in
+            *",$RULES_TARGET,"*)
+                fname=$(basename "$frag")
+                dest="$RULES_DEST/$fname"
+                if prompt_update "Rule: $fname" "$frag" "$dest"; then
+                    cp "$frag" "$dest"
+                    print_success "Updated: $fname"
+                fi
+                ;;
+        esac
+    done
+
+    # Render Claude project_instructions template (claude-code only).
+    if [ "$AI_ASSISTANT" = "claude-code" ]; then
+        TMPL="$SOURCE_ROOT/product/install-templates/claude/project_instructions.md.tmpl"
+        DEST="$PROJECT_ROOT/.claude/project_instructions.md"
+        if [ -f "$TMPL" ]; then
+            # Render to a temp file so prompt_update can diff against existing.
+            RENDERED=$(mktemp)
+            sed \
+                -e 's|{{paths.changelog}}|logs/CHANGELOG.md|g' \
+                -e 's|{{paths.devlog}}|logs/DEVLOG.md|g' \
+                -e 's|{{paths.state}}|logs/STATE.md|g' \
+                -e 's|{{paths.adr_dir}}|logs/adr/|g' \
+                "$TMPL" > "$RENDERED"
+            if prompt_update "Claude project_instructions.md" "$RENDERED" "$DEST"; then
+                cp "$RENDERED" "$DEST"
+                print_success "Updated: project_instructions.md"
             fi
-        done
-    elif [[ "$AI_ASSISTANT" == "claude-code" ]]; then
-        for rule_file in "$RULES_SRC/"*.md; do
-            [[ -f "$rule_file" ]] || continue
-            rule_name=$(basename "$rule_file")
-            if [[ "$rule_name" == "project_instructions.md" ]]; then
-                dest_file="$PROJECT_ROOT/.claude/project_instructions.md"
-            else
-                dest_file="$PROJECT_ROOT/.claude/rules/$rule_name"
-            fi
-            if prompt_update "Claude rule: $rule_name" "$rule_file" "$dest_file"; then
-                mkdir -p "$(dirname "$dest_file")"
-                cp "$rule_file" "$dest_file"
-                print_success "Updated: $rule_name"
-            fi
-        done
+            rm -f "$RENDERED"
+        fi
     fi
+fi
+
+# Update AGENTS.md at project root (strip CRLF as in install).
+AGENTS_SRC="$SOURCE_ROOT/product/AGENTS.md"
+if [ -f "$AGENTS_SRC" ]; then
+    AGENTS_TMP=$(mktemp)
+    tr -d '\r' < "$AGENTS_SRC" > "$AGENTS_TMP"
+    if prompt_update "AGENTS.md" "$AGENTS_TMP" "$PROJECT_ROOT/AGENTS.md"; then
+        cp "$AGENTS_TMP" "$PROJECT_ROOT/AGENTS.md"
+        print_success "Updated: AGENTS.md"
+    fi
+    rm -f "$AGENTS_TMP"
 fi
 
 # Migrate legacy DEVLOG context into STATE.md for existing installs
