@@ -828,28 +828,18 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
+# Reuse Spec 1's stdlib config parser. Sibling-module import.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config_parser import parse_config
+
 SUBAGENT_MARKER = "LFG_SUBAGENT_PRIME"
 
 
 def _resolve_log_path(project_root: Path, key: str, default_rel: str) -> Path:
-    # Use the same paths block lint-logs reads. Avoid importing the parser here
-    # to keep primer self-contained; do a minimal block-aware scan.
-    cfg = project_root / ".logfile-config.yml"
-    if cfg.exists():
-        in_block = False
-        for line in cfg.read_text(encoding="utf-8").splitlines():
-            if line.startswith("paths:"):
-                in_block = True
-                continue
-            if line and not line.startswith(" "):
-                in_block = False
-            if in_block:
-                stripped = line.strip()
-                if stripped.startswith(f"{key}:"):
-                    val = stripped.split(":", 1)[1].strip()
-                    if val.startswith('"') and val.endswith('"'):
-                        val = val[1:-1]
-                    return project_root / val
+    cfg = parse_config(str(project_root / ".logfile-config.yml"))
+    path = cfg.get("paths", {}).get(key)
+    if path:
+        return project_root / path
     return project_root / default_rel
 
 
@@ -1061,6 +1051,63 @@ def test_promote_writes_audit_trail(tmp_path):
     assert "sub42" in audit
     # ISO 8601-ish date present
     assert datetime.utcnow().strftime("%Y") in audit
+
+
+def test_promote_routes_entries_to_their_declared_category(tmp_path):
+    """Subagent staged entries that declare '### Fixed' must land under the
+    canonical CHANGELOG's '### Fixed' subsection, not under whichever '###' is
+    first. Code-owl review finding #1.
+    """
+    root = _seed(tmp_path)
+    # Seed already has '### Added'; add '### Fixed' to canonical too.
+    cl_path = root / "logs" / "CHANGELOG.md"
+    cl_path.write_text(
+        "# Changelog\n## [Unreleased]\n### Added\n- Existing add.\n\n### Fixed\n- Existing fix.\n",
+        encoding="utf-8",
+    )
+    _stage(root, "sub99", changelog="### Fixed\n- A new fix from subagent.\n")
+    promote(root, "sub99")
+    cl = cl_path.read_text(encoding="utf-8")
+    # New entry lands under "### Fixed", not under "### Added".
+    fixed_block = cl[cl.index("### Fixed"):]
+    added_block = cl[cl.index("### Added"):cl.index("### Fixed")]
+    assert "A new fix from subagent" in fixed_block
+    assert "A new fix from subagent" not in added_block
+
+
+def test_promote_creates_new_category_when_missing(tmp_path):
+    """If the canonical CHANGELOG doesn't have the staged category yet, promote
+    adds a new '### <Category>' subsection at the end of [Unreleased].
+    """
+    root = _seed(tmp_path)
+    _stage(root, "sub88", changelog="### Security\n- Closed an auth gap.\n")
+    promote(root, "sub88")
+    cl = (root / "logs" / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert "### Security" in cl
+    assert "Closed an auth gap" in cl
+
+
+def test_promote_preserves_multiline_devlog_blocks(tmp_path):
+    """DEVLOG entries often span multiple paragraphs separated by blank lines —
+    the promoter must not strip the interior blanks. Code-owl review finding #2.
+    """
+    root = _seed(tmp_path)
+    entry = (
+        "### 2026-05-28: A standard-format entry\n"
+        "\n"
+        "**Situation:** Setup.\n"
+        "\n"
+        "**Decision:** Did the thing.\n"
+    )
+    _stage(root, "subml", devlog=entry)
+    promote(root, "subml")
+    dl = (root / "logs" / "DEVLOG.md").read_text(encoding="utf-8")
+    assert "**Situation:**" in dl
+    assert "**Decision:**" in dl
+    # Interior blank line between the two **Bold** blocks survived.
+    sit = dl.index("**Situation:**")
+    dec = dl.index("**Decision:**")
+    assert "\n\n" in dl[sit:dec], "interior blank line between paragraphs was stripped"
 ```
 
 - [ ] **Step 2: Run, see fail.**
@@ -1071,13 +1118,21 @@ def test_promote_writes_audit_trail(tmp_path):
 """Lead-only verb: promote subagent staged writes into canonical CHANGELOG/DEVLOG.
 
 Reads .lfg/staged/<id>/changelog.md and .lfg/staged/<id>/devlog.md, appends
-to canonical, writes an audit line to .lfg/promoted.log, removes the staged
+to canonical (routing CHANGELOG entries to their declared '### <Category>'
+subsections), writes an audit line to .lfg/promoted.log, removes the staged
 dir. Idempotent — second call on the same id is a no-op.
 """
 from __future__ import annotations
+import os
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List
+
+# Reuse Spec 1's stdlib config parser instead of duplicating its logic here.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config_parser import parse_config
 
 
 class PromoteError(ValueError):
@@ -1085,44 +1140,87 @@ class PromoteError(ValueError):
 
 
 def _resolve(project_root: Path, key: str, default_rel: str) -> Path:
-    cfg = project_root / ".logfile-config.yml"
-    if cfg.exists():
-        in_block = False
-        for line in cfg.read_text(encoding="utf-8").splitlines():
-            if line.startswith("paths:"):
-                in_block = True
-                continue
-            if line and not line.startswith(" "):
-                in_block = False
-            if in_block:
-                s = line.strip()
-                if s.startswith(f"{key}:"):
-                    v = s.split(":", 1)[1].strip().strip('"')
-                    return project_root / v
+    cfg = parse_config(str(project_root / ".logfile-config.yml"))
+    path = cfg.get("paths", {}).get(key)
+    if path:
+        return project_root / path
     return project_root / default_rel
+
+
+def _split_by_category(staged_text: str) -> Dict[str, List[str]]:
+    """Parse the staged changelog into {category: [entry-lines]}. Lines before
+    any '### <Category>' header default to 'Added'. Preserves blank lines
+    inside a category (they may be intentional formatting)."""
+    by_cat: Dict[str, List[str]] = {}
+    current = "Added"
+    for ln in staged_text.splitlines():
+        s = ln.strip()
+        if s.startswith("### "):
+            current = s[4:].strip()
+            continue
+        by_cat.setdefault(current, []).append(ln.rstrip())
+    # Trim leading/trailing blank lines per category, but keep interior blanks.
+    for cat, lines in list(by_cat.items()):
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and not lines[-1].strip():
+            lines.pop()
+        if not lines:
+            del by_cat[cat]
+        else:
+            by_cat[cat] = lines
+    return by_cat
 
 
 def _append_under_unreleased(changelog_path: Path, new_entries: str) -> None:
     text = changelog_path.read_text(encoding="utf-8") if changelog_path.exists() else "# Changelog\n## [Unreleased]\n"
     lines = text.splitlines()
-    # Find the "## [Unreleased]" line; insert after the FIRST subsection heading
-    # (e.g. "### Added") if any, otherwise immediately after the heading.
     try:
-        i = next(idx for idx, ln in enumerate(lines)
-                 if ln.strip().lower().startswith("## [unreleased]"))
+        unreleased_i = next(idx for idx, ln in enumerate(lines)
+                            if ln.strip().lower().startswith("## [unreleased]"))
     except StopIteration:
         raise PromoteError(f"{changelog_path}: missing '## [Unreleased]' section")
-    insert_at = i + 1
-    while insert_at < len(lines) and not lines[insert_at].strip().startswith("###"):
-        insert_at += 1
-    if insert_at < len(lines) and lines[insert_at].strip().startswith("###"):
-        insert_at += 1  # land just after "### Added" (or whichever subsection)
 
-    payload = [ln for ln in new_entries.rstrip().splitlines() if ln.strip()]
-    new_lines = lines[:insert_at] + payload + lines[insert_at:]
-    if not text.endswith("\n"):
-        new_lines.append("")
-    changelog_path.write_text("\n".join(new_lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
+    by_cat = _split_by_category(new_entries)
+    if not by_cat:
+        return  # nothing to do
+
+    # Find the bounds of the [Unreleased] section.
+    section_end = len(lines)
+    for j in range(unreleased_i + 1, len(lines)):
+        if lines[j].strip().startswith("## "):
+            section_end = j
+            break
+
+    # For each category, find an existing '### <Category>' header inside the
+    # section; if found, append after it. Otherwise add the header + entries
+    # at the end of the section.
+    out = lines[:]
+    # Walk from the end so insertions don't shift earlier indices.
+    for cat in reversed(list(by_cat.keys())):
+        entries = by_cat[cat]
+        header_idx = None
+        for j in range(unreleased_i + 1, section_end):
+            if out[j].strip().lower() == f"### {cat.lower()}":
+                header_idx = j
+                break
+        if header_idx is not None:
+            insert_at = header_idx + 1
+            # Skip immediate blanks under the header to land on first entry,
+            # then insert before any non-entry content.
+            while insert_at < section_end and not out[insert_at].strip():
+                insert_at += 1
+            out[insert_at:insert_at] = entries
+            section_end += len(entries)
+        else:
+            # Append a new subsection at the end of [Unreleased].
+            new_block = [f"### {cat}"] + entries + [""]
+            out[section_end:section_end] = new_block
+            section_end += len(new_block)
+
+    # Always end with exactly one trailing newline.
+    rendered = "\n".join(out).rstrip("\n") + "\n"
+    changelog_path.write_text(rendered, encoding="utf-8")
 
 
 def _append_to_devlog(devlog_path: Path, new_entry: str) -> None:
@@ -1413,8 +1511,11 @@ if [ "$AI_ASSISTANT" = "claude-code" ]; then
 fi
 
 # Drop AGENTS.md at the project root for tools that read it natively.
+# Strip CRLF in case the source was checked out on Windows with autocrlf — the
+# generator's contract is LF-only, and tools shouldn't see a mixed-line-ending
+# file just because of where the user cloned the repo.
 if [ -f "$SOURCE_ROOT/AGENTS.md" ]; then
-    cp "$SOURCE_ROOT/AGENTS.md" "$PROJECT_ROOT/AGENTS.md"
+    tr -d '\r' < "$SOURCE_ROOT/AGENTS.md" > "$PROJECT_ROOT/AGENTS.md"
     CREATED_ITEMS+=("$PROJECT_ROOT/AGENTS.md")
     print_success "Installed AGENTS.md at project root"
 fi
@@ -1481,20 +1582,25 @@ Get-ChildItem -Path (Join-Path $SourceRoot "rules") -Filter "*.md" | ForEach-Obj
 if ($AiAssistant -eq "claude-code") {
     $tmpl = Join-Path $SourceRoot "install-templates\claude\project_instructions.md.tmpl"
     $dest = Join-Path $ProjectRoot ".claude\project_instructions.md"
-    (Get-Content $tmpl -Raw) `
+    $rendered = (Get-Content $tmpl -Raw) `
         -replace '\{\{paths\.changelog\}\}','logs/CHANGELOG.md' `
         -replace '\{\{paths\.devlog\}\}','logs/DEVLOG.md' `
         -replace '\{\{paths\.state\}\}','logs/STATE.md' `
-        -replace '\{\{paths\.adr_dir\}\}','logs/adr/' `
-        | Set-Content -Path $dest -Encoding utf8
+        -replace '\{\{paths\.adr_dir\}\}','logs/adr/'
+    # Spec requires no BOM. Windows PowerShell 5.1's `Set-Content -Encoding utf8`
+    # writes UTF-8 *with* BOM, so use .NET directly with a no-BOM encoding.
+    [System.IO.File]::WriteAllText($dest, $rendered, (New-Object System.Text.UTF8Encoding $false))
     $CreatedItems += $dest
     Print-Success "Rendered .claude/project_instructions.md"
 }
 
 $agentsSrc = Join-Path $SourceRoot "AGENTS.md"
 if (Test-Path $agentsSrc) {
-    Copy-Item -Path $agentsSrc -Destination (Join-Path $ProjectRoot "AGENTS.md") -Force
-    $CreatedItems += (Join-Path $ProjectRoot "AGENTS.md")
+    # Re-emit with LF + no BOM in case the source was checked out CRLF.
+    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
+    $agentsDest = Join-Path $ProjectRoot "AGENTS.md"
+    [System.IO.File]::WriteAllText($agentsDest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
+    $CreatedItems += $agentsDest
     Print-Success "Installed AGENTS.md at project root"
 }
 ```
@@ -1552,6 +1658,10 @@ The Spec 1 smoke test must be updated for the new layout (AGENTS.md exists at ro
 # Spec 2: AGENTS.md must land at project root.
 test -f AGENTS.md || { echo "FAIL: AGENTS.md missing at project root"; exit 1; }
 head -1 AGENTS.md | grep -q '^---$' || { echo "FAIL: AGENTS.md missing frontmatter"; exit 1; }
+
+# Spec 2: AGENTS.md must be LF + no BOM (generator's documented contract).
+if grep -q $'\r' AGENTS.md; then echo "FAIL: AGENTS.md has CRLF line endings"; exit 1; fi
+head -c 3 AGENTS.md | grep -q $'\xEF\xBB\xBF' && { echo "FAIL: AGENTS.md has UTF-8 BOM"; exit 1; }
 
 # Spec 2: installed rule must equal the canonical fragment.
 diff -q .claude/rules/log-file-maintenance.md \
@@ -1631,6 +1741,7 @@ exists and is non-empty. This is not an LLM test — it's an assertion that
 the artifact's stated navigation graph actually leads somewhere.
 """
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -1643,11 +1754,13 @@ def _install_into(tmp: Path) -> None:
     (tmp / ".claude").mkdir()
     submodule = tmp / ".log-file-genius" / "product"
     submodule.mkdir(parents=True)
+    # Cross-platform copy (don't shell out to `cp`, which is Unix-only).
     for item in (REPO / "product").iterdir():
+        target = submodule / item.name
         if item.is_dir():
-            subprocess.check_call(["cp", "-r", str(item), str(submodule / item.name)])
+            shutil.copytree(item, target)
         else:
-            subprocess.check_call(["cp", str(item), str(submodule / item.name)])
+            shutil.copy2(item, target)
     subprocess.check_call(
         ["bash", str(REPO / "product/scripts/install.sh"),
          "--profile", "solo-developer", "--ai-assistant", "claude-code", "--force"],
