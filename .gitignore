@@ -1,8 +1,11 @@
 # Secrets and API keys
 .env
 
-# AI Agent configuration (contains API keys/endpoints)
+# AI Agent configuration (contains API keys/endpoints) at the repo root.
+# product/AGENTS.md is the generated canonical agent-onboarding doc (Spec 2)
+# and IS tracked — it's the public artifact installers drop into user projects.
 AGENTS.md
+!product/AGENTS.md
 
 # Augment - internal guidance only (root level only, not starter packs)
 # Ignore the entire .augment directory

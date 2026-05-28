@@ -147,6 +147,49 @@ def cmd_status(args):
     return 0
 
 
+def cmd_generate(args):
+    """Regenerate product/AGENTS.md from rules fragments"""
+    from generator import parse_fragment, render_agents_md, GeneratorError
+    rules_dir = Path(__file__).resolve().parent.parent / "rules"
+    if not rules_dir.is_dir():
+        print(f"ERROR: rules dir not found at {rules_dir}", file=sys.stderr)
+        return 2
+
+    fragments = []
+    for p in sorted(rules_dir.glob("*.md")):
+        try:
+            fragments.append(parse_fragment(p))
+        except GeneratorError as e:
+            print(f"ERROR: {p.name}: {e}", file=sys.stderr)
+            return 2
+
+    try:
+        rendered = render_agents_md(fragments)
+    except GeneratorError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+
+    # Default output: product/AGENTS.md, unless --out specified.
+    default_out = Path(__file__).resolve().parent.parent / "AGENTS.md"
+    out_path = Path(args.out) if getattr(args, "out", None) else default_out
+
+    if getattr(args, "check", False):
+        existing = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
+        if existing == rendered:
+            return 0
+        print(f"DRIFT: {out_path} would change after `lfg generate`.", file=sys.stderr)
+        print("Run `python product/scripts/lfg.py generate` and commit the result.",
+              file=sys.stderr)
+        return 1
+
+    # Write with explicit LF + UTF-8, no BOM.
+    out_path.write_bytes(rendered.encode("utf-8"))
+    tokens = len(rendered) // 4
+    from generator import AGENTS_TOKEN_BUDGET
+    print(f"Wrote {out_path} ({tokens} tokens, budget {AGENTS_TOKEN_BUDGET})")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -230,6 +273,12 @@ def main():
     p_hooks = subparsers.add_parser('install-hooks', help='Install git pre-commit hooks')
     p_hooks.add_argument('--force', action='store_true', help='Overwrite existing hook')
 
+    # generate command
+    p_gen = subparsers.add_parser('generate', help='Regenerate AGENTS.md from fragments')
+    p_gen.add_argument('--check', action='store_true',
+                       help='Exit non-zero if AGENTS.md would change (CI mode)')
+    p_gen.add_argument('--out', help='Write to a non-default path (testing)')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -245,6 +294,7 @@ def main():
         'check-rules': cmd_check_rules,
         'status': cmd_status,
         'install-hooks': cmd_install_hooks,
+        'generate': cmd_generate,
     }
 
     return handlers[args.command](args)

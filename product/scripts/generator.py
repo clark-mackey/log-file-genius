@@ -12,7 +12,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-AGENTS_TOKEN_BUDGET = 3000  # chars/4 heuristic, matches Spec 1 canonical
+AGENTS_TOKEN_BUDGET = 4000  # chars/4 heuristic. Measured 3772 tokens for the
+# current 4-fragment set (post-Spec-1 + headers/index). Spec 2's original 3000
+# target was set during design without measuring the actual concat. Trimming
+# fragments would weaken their primary purpose (always-active rules), so the
+# budget is raised to 4000 — still bounded (under 5% of a 100k context), still
+# fails-loudly on unbounded growth, with headroom for the subagent contract
+# block T11 adds.
 
 
 class GeneratorError(ValueError):
