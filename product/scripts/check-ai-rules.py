@@ -265,10 +265,10 @@ def main():
     if args.rules_dir:
         rules_dir = Path(args.rules_dir)
     else:
-        # Default: check product/ai-rules and any .augment/rules
+        # Default: check product/rules (canonical fragments; ai-rules/ removed in T22)
         script_dir = Path(__file__).parent
         product_dir = script_dir.parent
-        rules_dir = product_dir / "ai-rules"
+        rules_dir = product_dir / "rules"
 
     if not rules_dir.exists():
         print(f"ERROR: Rules directory not found: {rules_dir}", file=sys.stderr)
