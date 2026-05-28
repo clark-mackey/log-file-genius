@@ -54,8 +54,8 @@ Help expand support for more AI coding assistants!
 - Other AI assistants
 
 **To add a new platform:**
-1. Add the platform's rule set in `product/ai-rules/[platform-name]/`
-2. Include setup instructions, rules/instructions, and examples
+1. Add a `targets` entry for the new platform to each fragment in `product/rules/`
+2. Add any platform-specific render logic to `product/scripts/generator.py`
 3. Test thoroughly with the platform
 4. Update the main README.md with the new platform
 5. Submit a PR with your changes
@@ -71,6 +71,34 @@ Using Log File Genius successfully? Share your story!
    - Challenges you faced
    - Tips for other users
    - Before/after metrics if available
+
+## Build-time dependency: Python 3.11+
+
+LFG remains **zero-dependency at runtime for users** — the installer, validators,
+and pre-commit hook are stdlib-only.
+
+For **contributors**, Python 3.11+ is required to regenerate `product/AGENTS.md`
+from the canonical fragments in `product/rules/`. After editing any fragment, run:
+
+```bash
+python product/scripts/lfg.py generate
+```
+
+CI runs `lfg generate --check` on every PR and will fail if `AGENTS.md` is out
+of date relative to the fragments. To avoid forgetting, install the pre-commit
+hook below.
+
+### Optional: pre-commit auto-regenerate
+
+```bash
+cp product/scripts/pre-commit-regen .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+This hook regenerates `product/AGENTS.md` automatically whenever you stage
+changes under `product/rules/` and re-adds the updated `AGENTS.md` to the commit.
+
+---
 
 ## 🚀 Getting Started
 
@@ -203,18 +231,17 @@ All contributors will be:
 - Mentioned in release notes (for significant contributions)
 - Thanked in the community discussions
 
-## 📋 Starter Pack Contribution Checklist
+## 📋 New Platform Contribution Checklist
 
-If you're adding a new AI assistant rule set:
+If you're adding support for a new AI assistant:
 
-- [ ] Created `product/ai-rules/[platform-name]/` directory
-- [ ] Included README.md with setup instructions
-- [ ] Added platform-specific rules/instructions
-- [ ] Provided working examples
-- [ ] Tested with the actual platform
+- [ ] Added `targets` entry to relevant fragments in `product/rules/`
+- [ ] Updated `product/scripts/generator.py` with any platform-specific rendering
+- [ ] Ran `python product/scripts/lfg.py generate` to regenerate `product/AGENTS.md`
+- [ ] Tested the full install flow with the actual platform
 - [ ] Updated main README.md with platform status
 - [ ] Documented any platform-specific quirks
-- [ ] Included troubleshooting section
+- [ ] Included troubleshooting notes in relevant fragments
 - [ ] Added links to official platform documentation
 
 ## 🆘 Need Help?

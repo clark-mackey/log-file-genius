@@ -1,4 +1,8 @@
 ---
+fragment: token-usage
+order: 40
+targets: agents_md, claude_rules, augment_rules
+summary: "@token usage" command — report context-window usage and component token costs.
 type: "manual"
 ---
 

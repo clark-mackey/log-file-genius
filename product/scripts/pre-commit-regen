@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Auto-regenerate AGENTS.md when fragments are staged.
+set -e
+if git diff --cached --name-only | grep -q '^product/rules/'; then
+    python product/scripts/lfg.py generate
+    git add product/AGENTS.md
+fi
