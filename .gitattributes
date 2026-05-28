@@ -9,6 +9,12 @@
 
 # Explicitly set line endings for specific file types
 *.md text
+
+# AGENTS.md is generated with an LF-only contract enforced by lfg generate
+# and asserted by the smoke tests. Force LF in working copies on Windows too
+# — otherwise autocrlf converts to CRLF on checkout and `git status` shows
+# the file as modified after every clone.
+product/AGENTS.md text eol=lf
 *.yml text
 *.yaml text
 *.json text
