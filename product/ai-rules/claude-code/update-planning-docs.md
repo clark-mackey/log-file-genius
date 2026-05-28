@@ -96,7 +96,7 @@ Please specify (1-5):
 
 1. Ask: "What architectural decision needs documenting?"
 2. Get next ADR number from `logs/adr/README.md`
-3. Use template from `.log-file-genius/templates/ADR_template.md`
+3. Use template from `.log-file-genius/product/templates/ADR_template.md`
 4. Create file: `logs/adr/NNN-short-title.md`
 5. Fill in: Context, Decision, Consequences, Alternatives
 6. Update `logs/adr/README.md` index
@@ -128,8 +128,8 @@ Read paths from `.logfile-config.yml` → `paths` (fallback `logs/`):
 - **DEVLOG:** `logs/DEVLOG.md`
 - **STATE:** `logs/STATE.md`
 - **ADRs:** `logs/adr/` directory
-- **Templates:** `.log-file-genius/templates/` directory
-- **How-to guide:** `.log-file-genius/docs/log_file_how_to.md`
+- **Templates:** `.log-file-genius/product/templates/` directory
+- **How-to guide:** `.log-file-genius/product/docs/log_file_how_to.md`
 
 ---
 
