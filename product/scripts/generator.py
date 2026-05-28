@@ -12,13 +12,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-AGENTS_TOKEN_BUDGET = 4000  # chars/4 heuristic. Measured 3772 tokens for the
-# current 4-fragment set (post-Spec-1 + headers/index). Spec 2's original 3000
-# target was set during design without measuring the actual concat. Trimming
-# fragments would weaken their primary purpose (always-active rules), so the
-# budget is raised to 4000 — still bounded (under 5% of a 100k context), still
-# fails-loudly on unbounded growth, with headroom for the subagent contract
-# block T11 adds.
+AGENTS_TOKEN_BUDGET = 4500  # chars/4 heuristic. Re-bumped to 4500 after T11's
+# subagent contract block landed AGENTS.md at 3999/4000 — zero headroom would
+# break the gate on any subsequent fragment edit. 4500 keeps growth bounded
+# (~4.5% of a 100k context) and leaves ~500 tokens of editing slack. If this
+# starts climbing toward 4500, that's a real signal to compress, not to raise.
+# History: Spec 2 designed 3000 → measured 3772 → bumped to 4000 (T6) →
+# T11 contract pushed near 4000 → bumped to 4500 (T13).
 
 
 class GeneratorError(ValueError):
