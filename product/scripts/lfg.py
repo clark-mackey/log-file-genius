@@ -203,6 +203,12 @@ def cmd_prime(args):
     return 0
 
 
+def cmd_promote(args):
+    """Promote a subagent's staged entries into canonical CHANGELOG/DEVLOG."""
+    from promoter import promote
+    return promote(Path.cwd(), args.subagent_id)
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -298,6 +304,12 @@ def main():
                          help='Number of CHANGELOG Unreleased entries to include (default 5)')
     p_prime.add_argument('--json', action='store_true', help='JSON output')
 
+    # promote command
+    p_prom = subparsers.add_parser(
+        'promote', help="Promote a subagent's staged entries into canonical CHANGELOG/DEVLOG")
+    p_prom.add_argument('subagent_id',
+                        help='Subagent id matching the .lfg/staged/<id>/ directory')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -315,6 +327,7 @@ def main():
         'install-hooks': cmd_install_hooks,
         'generate': cmd_generate,
         'prime': cmd_prime,
+        'promote': cmd_promote,
     }
 
     return handlers[args.command](args)
