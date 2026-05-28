@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # product/tests/smoke_install.sh
 # Cross-platform installer smoke test (bash).
-# Asserts a fresh install produces the expected files, config blocks, and
-# frontmatter, and that the installed rule equals the canonical ai-rules source
-# (install==update parity).
+# Asserts a fresh install produces the expected files, config blocks,
+# frontmatter, AGENTS.md (LF + no BOM), and that the installed rule equals
+# the canonical fragment (install==update parity).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -33,17 +33,18 @@ grep -q "^token_targets:" .logfile-config.yml || { echo "FAIL: no token_targets 
 # --- Frontmatter ---
 head -1 logs/CHANGELOG.md | grep -q '^---$' || { echo "FAIL: CHANGELOG.md missing frontmatter"; exit 1; }
 
-# --- install==canonical parity ---
-# update.sh does a git fetch/pull so we can't run it end-to-end in a temp dir.
-# Instead: verify the installed rule is byte-for-byte identical to the
-# canonical ai-rules source, and that update.sh sources from ai-rules (not
-# starter-packs).
-diff -q .claude/rules/log-file-maintenance.md \
-    "$REPO/product/ai-rules/claude-code/log-file-maintenance.md" \
-    || { echo "FAIL: installed rule != canonical ai-rules source"; exit 1; }
+# Spec 2: AGENTS.md must land at project root.
+test -f AGENTS.md || { echo "FAIL: AGENTS.md missing at project root"; exit 1; }
+head -1 AGENTS.md | grep -q '^---$' || { echo "FAIL: AGENTS.md missing frontmatter"; exit 1; }
 
-grep -q 'product/ai-rules/\$AI_ASSISTANT' "$REPO/product/scripts/update.sh" \
-    || { echo "FAIL: update.sh does not source from ai-rules"; exit 1; }
+# Spec 2: AGENTS.md must be LF + no BOM (generator's documented contract).
+if grep -q $'\r' AGENTS.md; then echo "FAIL: AGENTS.md has CRLF line endings"; exit 1; fi
+head -c 3 AGENTS.md | grep -q $'\xEF\xBB\xBF' && { echo "FAIL: AGENTS.md has UTF-8 BOM"; exit 1; } || true
+
+# Spec 2: installed rule must equal the canonical fragment.
+diff -q .claude/rules/log-file-maintenance.md \
+    "$REPO/product/rules/log-file-maintenance.md" \
+    || { echo "FAIL: installed rule != canonical fragment"; exit 1; }
 
 if grep -q 'starter-packs' "$REPO/product/scripts/update.sh"; then
     echo "FAIL: update.sh still references starter-packs"; exit 1
