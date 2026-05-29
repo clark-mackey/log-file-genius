@@ -374,3 +374,26 @@ def test_apply_creates_archive_dir_if_missing(tmp_path):
     apply(plan)
 
     assert (tmp_path / "logs" / "archive").is_dir()
+
+
+def test_apply_is_idempotent(tmp_path):
+    """Running build_plan + apply twice → second run is a no-op."""
+    text_cl = _make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500)
+    _write_minimal_config_and_logs(tmp_path, changelog_text=text_cl)
+
+    plan1 = build_plan(tmp_path, include_devlog=False)
+    apply(plan1)
+
+    plan2 = build_plan(tmp_path, include_devlog=False)
+    assert plan2.is_empty(), f"second run should be empty, got {plan2.actions}"
+
+
+def test_build_plan_dogfood_against_this_repo():
+    """Smoke: building a plan against this repo's actual logs doesn't crash."""
+    repo_root = Path(__file__).resolve().parents[2]
+    if not (repo_root / "logs" / "CHANGELOG.md").exists():
+        pytest.skip("no logs/CHANGELOG.md to dogfood against")
+    plan = build_plan(repo_root)
+    assert isinstance(plan, ArchivePlan)
+    for r in plan.refusal_reasons:
+        assert isinstance(r, str) and r
