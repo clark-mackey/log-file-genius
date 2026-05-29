@@ -152,3 +152,69 @@ def parse_changelog(text: str) -> Dict[str, Any]:
         "versions": versions,
         "archive_section": archive_section,
     }
+
+
+# ----- DEVLOG parser -----
+
+_DAILY_LOG_RE = re.compile(r"^##\s+Daily Log\b", re.IGNORECASE)
+_DEVLOG_ENTRY_RE = re.compile(
+    r"^###\s+(?P<date>\d{4}-\d{2}-\d{2})\s*:?\s*(?P<title>.*?)\s*$"
+)
+
+
+def parse_devlog(text: str) -> Dict[str, Any]:
+    """Parse a DEVLOG into header / daily-log heading / entries / archive section.
+
+    Returns {header, daily_log_heading, entries, archive_section} where:
+      - header: everything before "## Daily Log".
+      - daily_log_heading: the "## Daily Log..." line itself.
+      - entries: list of {'date': 'YYYY-MM-DD', 'title': str, 'content': str},
+        in file order (newest-first by convention).
+      - archive_section: "## Archive" + content if present, else "".
+
+    Raises ArchiveError if no "## Daily Log" heading.
+    """
+    lines = text.splitlines(keepends=True)
+    n = len(lines)
+
+    dl_idx = next((i for i, ln in enumerate(lines) if _DAILY_LOG_RE.match(ln)), None)
+    if dl_idx is None:
+        raise ArchiveError("DEVLOG missing '## Daily Log' heading")
+
+    header = "".join(lines[:dl_idx])
+    daily_log_heading = lines[dl_idx]
+
+    # Locate Archive section if any.
+    arch_idx = next(
+        (i for i in range(dl_idx + 1, n) if _ARCHIVE_HEADER_RE.match(lines[i])),
+        n,
+    )
+    archive_section = "".join(lines[arch_idx:n]) if arch_idx < n else ""
+
+    # Walk entries within [dl_idx+1, arch_idx).
+    entries: List[Dict[str, str]] = []
+    i = dl_idx + 1
+    while i < arch_idx:
+        m = _DEVLOG_ENTRY_RE.match(lines[i])
+        if m:
+            e_start = i
+            e_end = next(
+                (j for j in range(i + 1, arch_idx)
+                 if _DEVLOG_ENTRY_RE.match(lines[j]) or lines[j].startswith("## ")),
+                arch_idx,
+            )
+            entries.append({
+                "date": m.group("date"),
+                "title": m.group("title").strip(),
+                "content": "".join(lines[e_start:e_end]),
+            })
+            i = e_end
+            continue
+        i += 1
+
+    return {
+        "header": header,
+        "daily_log_heading": daily_log_heading,
+        "entries": entries,
+        "archive_section": archive_section,
+    }
