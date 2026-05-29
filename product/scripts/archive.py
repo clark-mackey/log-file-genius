@@ -292,3 +292,83 @@ def parse_devlog(text: str) -> Dict[str, Any]:
         "entries": entries,
         "archive_section": archive_section,
     }
+
+
+# ----- DEVLOG plan builder -----
+
+def _plan_devlog(
+    *,
+    text: str,
+    source_path: Path,
+    budget: int,
+    keep_fraction: float,
+) -> Tuple[List[ArchiveAction], List[str], List[str]]:
+    """Return (actions, refusal_reasons, warnings) for DEVLOG archival."""
+    parsed = parse_devlog(text)
+    target = int(budget * keep_fraction)
+
+    current_tokens = _estimate_tokens(text)
+    if current_tokens <= target:
+        return [], [], []
+
+    entries = parsed["entries"]  # newest-first in file order
+    if not entries:
+        return [], [], []
+
+    # Fit-the-budget walk: accumulate newest-first; archive remainder.
+    protected_overhead = (
+        _estimate_tokens(parsed["header"])
+        + _estimate_tokens(parsed["daily_log_heading"])
+        + _estimate_tokens(parsed["archive_section"])
+    )
+
+    warnings: List[str] = []
+    keep_cutoff = 0  # index up to which entries are kept (exclusive)
+    cumulative = protected_overhead
+    newest_tokens = _estimate_tokens(entries[0]["content"])
+    if newest_tokens > target - protected_overhead:
+        warnings.append(
+            f"Newest DEVLOG entry ({entries[0]['date']}) is {newest_tokens} tokens, "
+            f"oversize for keep_fraction*budget = {target}. It stays; consider trimming."
+        )
+        # Force-keep the newest entry even though it blows the budget.
+        cumulative += newest_tokens
+        keep_cutoff = 1
+
+    for i in range(keep_cutoff, len(entries)):
+        e_tokens = _estimate_tokens(entries[i]["content"])
+        if cumulative + e_tokens > target:
+            break
+        cumulative += e_tokens
+        keep_cutoff = i + 1
+
+    if keep_cutoff >= len(entries):
+        return [], [], warnings
+
+    to_archive = entries[keep_cutoff:]  # oldest part
+    # Sort to_archive oldest-first for the archive file (entries are newest-first).
+    to_archive_oldest_first = list(reversed(to_archive))
+    archive_content = "".join(e["content"] for e in to_archive_oldest_first)
+
+    earliest_date = to_archive_oldest_first[0]["date"]
+    latest_date = to_archive_oldest_first[-1]["date"]
+    archive_name = f"DEVLOG-{earliest_date}-to-{latest_date}.md"
+    archive_path = source_path.parent / "archive" / archive_name
+
+    summary_line = (
+        f"- [{archive_name}](archive/{archive_name}) — "
+        f"entries {earliest_date} through {latest_date}; archived "
+        f"~{_estimate_tokens(archive_content)} tokens, {len(to_archive)} entries"
+    )
+
+    after_tokens = cumulative  # the new total = protected + kept entries
+    return [
+        ArchiveAction(
+            source_path=source_path,
+            archive_path=archive_path,
+            moved_content=archive_content,
+            summary_line=summary_line,
+            tokens_before=current_tokens,
+            tokens_after=after_tokens,
+        )
+    ], [], warnings

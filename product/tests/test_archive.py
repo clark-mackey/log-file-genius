@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from archive import (
     parse_changelog, parse_devlog, ArchivePlan, ArchiveAction, ArchiveError,
     _estimate_tokens, DEFAULT_KEEP_FRACTION, COMBINED_KEEP_FRACTION_FLOOR,
-    _plan_changelog,
+    _plan_changelog, _plan_devlog,
 )
 
 
@@ -200,3 +200,54 @@ def test_plan_changelog_no_action_when_already_under_budget(tmp_path):
     )
     assert actions == []
     assert refusals == []
+
+
+def _make_devlog(entry_token_sizes):
+    """Build a DEVLOG; entry_token_sizes[i] in tokens for the i-th entry (newest first)."""
+    header = "# Development Log\n\n## Daily Log - Newest First\n\n"
+    entries = []
+    base_date = 28
+    for i, t in enumerate(entry_token_sizes):
+        # date counts down from 2026-05-28
+        date = f"2026-05-{base_date - i:02d}"
+        body = "x" * (t * 4)
+        entries.append(f"### {date}: entry {i}\n\n{body}\n\n")
+    return header + "".join(entries)
+
+
+def test_plan_devlog_keeps_newest_entries_fitting_keep_fraction(tmp_path):
+    # Budget 15000, keep_fraction 0.8 → target 12000.
+    # 5 entries x 3000 tokens each = 15000 total + headers.
+    text = _make_devlog([3000] * 5)
+    src = tmp_path / "DEVLOG.md"
+    actions, refusals, warnings = _plan_devlog(
+        text=text, source_path=src, budget=15_000, keep_fraction=0.8,
+    )
+    assert refusals == []
+    assert len(actions) == 1
+    # Oldest entries archive; the newest (2026-05-28) stays in source.
+    assert "2026-05-28" not in actions[0].moved_content
+    # The oldest seeded date (2026-05-24, i=4) IS archived.
+    assert "2026-05-24" in actions[0].moved_content
+
+
+def test_plan_devlog_no_action_when_under_budget(tmp_path):
+    text = _make_devlog([1000] * 3)  # 3000 tokens total
+    src = tmp_path / "DEVLOG.md"
+    actions, refusals, warnings = _plan_devlog(
+        text=text, source_path=src, budget=15_000, keep_fraction=0.8,
+    )
+    assert actions == [] and refusals == []
+
+
+def test_plan_devlog_warns_when_single_newest_oversize(tmp_path):
+    # Newest entry alone is 13000 tokens (> 0.8 * 15000 = 12000).
+    text = _make_devlog([13000, 1000, 1000])
+    src = tmp_path / "DEVLOG.md"
+    actions, refusals, warnings = _plan_devlog(
+        text=text, source_path=src, budget=15_000, keep_fraction=0.8,
+    )
+    # Newest stays in source (never archived).
+    if actions:
+        assert "2026-05-28" not in actions[0].moved_content
+    assert any("newest" in w.lower() and "oversize" in w.lower() for w in warnings)
