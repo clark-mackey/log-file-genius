@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from archive import (
     parse_changelog, parse_devlog, ArchivePlan, ArchiveAction, ArchiveError,
     _estimate_tokens, DEFAULT_KEEP_FRACTION, COMBINED_KEEP_FRACTION_FLOOR,
+    _plan_changelog,
 )
 
 
@@ -145,3 +146,57 @@ def test_parse_devlog_no_entries_empty_list():
     """)
     parsed = parse_devlog(text)
     assert parsed["entries"] == []
+
+
+def _make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500):
+    """Build a CHANGELOG with controlled token counts.
+
+    unreleased_tokens / version_tokens are in tokens; each body becomes a
+    single line of 'x' chars whose length is tokens*4 minus 2 (for '- ').
+    """
+    unreleased_body = "- " + ("x" * (unreleased_tokens * 4 - 2)) + "\n"
+    versions = ""
+    for i in range(version_count, 0, -1):  # newest first: v0.5 down to v0.1
+        body = "- " + ("x" * (version_tokens * 4 - 2)) + "\n"
+        versions += f"## [0.{i}.0] - 2026-0{i}-01\n\n{body}\n"
+    return f"# Changelog\n\n## [Unreleased]\n\n{unreleased_body}\n{versions}"
+
+
+def test_plan_changelog_archives_oldest_versions_until_under_budget(tmp_path):
+    # Budget 10000; unreleased=200; 5 versions x 2500 tokens.
+    text = _make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500)
+    src = tmp_path / "CHANGELOG.md"
+    actions, refusals, warnings = _plan_changelog(
+        text=text, source_path=src, budget=10_000, keep_fraction=0.8,
+    )
+    assert not refusals
+    assert len(actions) == 1
+    action = actions[0]
+    # 0.8 * 10000 = 8000 target. Plan should bring source under 8000.
+    assert action.tokens_after <= 8000
+    # Archive content contains the oldest version block.
+    assert "[0.1.0]" in action.moved_content
+    # Archive filename pattern self-documents the range.
+    name = action.archive_path.name
+    assert name.startswith("CHANGELOG-v0.1.0-to-") and name.endswith(".md")
+
+
+def test_plan_changelog_refuses_when_unreleased_alone_over_budget(tmp_path):
+    # Unreleased alone = 11000 tokens; budget = 10000.
+    text = _make_changelog(unreleased_tokens=11_000, version_count=2, version_tokens=500)
+    src = tmp_path / "CHANGELOG.md"
+    actions, refusals, warnings = _plan_changelog(
+        text=text, source_path=src, budget=10_000, keep_fraction=0.8,
+    )
+    assert actions == []
+    assert any("Unreleased" in r for r in refusals)
+
+
+def test_plan_changelog_no_action_when_already_under_budget(tmp_path):
+    text = _make_changelog(unreleased_tokens=100, version_count=2, version_tokens=500)
+    src = tmp_path / "CHANGELOG.md"
+    actions, refusals, warnings = _plan_changelog(
+        text=text, source_path=src, budget=10_000, keep_fraction=0.8,
+    )
+    assert actions == []
+    assert refusals == []

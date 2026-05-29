@@ -154,6 +154,80 @@ def parse_changelog(text: str) -> Dict[str, Any]:
     }
 
 
+# ----- CHANGELOG plan builder -----
+
+def _plan_changelog(
+    *,
+    text: str,
+    source_path: Path,
+    budget: int,
+    keep_fraction: float,
+) -> Tuple[List[ArchiveAction], List[str], List[str]]:
+    """Return (actions, refusal_reasons, warnings) for CHANGELOG archival."""
+    parsed = parse_changelog(text)
+    target = int(budget * keep_fraction)
+
+    current_tokens = _estimate_tokens(text)
+    if current_tokens <= target:
+        return [], [], []
+
+    protected = (
+        _estimate_tokens(parsed["header"])
+        + _estimate_tokens(parsed["unreleased"])
+        + _estimate_tokens(parsed["archive_section"])
+    )
+    if protected > budget:
+        return [], [
+            f"CHANGELOG protected sections (header + [Unreleased] + Archive) "
+            f"already total {protected} tokens, over budget {budget}. "
+            f"Trim [Unreleased] before archiving."
+        ], []
+
+    # Walk versions OLDEST first. The parser keeps file-order (newest first by
+    # convention), so reverse.
+    versions = parsed["versions"]
+    versions_by_age = list(reversed(versions))  # oldest first
+
+    to_archive: List[Dict[str, str]] = []
+    remaining_versions = list(versions)  # mutable copy
+    running_total = current_tokens
+    for v in versions_by_age:
+        if running_total <= target:
+            break
+        v_tokens = _estimate_tokens(v["content"])
+        to_archive.append(v)
+        remaining_versions.remove(v)
+        running_total -= v_tokens
+
+    if not to_archive:
+        return [], [], []
+
+    # to_archive is already oldest-first.
+    archive_content = "".join(v["content"] for v in to_archive)
+
+    earliest = to_archive[0]["version"]
+    latest = to_archive[-1]["version"]
+    archive_name = f"CHANGELOG-v{earliest}-to-v{latest}.md"
+    archive_path = source_path.parent / "archive" / archive_name
+
+    summary_line = (
+        f"- [{archive_name}](archive/{archive_name}) — "
+        f"versions v{earliest} through v{latest}; archived "
+        f"~{_estimate_tokens(archive_content)} tokens, {len(to_archive)} version blocks"
+    )
+
+    return [
+        ArchiveAction(
+            source_path=source_path,
+            archive_path=archive_path,
+            moved_content=archive_content,
+            summary_line=summary_line,
+            tokens_before=current_tokens,
+            tokens_after=running_total,
+        )
+    ], [], []
+
+
 # ----- DEVLOG parser -----
 
 _DAILY_LOG_RE = re.compile(r"^##\s+Daily Log\b", re.IGNORECASE)
