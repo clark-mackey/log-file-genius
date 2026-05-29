@@ -372,3 +372,111 @@ def _plan_devlog(
             tokens_after=after_tokens,
         )
     ], [], warnings
+
+
+def build_plan(
+    project_root: Path,
+    *,
+    keep_fraction: Optional[float] = None,
+    include_changelog: bool = True,
+    include_devlog: bool = True,
+) -> ArchivePlan:
+    """Top-level planner: read config, parse files, build plan.
+
+    keep_fraction defaults to .logfile-config.yml -> archival.keep_fraction,
+    or DEFAULT_KEEP_FRACTION (0.8) if unset.
+    """
+    cfg = parse_config(str(project_root / ".logfile-config.yml"))
+    paths = cfg.get("paths", {})
+    targets = cfg.get("token_targets", {})
+    archival_cfg = cfg.get("archival", {})
+
+    if keep_fraction is None:
+        kf_raw = archival_cfg.get("keep_fraction")
+        try:
+            keep_fraction = float(kf_raw) if kf_raw is not None else DEFAULT_KEEP_FRACTION
+        except (TypeError, ValueError):
+            keep_fraction = DEFAULT_KEEP_FRACTION
+
+    changelog_path = project_root / paths.get("changelog", "logs/CHANGELOG.md")
+    devlog_path = project_root / paths.get("devlog", "logs/DEVLOG.md")
+    changelog_budget = int(targets.get("changelog", 10_000))
+    devlog_budget = int(targets.get("devlog", 15_000))
+    combined_budget = int(targets.get("combined", 25_000))
+
+    plan = ArchivePlan()
+
+    if include_changelog and changelog_path.exists():
+        try:
+            actions, refusals, warns = _plan_changelog(
+                text=changelog_path.read_text(encoding="utf-8"),
+                source_path=changelog_path,
+                budget=changelog_budget,
+                keep_fraction=keep_fraction,
+            )
+            plan.actions.extend(actions)
+            plan.refusal_reasons.extend(refusals)
+            plan.warnings.extend(warns)
+        except ArchiveError as e:
+            plan.refusal_reasons.append(f"CHANGELOG: {e}")
+
+    if include_devlog and devlog_path.exists():
+        try:
+            actions, refusals, warns = _plan_devlog(
+                text=devlog_path.read_text(encoding="utf-8"),
+                source_path=devlog_path,
+                budget=devlog_budget,
+                keep_fraction=keep_fraction,
+            )
+            plan.actions.extend(actions)
+            plan.refusal_reasons.extend(refusals)
+            plan.warnings.extend(warns)
+        except ArchiveError as e:
+            plan.refusal_reasons.append(f"DEVLOG: {e}")
+
+    # Combined-budget overflow loop (DEVLOG only).
+    def _projected_combined() -> int:
+        cl_tokens = _estimate_tokens(changelog_path.read_text(encoding="utf-8")) \
+                    if changelog_path.exists() else 0
+        dl_tokens = _estimate_tokens(devlog_path.read_text(encoding="utf-8")) \
+                    if devlog_path.exists() else 0
+        for a in plan.actions:
+            if a.source_path == changelog_path:
+                cl_tokens = a.tokens_after
+            elif a.source_path == devlog_path:
+                dl_tokens = a.tokens_after
+        return cl_tokens + dl_tokens
+
+    current_kf = keep_fraction
+    while (
+        include_devlog
+        and devlog_path.exists()
+        and _projected_combined() > combined_budget
+        and current_kf > COMBINED_KEEP_FRACTION_FLOOR
+    ):
+        current_kf = round(current_kf - 0.05, 2)
+        # Drop any existing DEVLOG action and replan with tighter keep_fraction.
+        plan.actions = [a for a in plan.actions if a.source_path != devlog_path]
+        try:
+            actions, refusals, warns = _plan_devlog(
+                text=devlog_path.read_text(encoding="utf-8"),
+                source_path=devlog_path,
+                budget=devlog_budget,
+                keep_fraction=current_kf,
+            )
+            plan.actions.extend(actions)
+            for w in warns:
+                if w not in plan.warnings:
+                    plan.warnings.append(w)
+        except ArchiveError as e:
+            plan.refusal_reasons.append(f"DEVLOG (combined-overflow pass): {e}")
+            break
+
+    if _projected_combined() > combined_budget:
+        plan.refusal_reasons.append(
+            f"Combined still exceeds {combined_budget} tokens after archiving "
+            f"DEVLOG down to keep_fraction floor ({COMBINED_KEEP_FRACTION_FLOOR}). "
+            f"Trim CHANGELOG [Unreleased] or DEVLOG newest entries manually."
+        )
+
+    return plan

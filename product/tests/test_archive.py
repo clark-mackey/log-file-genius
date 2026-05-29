@@ -7,8 +7,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from archive import (
     parse_changelog, parse_devlog, ArchivePlan, ArchiveAction, ArchiveError,
     _estimate_tokens, DEFAULT_KEEP_FRACTION, COMBINED_KEEP_FRACTION_FLOOR,
-    _plan_changelog, _plan_devlog,
+    _plan_changelog, _plan_devlog, build_plan,
 )
+from typing import Optional
 
 
 def test_constants_match_spec():
@@ -251,3 +252,56 @@ def test_plan_devlog_warns_when_single_newest_oversize(tmp_path):
     if actions:
         assert "2026-05-28" not in actions[0].moved_content
     assert any("newest" in w.lower() and "oversize" in w.lower() for w in warnings)
+
+
+def _write_minimal_config_and_logs(tmp_path,
+                                    changelog_text=None,
+                                    devlog_text=None):
+    (tmp_path / ".logfile-config.yml").write_text(textwrap.dedent("""
+        paths:
+          changelog: logs/CHANGELOG.md
+          devlog: logs/DEVLOG.md
+        token_targets:
+          changelog: 10000
+          devlog: 15000
+          combined: 25000
+        archival:
+          keep_fraction: 0.8
+    """), encoding="utf-8")
+    (tmp_path / "logs").mkdir(exist_ok=True)
+    if changelog_text:
+        (tmp_path / "logs" / "CHANGELOG.md").write_text(changelog_text, encoding="utf-8")
+    if devlog_text:
+        (tmp_path / "logs" / "DEVLOG.md").write_text(devlog_text, encoding="utf-8")
+
+
+def test_build_plan_reads_config_paths_and_budgets(tmp_path):
+    _write_minimal_config_and_logs(
+        tmp_path,
+        changelog_text=_make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500),
+        devlog_text=_make_devlog([1000] * 3),
+    )
+    plan = build_plan(tmp_path)
+    # Only CHANGELOG over budget; DEVLOG fits.
+    assert len(plan.actions) == 1
+    assert "CHANGELOG" in plan.actions[0].source_path.name
+
+
+def test_build_plan_devlog_over_individual_budget(tmp_path):
+    # DEVLOG alone is over 15000; CHANGELOG fits.
+    text_cl = _make_changelog(unreleased_tokens=200, version_count=3, version_tokens=2000)
+    text_dl = _make_devlog([4000] * 4)  # 16000 — over 15000
+    _write_minimal_config_and_logs(tmp_path, changelog_text=text_cl, devlog_text=text_dl)
+    plan = build_plan(tmp_path)
+    devlog_actions = [a for a in plan.actions if "DEVLOG" in a.source_path.name]
+    assert len(devlog_actions) == 1
+
+
+def test_build_plan_no_action_when_all_under_budget(tmp_path):
+    _write_minimal_config_and_logs(
+        tmp_path,
+        changelog_text=_make_changelog(100, 1, 100),
+        devlog_text=_make_devlog([100]),
+    )
+    plan = build_plan(tmp_path)
+    assert plan.is_empty()
