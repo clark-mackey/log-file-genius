@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from archive import (
     parse_changelog, parse_devlog, ArchivePlan, ArchiveAction, ArchiveError,
     _estimate_tokens, DEFAULT_KEEP_FRACTION, COMBINED_KEEP_FRACTION_FLOOR,
-    _plan_changelog, _plan_devlog, build_plan,
+    _plan_changelog, _plan_devlog, build_plan, apply,
 )
 from typing import Optional
 
@@ -305,3 +305,72 @@ def test_build_plan_no_action_when_all_under_budget(tmp_path):
     )
     plan = build_plan(tmp_path)
     assert plan.is_empty()
+
+
+def test_apply_writes_archive_and_rewrites_source(tmp_path):
+    text_cl = _make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500)
+    _write_minimal_config_and_logs(tmp_path, changelog_text=text_cl)
+
+    plan = build_plan(tmp_path, include_devlog=False)
+    assert len(plan.actions) == 1
+    action = plan.actions[0]
+
+    apply(plan)
+
+    # Archive file exists with the moved content.
+    assert action.archive_path.exists()
+    archived = action.archive_path.read_text(encoding="utf-8")
+    assert "[0.1.0]" in archived  # oldest version was moved
+
+    # Source no longer contains that oldest version.
+    new_source = action.source_path.read_text(encoding="utf-8")
+    assert "[0.1.0]" not in new_source
+
+    # Source [Unreleased] preserved.
+    assert "## [Unreleased]" in new_source
+
+    # Source has a ## Archive section with the summary line.
+    assert "## Archive" in new_source
+    assert "CHANGELOG-v0.1.0-to-" in new_source
+
+
+def test_apply_appends_to_existing_archive_section(tmp_path):
+    # Pre-existing Archive section should be appended to, not duplicated.
+    initial = textwrap.dedent("""\
+        # Changelog
+
+        ## [Unreleased]
+        - x
+
+        ## [0.3.0] - 2026-03-01
+        """) + ("- " + "x" * 9996 + "\n") + textwrap.dedent("""
+
+        ## [0.2.0] - 2026-02-01
+        """) + ("- " + "x" * 9996 + "\n") + textwrap.dedent("""
+
+        ## Archive
+
+        - [CHANGELOG-v0.0.1-to-v0.1.0.md](archive/CHANGELOG-v0.0.1-to-v0.1.0.md) — old
+        """)
+    _write_minimal_config_and_logs(tmp_path, changelog_text=initial)
+
+    plan = build_plan(tmp_path, include_devlog=False)
+    apply(plan)
+
+    src_text = (tmp_path / "logs" / "CHANGELOG.md").read_text(encoding="utf-8")
+    # Both archive lines should be present.
+    assert "CHANGELOG-v0.0.1-to-v0.1.0.md" in src_text
+    # The Archive header should appear exactly once.
+    assert src_text.count("## Archive") == 1
+
+
+def test_apply_creates_archive_dir_if_missing(tmp_path):
+    text_cl = _make_changelog(unreleased_tokens=200, version_count=5, version_tokens=2500)
+    _write_minimal_config_and_logs(tmp_path, changelog_text=text_cl)
+    # Confirm no archive dir initially.
+    assert not (tmp_path / "logs" / "archive").exists()
+
+    plan = build_plan(tmp_path, include_devlog=False)
+    apply(plan)
+
+    assert (tmp_path / "logs" / "archive").is_dir()
