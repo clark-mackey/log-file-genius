@@ -40,11 +40,12 @@ The installer will:
 
 1. **Detect your AI assistant** - Automatically detects Augment Code, Claude Code, or prompts for manual selection
 2. **Prompt for profile** - Choose from: solo-developer, team, open-source, or startup
-3. **Create folder structure** - Creates `logs/`, `logs/adr/`, `logs/incidents/`
+3. **Create folder structure** - Creates `logs/` and `logs/adr/`
 4. **Install templates** - Copies CHANGELOG, DEVLOG, STATE, and ADR templates to `logs/`
-5. **Install AI rules** - Copies AI assistant rules to `.augment/rules/` or `.claude/rules/`
-6. **Create config file** - Generates `.logfile-config.yml` with your profile settings
-7. **Validate installation** - Checks that all required files exist
+5. **Install AGENTS.md** - Drops the canonical agent-agnostic rules at the project root
+6. **Install per-tool rules** - Generates platform-specific rule files in `.augment/rules/` or `.claude/rules/`
+7. **Create config file** - Generates `.logfile-config.yml` with your profile settings
+8. **Validate installation** - Checks that all required files exist
 
 ---
 
@@ -55,9 +56,11 @@ The installer will:
 - `logs/DEVLOG.md` - Development narrative (why changes were made, decisions, context)
 - `logs/STATE.md` - Current project state (active agent, current task)
 - `logs/adr/TEMPLATE.md` - Architecture Decision Record template
+- `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
 - `.logfile-config.yml` - Profile configuration and settings
 
-### AI Assistant Rules
+### Per-Tool Rule Files
+All generated from the same canonical fragments in `product/rules/`:
 - `.augment/rules/log-file-maintenance.md` (for Augment Code)
 - `.claude/rules/log-file-maintenance.md` (for Claude Code)
 - Additional AI-specific rules and instructions
@@ -192,15 +195,44 @@ ls -la logs/
 
 ## Updating Log File Genius
 
-To update to the latest version:
+To update to the latest version, use the bundled `update.sh` / `update.ps1`. The
+updater refreshes `AGENTS.md`, per-tool rules, validators, and the `lfg` CLI
+while preserving your customizations.
 
 ```bash
-# Update the submodule
+# Bash/Mac/Linux
 cd .log-file-genius && git pull && cd ..
-
-# Re-run installer (preserves customizations)
-./.log-file-genius/product/scripts/install.sh --force
+./.log-file-genius/product/scripts/update.sh
 ```
+
+```powershell
+# PowerShell/Windows
+cd .log-file-genius; git pull; cd ..
+.\.log-file-genius\product\scripts\update.ps1
+```
+
+---
+
+## Day-2: the `lfg` CLI
+
+Beyond install/update, a stdlib-only Python CLI handles the ongoing operations:
+
+```bash
+python .log-file-genius/product/scripts/lfg.py validate
+python .log-file-genius/product/scripts/lfg.py archive --dry-run
+python .log-file-genius/product/scripts/lfg.py archive   # gracefully archives old entries
+```
+
+Key commands:
+
+- `lfg validate` — lint logs (token budgets, formatting, required sections)
+- `lfg archive --dry-run` — preview a work-aware archival plan
+- `lfg archive` — apply it (protects `[Unreleased]` and the most recent DEVLOG entries)
+- `lfg prime` — emit a compact digest for subagent initial context
+- `lfg promote <staged-id>` — merge a subagent's staged entries into CHANGELOG/DEVLOG
+- `lfg generate` — regenerate `AGENTS.md` from fragments (contributors only)
+
+Run `--help` on any subcommand for flags.
 
 ---
 

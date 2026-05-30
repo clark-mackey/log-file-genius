@@ -75,7 +75,7 @@ This isn't just documentation. It's an operating system for AI agent performance
 
 - **🔒 Safety Tools Available:** Optional secret detection and log validation, plus a pre-commit hook you can enable, catch problems before they hit the repo. These are opt-in — run them manually or copy the hook into `.git/hooks/`. Your agent won't accidentally leak API keys into a DEVLOG entry.
 
-- **🔧 Tool Agnostic:** Works with Claude, Cursor, GitHub Copilot, Augment, and any other AI coding assistant. Your toaster will probably be running it soon.
+- **🔧 Tool Agnostic:** A single canonical `AGENTS.md` ships to your project root for any agent that reads it natively (Claude, Codex, Aider, etc.), with per-tool rule files generated alongside for Augment, Claude Code, and others. Your toaster will probably be running it soon.
 
 ---
 
@@ -118,7 +118,8 @@ The installer will:
 
 **What gets installed:**
 - `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs)
-- `.augment/` or `.claude/` - AI assistant rules
+- `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
+- `.augment/` or `.claude/` - Per-tool rule files generated from the same source
 - `.logfile-config.yml` - Profile configuration
 
 **What stays hidden:**
@@ -130,16 +131,17 @@ After installation, your project root should contain **ONLY** these files/folder
 
 **Visible:**
 - `logs/` folder (contains CHANGELOG.md, DEVLOG.md, STATE.md, adr/)
+- `AGENTS.md` file (canonical agent-agnostic rules at the project root)
 - `.logfile-config.yml` file (your profile configuration)
 
 **Hidden (may not show in file explorer by default):**
 - `.log-file-genius/` folder (git submodule - the source repository)
-- `.augment/` or `.claude/` folder (AI assistant rules)
+- `.augment/` or `.claude/` folder (per-tool rule files)
 - `.git/` folder (your project's git repository)
 
 **❌ If you see a visible `log-file-genius/` folder (without the dot), something went wrong.** This means a full clone was created instead of a submodule. Delete it and re-run the installation command.
 
-**Total visible items added to your project root: 2** (logs/ folder + .logfile-config.yml file)
+**Total visible items added to your project root: 3** (logs/ + AGENTS.md + .logfile-config.yml)
 
 ---
 
@@ -161,15 +163,38 @@ Starting a brand new project? Use the GitHub template:
 
 ### Updating Log File Genius
 
-Already installed? Update to the latest version:
+Already installed? Update to the latest version with the bundled update script:
 
+**Bash/Mac/Linux:**
 ```bash
-# Update source
 cd .log-file-genius && git pull && cd ..
-
-# Re-run installer (smart merge, preserves customizations)
-./.log-file-genius/product/scripts/install.sh --force
+./.log-file-genius/product/scripts/update.sh
 ```
+
+**PowerShell/Windows:**
+```powershell
+cd .log-file-genius; git pull; cd ..
+.\.log-file-genius\product\scripts\update.ps1
+```
+
+The updater preserves your customizations and refreshes `AGENTS.md`, per-tool rules, validators, and the `lfg` CLI in place.
+
+---
+
+### The `lfg` CLI
+
+After installation, a small Python CLI lives at `.log-file-genius/product/scripts/lfg.py`. It is stdlib-only and the entry point for everything beyond install/update:
+
+| Command | Purpose |
+|---|---|
+| `lfg validate` | Lint logs (token budgets, format, required sections) |
+| `lfg archive --dry-run` | Preview a graceful, work-aware archival plan |
+| `lfg archive` | Apply the plan (protects `[Unreleased]` and the most recent DEVLOG entries) |
+| `lfg generate` | Regenerate `AGENTS.md` from `product/rules/` fragments (contributors) |
+| `lfg prime` | Print a compact digest for a subagent's initial context |
+| `lfg promote <staged-id>` | Merge a subagent's staged log entries into CHANGELOG/DEVLOG |
+
+Run `python .log-file-genius/product/scripts/lfg.py --help` for the full list.
 
 ---
 
@@ -195,7 +220,7 @@ This project is for you. Your feedback, ideas, and contributions make it better.
 
 ## Contributing
 
-Contributions are welcome! Whether it's improving the documentation, adding a new starter pack, or suggesting a new feature, please feel free to open an issue or pull request. Check out the [**`CONTRIBUTING.md`**](CONTRIBUTING.md) file for more details.
+Contributions are welcome! Whether it's improving the documentation, adding support for a new AI assistant, or suggesting a new feature, please feel free to open an issue or pull request. Check out the [**`CONTRIBUTING.md`**](CONTRIBUTING.md) file for more details.
 
 ---
 
