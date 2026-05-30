@@ -19,26 +19,30 @@
 
 AI coding assistants struggle when project context grows large — traditional documentation consumes too much of the context window, leaving less room for code. Log File Genius is a 5-document system that provides complete project context while consuming less than 5% of an AI's context window. Packaged as an installable GitHub repository with AI assistant rules and templates.
 
-### Current State (As of February 2026)
+### Current State (As of May 2026, post v0.3.0)
 
-**Repository Status:** ✅ Live on GitHub - public repository
+**Repository Status:** ✅ Live on GitHub — public repository, tagged `v0.3.0`
 
 **What's Working:**
-- ✅ Augment + Claude Code starter packs with platform-specific rules
-- ✅ Cross-platform installer scripts (`install.ps1`, `install.sh`)
-- ✅ Profile system with 4 profiles (solo-developer, team, open-source, startup)
-- ✅ Token-based archival (CHANGELOG <10k, DEVLOG <15k, combined <25k tokens)
+- ✅ **Canonical `AGENTS.md`** at project root, generated from `product/rules/` fragments — read natively by Claude, Codex, Aider, Cursor (agent mode), and any other AGENTS.md-aware tool
+- ✅ **Per-tool rule files** for Augment (`.augment/rules/`) and Claude Code (`.claude/rules/`) generated from the same fragments — no more drift between platforms
+- ✅ **`lfg generate --check`** in CI fails any PR where AGENTS.md drifts from fragments
+- ✅ Cross-platform installer + updater scripts (`install.{sh,ps1}`, `update.{sh,ps1}`) with no-BOM UTF-8 + LF enforcement on Windows
+- ✅ Profile system with 4 profiles (solo-developer, team, open-source, startup) — `archival:` blocks slimmed to `keep_fraction` only
+- ✅ Token-based budgets (CHANGELOG <10k, DEVLOG <15k, STATE <500, combined <25k)
+- ✅ **Deterministic `lfg archive`** (v0.3.0) — work-aware archival that protects `[Unreleased]` + newest DEVLOG entries; preview with `--dry-run`, apply with `--force`
+- ✅ **Subagent contract** — `LFG_SUBAGENT_PRIME` identity marker, `lfg prime` digest, `.lfg/staged/<id>/` writes, `lfg promote` merge. Subagents never touch CHANGELOG/DEVLOG/STATE directly.
 - ✅ Session handoff protocol, stale context detection, entry verbosity control
-- ✅ Multi-agent guard clauses (agent-topology-neutral)
-- ✅ Validation scripts, git hooks, secret detection
+- ✅ Validation: `lfg validate` + bash/PowerShell validators + pre-commit hook (incl. auto-regen of AGENTS.md)
+- ✅ Secret detection script (`detect-secrets.py`) with entropy + pattern + context layers
+- ✅ 80 tests under `product/tests/` covering generator, primer, promoter, archive, validators, config parser
 
-**Known Issues:**
-1. **Rule adherence inconsistent** — improved but not 100% reliable across all AI platforms
-2. **Documentation gaps** — missing brownfield migration guides, troubleshooting, real-world examples
+**Known Issues / Open Work:**
+1. **Epic 6 (Examples & Community)** — no before/after example projects, success stories, or community guidelines yet
+2. **Epic 12 (Security)** — detection script works, but `SECURITY.md`, redaction guide, and security-specific rule fragment still missing
 
 **What's Deferred:**
-- ❌ Cursor support (post-MVP)
-- ❌ MCP Server (deferred until rules-based approach proves insufficient)
+- ❌ MCP Server (deferred until rules-based approach proves insufficient — the layered code-under-rules approach has largely closed the original rule-adherence gap)
 
 ### Change Log
 
@@ -53,6 +57,9 @@ AI coding assistants struggle when project context grows large — traditional d
 | 2026-02-06 | 0.7     | Epic 10 revised: dedicated subagents → agent-agnostic multi-agent support. SESSION END guard for agent teams. | Augment Agent  |
 | 2026-02-06 | 0.8     | PRD alignment pass: updated Goals, Background, Current State (Feb 2026), Technical Assumptions, Next Steps. Fixed stale claims and Augment-only language. | Augment Agent  |
 | 2026-02-06 | 0.9     | Epic 17 REJECTED (scope creep). Incident reporting replaced by lightweight DEVLOG incident format with rubric and `🚨 INCIDENT` prefix. | Augment Agent  |
+| 2026-04-XX | 1.0     | **Spec 1 (Consistency & Correctness):** killed install-vs-update rule divergence; killed starter packs; stdlib YAML-subset config parser; STATE owns "the now"; budget consistency; brownfield STATE migration. Released as PR #5. | Claude Code |
+| 2026-05-XX | 1.1     | **Spec 2 (Agent-Agnostic Core):** moved rules to `product/rules/` fragments; built canonical `AGENTS.md` via `lfg generate`; added `lfg prime` (subagent digest) + `lfg promote` (staged writes); CI drift gate. Released as PR #6. | Claude Code |
+| 2026-05-29 | 1.2 (v0.3.0) | **Spec 3 (Graceful Work-Aware Archival):** `lfg archive` deterministic CLI; fit-the-budget DEVLOG archival; version-block CHANGELOG archival; `[Unreleased]` + STATE + ADRs protected. Released as PR #7, tagged `v0.3.0`. | Claude Code |
 
 ---
 
@@ -125,9 +132,9 @@ No runtime services. The core system is markdown files and AI rules. Optional Py
 **Goal:** Provide comprehensive guidance for adding the log file system to existing projects with existing documentation, enabling developers to migrate or integrate without starting from scratch.
 **Status:** Basic guidance exists, but comprehensive migration strategies and content conversion guides are incomplete.
 
-### Epic 3: Augment & Claude Code Platform Support ✅ MOSTLY COMPLETE
-**Goal:** Deliver production-ready starter packs for Augment and Claude Code with feature parity and equal reliability.
-**Status:** Both starter packs exist and work, but reliability issues (rule adherence, archival) need fixing. Cursor support deferred.
+### Epic 3: Agent-Agnostic Rules + Per-Tool Generation ✅ COMPLETE (v0.3.0)
+**Goal:** Ship a single canonical rule set that works for any AGENTS.md-aware tool, with per-tool rule files generated for platforms that need them.
+**Status:** Spec 2 replaced platform-specific starter packs with `product/rules/` fragments + `lfg generate`. AGENTS.md drops at project root for Claude/Codex/Aider/Cursor; `.augment/rules/` and `.claude/rules/` are generated from the same source. CI drift gate (`lfg generate --check`) prevents per-tool divergence. Original "Augment + Claude starter pack" framing retired.
 
 ### Epic 4: Documentation & Usage Guides ⚠️ IN PROGRESS
 **Goal:** Provide comprehensive documentation including installation guides, usage examples, and the complete log_file_how_to.md so users understand how to implement and maintain the system.
@@ -153,9 +160,9 @@ No runtime services. The core system is markdown files and AI rules. Optional Py
 **Goal:** Prevent AI agents from leaking secrets (passwords, API keys, PII) into logs. AI must learn what NOT to document.
 **Status:** Planned. Spec: `project/specs/EPIC-12-security-secrets-detection.md`
 
-### Epic 13: Validation & Reliability ✅ P0
+### Epic 13: Validation & Reliability ✅ COMPLETE (v0.3.0)
 **Goal:** Verify AI agents maintain logs correctly with automated validation and self-assessment.
-**Status:** Planned. Spec: `project/specs/EPIC-13-validation-reliability.md`
+**Status:** Shipped across Specs 1–3. `lfg validate` + bash/PowerShell validators + pre-commit hook + GitHub Actions (`validate-logs.yml`, `lfg generate --check`). Closes GH issue #1 — rule adherence backed by deterministic CLI verbs. Open polish items (validation dashboard, examples) tracked separately under Epic 6. Spec: `project/specs/EPIC-13-validation-reliability.md`
 
 ### ~~Epic 17: Incident Reports & Learning~~ ❌ REJECTED → DEVLOG Enhancement
 **Goal:** ~~Standalone incident report document type with 210-line template, severity levels, verification framework.~~
@@ -176,6 +183,7 @@ No runtime services. The core system is markdown files and AI rules. Optional Py
 ### ~~Epic 9: CLI Tooling~~ ❌ REJECTED
 **Goal:** ~~Provide CLI tools for developer convenience.~~
 **Status:** REJECTED - Serves human developers, not AI agents. Does not reduce tokens or improve AI navigation. Moved to Rejected Ideas.
+**Clarification (v0.3.0):** `lfg.py` was built across Specs 2–3 as an *AI-workflow* CLI (`generate`/`prime`/`promote`/`archive`/`validate`), not the human-convenience CLI Epic 9 rejected. Different mission — these are deterministic verbs an agent calls to make rule-following reliable, not shortcuts for human developers. Epic 9's rejection still stands.
 
 ### Epic 10: Agent-Agnostic Multi-Agent Support 🔄 REVISED
 **Goal:** Ensure LFG files work for any agent topology (single, team, swarm) without assumptions or conflicts.

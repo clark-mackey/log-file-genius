@@ -33,12 +33,12 @@ Prevent AI assistants from leaking secrets (passwords, API keys, PII, credential
 
 ## Task List
 
-### Task 12.1: Add Security Rules to AI Assistant Rules
-- [ ] Update `log-file-maintenance.md` with security section
+### Task 12.1: Add Security Rules to Rule Fragments
+- [ ] Add a new `product/rules/security.md` fragment (or extend `log-file-maintenance.md`) with a security section
 - [ ] Add explicit "NEVER include" list (passwords, API keys, tokens, PII, etc.)
 - [ ] Add redaction guidance (use placeholders, reference by name)
 - [ ] Add pre-write security checklist for AI
-- [ ] Update both starter packs with security rules
+- [ ] Regenerate `product/AGENTS.md` via `lfg generate` so all tools pick it up automatically (no per-platform updates needed since Spec 2)
 
 ### Task 12.2: Create SECURITY.md Policy
 - [ ] Create `product/SECURITY.md` with security policy
