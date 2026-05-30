@@ -60,18 +60,12 @@ validation:
   crosslink_validation: false  # Skip cross-link validation
   fail_on_warnings: false      # Never fail on warnings (speed over perfection)
 
-# Archival - Token-based triggers with aggressive limits for speed
+# Archival — single knob for `lfg archive` retention.
+# keep_fraction: fraction of each file's token budget to retain after archival.
+# Default 0.8 (recommended). Lower = more aggressive archival.
 archival:
-  # Token-based triggers (archive oldest entries when exceeded)
-  changelog_token_limit: 6000    # Archive when CHANGELOG exceeds 6k tokens (aggressive)
-  devlog_token_limit: 8000       # Archive when DEVLOG exceeds 8k tokens (aggressive)
-  combined_token_limit: 14000    # Archive when combined exceeds 14k tokens (aggressive)
+  keep_fraction: 0.8
 
-  # Archival strategy
-  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
-  auto_archive_on_warning: true  # Prompt for archival on warnings (keep it lean)
-  auto_archive_on_error: true    # Prompt for archival on errors (keep it lean)
-  archive_directory: logs/archive  # Archive location
 
 # AI assistant behavior - Maximum speed
 ai_assistant:

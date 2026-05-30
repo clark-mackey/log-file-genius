@@ -459,11 +459,8 @@ function Test-TokenCounts {
             }
             Write-Host "" -ForegroundColor $COLOR_INFO
             Write-Host "  [!] ARCHIVAL REQUIRED" -ForegroundColor $COLOR_ERROR
-            Write-Host "  Archive OLDEST entries first until under budget:" -ForegroundColor $COLOR_INFO
-            Write-Host "  1. Move oldest version section(s) from CHANGELOG to logs/archive/" -ForegroundColor $COLOR_INFO
-            Write-Host "  2. Move oldest DEVLOG entries to logs/archive/" -ForegroundColor $COLOR_INFO
-            Write-Host "  3. Target: Remove ~$tokensOverBudget tokens to get under budget" -ForegroundColor $COLOR_INFO
-            Write-Host "  4. Re-run validation to confirm" -ForegroundColor $COLOR_INFO
+            Write-Host "  Run ``lfg archive --dry-run`` to see a work-aware archival plan." -ForegroundColor $COLOR_INFO
+            Write-Host "  Target: Remove ~$tokensOverBudget tokens to get under budget." -ForegroundColor $COLOR_INFO
         }
         return $EXIT_ERROR
     } elseif ($warnings.Count -gt 0) {

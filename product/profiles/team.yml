@@ -59,17 +59,12 @@ validation:
   crosslink_validation: false  # Skip cross-link validation (future feature)
   fail_on_warnings: false      # Allow warnings (don't block commits)
 
-# Archival - Token-based triggers with higher limits for team history
+# Archival — single knob for `lfg archive` retention.
+# keep_fraction: fraction of each file's token budget to retain after archival.
+# Default 0.8 (recommended). Lower = more aggressive archival.
 archival:
-  # Token-based triggers (archive oldest entries when exceeded)
-  changelog_token_limit: 12000   # Archive when CHANGELOG exceeds 12k tokens (higher for teams)
-  devlog_token_limit: 18000      # Archive when DEVLOG exceeds 18k tokens (higher for teams)
-  combined_token_limit: 30000    # Archive when combined exceeds 30k tokens (higher for teams)
+  keep_fraction: 0.8
 
-  # Archival strategy
-  strategy: oldest-first         # Always archive oldest entries first (regardless of date)
-  auto_archive_on_error: true    # Prompt for archival when hitting error threshold
-  archive_directory: logs/archive  # Archive location
 
 # AI assistant behavior - Proactive but visible
 ai_assistant:
