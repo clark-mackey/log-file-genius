@@ -961,11 +961,36 @@ git commit -m "Log transformation: Reduced from X to Y tokens"
 
 ### Archival Cadence
 
-| File | Archive Trigger | Keep in Main File |
-|------|----------------|-------------------|
-| CHANGELOG.md | >1,500 lines OR >10,000 tokens | Last 30-90 days |
-| DEVLOG.md | >2,000 lines OR >15,000 tokens | Last 30-90 days |
+| File | Archive Trigger | What's Kept |
+|------|----------------|-------------|
+| CHANGELOG.md | >10,000 tokens | `[Unreleased]` + newest released versions that fit `keep_fraction * budget` |
+| DEVLOG.md | >15,000 tokens | Newest entries that fit `keep_fraction * budget` (fit-the-budget) |
+| STATE.md | Never archives | Trim/overwrite — STATE is a snapshot |
 | ADRs | Never archive | All (loaded on-demand) |
+
+### Archival (`lfg archive`)
+
+Archival in LFG is **deterministic and work-aware**. When validators flag overage (CHANGELOG >10k, DEVLOG >15k, combined >25k), don't move entries manually — run:
+
+```bash
+python .log-file-genius/product/scripts/lfg.py archive --dry-run
+```
+
+The dry-run prints a plan: which version blocks (CHANGELOG) and which old entries (DEVLOG) would move, where they'd land, and what the new token counts would be. Review the plan, then apply with `lfg archive` (it'll prompt for confirmation), or `lfg archive --force` in scripts.
+
+**What's protected:**
+- CHANGELOG's `## [Unreleased]` section is **never** archived (it's in-flight work).
+- DEVLOG keeps the **newest entries** that fit within 80% of its budget (`keep_fraction` in `archival:` block of `.logfile-config.yml`). Older entries go to the archive.
+- STATE.md is a snapshot — it doesn't archive, it gets trimmed/overwritten.
+- ADRs are decisions — they never archive.
+
+**Archive files** land in `logs/archive/` with self-documenting names:
+- `CHANGELOG-v0.1.0-to-v0.1.5.md` — version range moved.
+- `DEVLOG-2025-10-15-to-2025-12-20.md` — entry date range.
+
+Each source file retains a `## Archive` section with one bullet per archive file (relative link + summary).
+
+**If `[Unreleased]` alone exceeds budget**, `lfg archive` refuses with exit 2 — you trim Unreleased manually. There is no `--force-include-unreleased` flag by design.
 
 ---
 

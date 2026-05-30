@@ -401,11 +401,8 @@ validate_tokens() {
             done
             echo ""
             echo -e "\033[31m  [!] ARCHIVAL REQUIRED\033[0m"
-            echo -e "\033[36m  Archive OLDEST entries first until under budget:\033[0m"
-            echo -e "\033[36m  1. Move oldest version section(s) from CHANGELOG to logs/archive/\033[0m"
-            echo -e "\033[36m  2. Move oldest DEVLOG entries to logs/archive/\033[0m"
-            echo -e "\033[36m  3. Target: Remove ~$tokens_over_budget tokens to get under budget\033[0m"
-            echo -e "\033[36m  4. Re-run validation to confirm\033[0m"
+            echo -e "\033[36m  Run \`lfg archive --dry-run\` to see a work-aware archival plan.\033[0m"
+            echo -e "\033[36m  Target: Remove ~$tokens_over_budget tokens to get under budget.\033[0m"
         fi
     elif [ ${#warnings[@]} -gt 0 ]; then
         write_validation_result "Token count" "WARNING" "${#warnings[@]} threshold(s) exceeded"

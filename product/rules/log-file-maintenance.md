@@ -187,15 +187,7 @@ Hints are optional - only add when a cross-reference exists.
 
 ## 🗄️ ARCHIVAL (When Token Limits Exceeded)
 
-**Triggers:** CHANGELOG >10k tokens | DEVLOG >15k tokens | Combined >25k tokens
-
-**Action:** Archive OLDEST entries first until under budget
-1. Move oldest entries to `logs/archive/[FILENAME]-YYYY-MM.md`
-2. Add summary line to the Archive section of the source file:
-   `- [FILENAME-YYYY-MM.md](archive/FILENAME-YYYY-MM.md) - Brief description of contents`
-3. Re-run validation to confirm
-
-**Key:** Archive by TOKEN COUNT, not date. Recent entries may need archiving if over budget.
+When validators flag overage, **do not move entries by hand**. Run `lfg archive --dry-run` to see a graceful, work-aware archival plan, review it, then `lfg archive` to apply. Spec 3 protects `[Unreleased]` in CHANGELOG and the most recent DEVLOG entries (fit-the-budget; keeps the newest set summing to 80% of budget). STATE and ADRs never archive. See `product/docs/log_file_how_to.md` for the full rule.
 
 ---
 

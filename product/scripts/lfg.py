@@ -212,6 +212,65 @@ def cmd_promote(args):
     return promote(Path.cwd(), args.subagent_id)
 
 
+def cmd_archive(args):
+    """Build an ArchivePlan and (if not --dry-run) apply it after confirmation."""
+    if args.state or args.adr:
+        if args.state:
+            sys.stderr.buffer.write(
+                "STATE files don't archive -- STATE is a snapshot, not a ledger. "
+                "Trim or overwrite it directly. See product/docs/log_file_how_to.md.\n"
+                .encode("utf-8")
+            )
+        if args.adr:
+            sys.stderr.buffer.write(
+                "ADRs don't archive -- they remain referenceable forever. "
+                "See product/docs/log_file_how_to.md.\n"
+                .encode("utf-8")
+            )
+        return 2
+
+    from archive import build_plan, apply, ArchiveError
+    include_changelog = True
+    include_devlog = True
+    if args.changelog and not args.devlog:
+        include_devlog = False
+    elif args.devlog and not args.changelog:
+        include_changelog = False
+
+    plan = build_plan(
+        project_root=Path.cwd(),
+        include_changelog=include_changelog,
+        include_devlog=include_devlog,
+    )
+
+    # Stream the human-readable plan to stdout (UTF-8 bytes — matches cmd_prime).
+    sys.stdout.buffer.write(plan.to_human().encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
+
+    if plan.refusal_reasons and not plan.actions:
+        return 2
+
+    if args.dry_run or plan.is_empty():
+        return 0
+
+    if not args.force:
+        try:
+            reply = input("Apply this archive plan? [y/N] ").strip().lower()
+        except EOFError:
+            reply = ""
+        if reply not in ("y", "yes"):
+            print("Aborted.", file=sys.stderr)
+            return 1
+
+    try:
+        apply(plan)
+    except ArchiveError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 3
+    print(f"Applied {len(plan.actions)} archive action(s).")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -313,6 +372,23 @@ def main():
     p_prom.add_argument('subagent_id',
                         help='Subagent id matching the .lfg/staged/<id>/ directory')
 
+    # archive command
+    p_arch = subparsers.add_parser(
+        'archive',
+        help="Archive old CHANGELOG version blocks and DEVLOG entries (deterministic, work-aware)")
+    p_arch.add_argument('--dry-run', action='store_true',
+                        help='Show the plan but write nothing (default if no flag)')
+    p_arch.add_argument('--force', action='store_true',
+                        help='Skip the confirmation prompt')
+    p_arch.add_argument('--changelog', action='store_true',
+                        help='Scope to CHANGELOG only')
+    p_arch.add_argument('--devlog', action='store_true',
+                        help='Scope to DEVLOG only')
+    p_arch.add_argument('--state', action='store_true',
+                        help='(rejected) STATE does not archive')
+    p_arch.add_argument('--adr', action='store_true',
+                        help='(rejected) ADRs do not archive')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -331,6 +407,7 @@ def main():
         'generate': cmd_generate,
         'prime': cmd_prime,
         'promote': cmd_promote,
+        'archive': cmd_archive,
     }
 
     return handlers[args.command](args)
