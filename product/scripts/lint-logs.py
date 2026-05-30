@@ -360,11 +360,11 @@ class LogLinter:
         if token_count > self.changelog_target:
             result.add_issue('error', None,
                            f"CHANGELOG exceeds token target ({token_count} > {self.changelog_target})",
-                           "Archive old entries to logs/archive/CHANGELOG-YYYY-MM.md")
+                           "Run `lfg archive --dry-run` to preview an archival plan")
         elif token_count > self.changelog_target * 0.8:
             result.add_issue('warning', None,
                            f"CHANGELOG approaching token target ({token_count}/{self.changelog_target})",
-                           "Consider archiving entries older than 2 weeks")
+                           "Run `lfg archive --dry-run` to preview an archival plan")
 
         # Validate frontmatter links
         self._validate_frontmatter_links(self.changelog_path, lines, result)
@@ -433,11 +433,11 @@ class LogLinter:
         if token_count > self.devlog_target:
             result.add_issue('error', None,
                            f"DEVLOG exceeds token target ({token_count} > {self.devlog_target})",
-                           "Archive old entries to logs/archive/DEVLOG-YYYY-MM.md")
+                           "Run `lfg archive --dry-run` to preview an archival plan")
         elif token_count > self.devlog_target * 0.8:
             result.add_issue('warning', None,
                            f"DEVLOG approaching token target ({token_count}/{self.devlog_target})",
-                           "Consider archiving entries older than 2 weeks")
+                           "Run `lfg archive --dry-run` to preview an archival plan")
 
         # Validate frontmatter links
         self._validate_frontmatter_links(self.devlog_path, lines, result)
