@@ -128,7 +128,7 @@ changes under `product/rules/` and re-adds the updated `AGENTS.md` to the commit
 3. **Make your changes**
    - Edit documentation files
    - Add new templates or examples
-   - Update starter packs
+   - Edit rule fragments under `product/rules/` (run `lfg generate` after)
 
 4. **Test your changes**
    - Verify all links work
@@ -175,7 +175,7 @@ Docs: Documentation-only changes
 ```
 
 Examples:
-- `Add: Cursor starter pack with installation guide`
+- `Add: Cursor target support in rule fragments`
 - `Fix: Broken links in migration guide`
 - `Update: README with new token reduction metrics`
 - `Docs: Clarify ADR creation process`
