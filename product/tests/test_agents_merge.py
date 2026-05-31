@@ -172,6 +172,19 @@ def test_merge_forward_version_raises():
         merge_into_existing(existing, BLOCK, RUNNING)
 
 
+def test_merge_forward_version_force_downgrade_replaces_no_raise():
+    existing = (
+        "<!-- LFG:BEGIN v99.0.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "future body\n"
+        "<!-- LFG:END -->\n"
+    )
+    # With force_downgrade, the newer-marker check is skipped and the interior
+    # is replaced anyway (the lone trailing newline after END is absorbed).
+    result = merge_into_existing(existing, BLOCK, RUNNING, force_downgrade=True)
+    assert result == BLOCK
+    assert "future body" not in result
+
+
 def test_merge_equal_version_replaces_no_raise():
     existing = (
         "<!-- LFG:BEGIN v0.4.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"

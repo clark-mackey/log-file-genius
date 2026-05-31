@@ -138,12 +138,14 @@ def merge_into_existing(
     block: str,
     running_version: str,
     allow_wrap: bool = True,
+    force_downgrade: bool = False,
 ) -> str:
     """Return the new AGENTS.md content.
 
     1. existing is None or blank -> return block (fresh install).
     2. existing has BEGIN + END markers:
-         - captured version > running_version -> raise ForwardVersionError.
+         - captured version > running_version -> raise ForwardVersionError,
+           UNLESS force_downgrade is True (then replace the interior anyway).
          - else replace everything from BEGIN through END (inclusive) with
            block; content before BEGIN and after END is preserved verbatim.
     3. existing has no markers + looks_like_lfg + allow_wrap -> return block.
@@ -159,7 +161,7 @@ def merge_into_existing(
     # Case 2: a complete managed block is present.
     if begin_match is not None and end_idx != -1 and end_idx > begin_match.start():
         captured = begin_match.group("ver")
-        if _compare_versions(captured, running_version) > 0:
+        if not force_downgrade and _compare_versions(captured, running_version) > 0:
             raise ForwardVersionError(
                 f"AGENTS.md was managed by a newer LFG (v{captured} > "
                 f"v{running_version}). Upgrade the submodule or pass "

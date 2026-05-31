@@ -190,6 +190,69 @@ def cmd_generate(args):
     return 0
 
 
+def cmd_merge_agents_md(args):
+    """Merge the canonical managed block into a target AGENTS.md (brownfield-safe).
+
+    Builds the marker-wrapped block from the rules fragments (same loading path
+    as cmd_generate), then merges it into the target via agents_merge, preserving
+    any surrounding user content. Idempotent: re-running on an up-to-date file
+    writes nothing.
+    """
+    import agents_merge
+    import generator
+    from generator import parse_fragment, GeneratorError
+
+    rules_dir = Path(__file__).resolve().parent.parent / "rules"
+    if not rules_dir.is_dir():
+        print(f"ERROR: rules dir not found at {rules_dir}", file=sys.stderr)
+        return 2
+
+    fragments = []
+    for p in sorted(rules_dir.glob("*.md")):
+        try:
+            fragments.append(parse_fragment(p))
+        except GeneratorError as e:
+            print(f"ERROR: {p.name}: {e}", file=sys.stderr)
+            return 2
+
+    try:
+        running_version = generator.read_repo_version()
+        block = generator.render_block(fragments, version=running_version)
+    except GeneratorError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+
+    existing = agents_merge.read_text_normalized(args.to)
+
+    try:
+        merged = agents_merge.merge_into_existing(
+            existing or None,
+            block,
+            running_version,
+            allow_wrap=not args.no_wrap,
+            force_downgrade=args.force_downgrade,
+        )
+    except agents_merge.ForwardVersionError:
+        # Re-extract the captured version for a precise message.
+        match = agents_merge.LFG_BEGIN_RE.search(existing)
+        captured = match.group("ver") if match else "?"
+        print(
+            f"ERROR: AGENTS.md at {args.to} was managed by a newer LFG "
+            f"(v{captured}). Re-run with --force-downgrade to overwrite.",
+            file=sys.stderr,
+        )
+        return 2
+
+    # Idempotency short-circuit: compare against the normalized on-disk content.
+    if merged == existing:
+        print(f"AGENTS.md already up to date (no change): {args.to}")
+        return 0
+
+    agents_merge.atomic_write(args.to, merged)
+    print(f"Updated {args.to}")
+    return 0
+
+
 def cmd_prime(args):
     """Emit a subagent context digest (STATE + last N CHANGELOG entries)."""
     from primer import build_prime
@@ -389,6 +452,17 @@ def main():
     p_arch.add_argument('--adr', action='store_true',
                         help='(rejected) ADRs do not archive')
 
+    # merge-agents-md command
+    p_merge = subparsers.add_parser(
+        'merge-agents-md',
+        help="Merge the canonical managed block into a target AGENTS.md (brownfield-safe)")
+    p_merge.add_argument('--to', required=True,
+                         help='Path to the target AGENTS.md (created if absent)')
+    p_merge.add_argument('--no-wrap', action='store_true',
+                         help='Prepend the block instead of wrapping pre-marker LFG content')
+    p_merge.add_argument('--force-downgrade', action='store_true',
+                         help='Overwrite a block managed by a newer LFG version')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -408,6 +482,7 @@ def main():
         'prime': cmd_prime,
         'promote': cmd_promote,
         'archive': cmd_archive,
+        'merge-agents-md': cmd_merge_agents_md,
     }
 
     return handlers[args.command](args)
