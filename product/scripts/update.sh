@@ -269,23 +269,10 @@ if prompt_update "validate-log-files.ps1" \
     print_success "Updated: validate-log-files.ps1"
 fi
 
-# Update templates (careful - users may have customized these)
-print_info "Checking templates..."
-print_warning "Note: Templates are often customized. Review changes carefully."
-echo ""
-
-for template in "$SOURCE_ROOT/product/templates/"*.md; do
-    if [[ -f "$template" ]]; then
-        template_name=$(basename "$template")
-        dest_template="$PROJECT_ROOT/templates/$template_name"
-        
-        if prompt_update "Template: $template_name" "$template" "$dest_template"; then
-            mkdir -p "$PROJECT_ROOT/templates"
-            cp "$template" "$dest_template"
-            print_success "Updated: $template_name"
-        fi
-    fi
-done
+# Templates are NOT copied to a project-root templates/ dir (Spec 4 §3).
+# They live only in .log-file-genius/product/templates/ (the submodule).
+# A root templates/ left over from older versions is cleaned up by the
+# SHA-256-matched backup step (added in a later Spec 4 task).
 
 echo ""
 echo -e "${GREEN}===========================================${NC}"

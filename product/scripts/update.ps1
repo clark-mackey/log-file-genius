@@ -293,28 +293,10 @@ if (Prompt-Update "validate-log-files.ps1" $ps1Script $ps1Dest) {
     Print-Success "Updated: validate-log-files.ps1"
 }
 
-# Update templates (careful - users may have customized these)
-Print-Info "Checking templates..."
-Print-Warning "Note: Templates are often customized. Review changes carefully."
-Write-Host ""
-
-$templatesPath = Join-Path $SourceRoot "product\templates"
-if (Test-Path $templatesPath) {
-    Get-ChildItem -Path $templatesPath -Filter "*.md" | ForEach-Object {
-        $templateName = $_.Name
-        $srcTemplate = $_.FullName
-        $destTemplate = Join-Path $ProjectRoot "templates\$templateName"
-        
-        if (Prompt-Update "Template: $templateName" $srcTemplate $destTemplate) {
-            $destDir = Split-Path -Parent $destTemplate
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-            }
-            Copy-Item -Path $srcTemplate -Destination $destTemplate -Force
-            Print-Success "Updated: $templateName"
-        }
-    }
-}
+# Templates are NOT copied to a project-root templates/ dir (Spec 4 §3).
+# They live only in .log-file-genius\product\templates\ (the submodule).
+# A root templates\ left over from older versions is cleaned up by the
+# SHA-256-matched backup step (added in a later Spec 4 task).
 
 Write-Host ""
 Write-Host "+========================================+" -ForegroundColor Green
