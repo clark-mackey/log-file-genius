@@ -178,3 +178,31 @@ def test_compare_versions_valid_terse_inputs_still_work():
     assert compare_versions("v0.4.0", "0.3.0") > 0
     assert compare_versions("1", "1.0.0") == 0
     assert compare_versions("1.2", "1.2.1") < 0
+
+
+# --- Checksum normalization (cross-platform stability) ----------------------
+# git re-encodes text files per platform: .ps1 ships with a UTF-8 BOM and
+# becomes CRLF on Windows checkout, while .py/.sh stay LF. compute_file_checksum
+# must hash CONTENT, not the checkout encoding, so a fixed VERSION.json baseline
+# passes on every platform. Regression guard for the shipped-broken-checksum bug.
+
+def test_checksum_ignores_bom_and_line_endings(tmp_path):
+    base = "line one\nline two\nline three\n"
+    lf = tmp_path / "lf.txt"
+    lf.write_bytes(base.encode("utf-8"))
+    crlf = tmp_path / "crlf.txt"
+    crlf.write_bytes(base.replace("\n", "\r\n").encode("utf-8"))
+    bom_crlf = tmp_path / "bom_crlf.txt"
+    bom_crlf.write_bytes(b"\xef\xbb\xbf" + base.replace("\n", "\r\n").encode("utf-8"))
+
+    h_lf = check_version.compute_file_checksum(lf)
+    assert check_version.compute_file_checksum(crlf) == h_lf
+    assert check_version.compute_file_checksum(bom_crlf) == h_lf
+
+
+def test_checksum_still_detects_content_change(tmp_path):
+    a = tmp_path / "a.txt"
+    a.write_bytes(b"real content\n")
+    b = tmp_path / "b.txt"
+    b.write_bytes(b"tampered content\n")
+    assert check_version.compute_file_checksum(a) != check_version.compute_file_checksum(b)

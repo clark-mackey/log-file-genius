@@ -165,15 +165,24 @@ def save_version_manifest(manifest: Dict):
 
 
 def compute_file_checksum(file_path: Path) -> Optional[str]:
-    """Compute SHA256 checksum of a file"""
+    """Compute a content checksum that is stable across platforms.
+
+    Text files in this repo are re-encoded by git on checkout: `.ps1` files
+    carry a UTF-8 BOM and become CRLF on Windows, while `.py`/`.sh` stay LF.
+    Hashing raw bytes therefore yields a different digest per platform, so a
+    fixed baseline in VERSION.json could never pass everywhere. We normalize
+    away those checkout artifacts (strip a leading UTF-8 BOM, fold CRLF/CR to
+    LF) before hashing, so the checksum reflects file *content*, not the
+    line-ending/BOM encoding git happened to apply. This matches the
+    UTF-8/LF/no-BOM read policy used elsewhere (agents_merge)."""
     if not file_path.exists():
         return None
-    
-    sha256 = hashlib.sha256()
-    with open(file_path, 'rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
-            sha256.update(chunk)
-    return sha256.hexdigest()[:16]  # First 16 chars for brevity
+
+    raw = file_path.read_bytes()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(normalized).hexdigest()[:16]  # First 16 chars for brevity
 
 
 def check_version_sync(manifest: Dict) -> List[str]:
