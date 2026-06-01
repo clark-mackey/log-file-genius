@@ -12,6 +12,7 @@ update_template_hashes.py is loaded via importlib from its file path
 
 import importlib.util
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -92,3 +93,59 @@ def test_manifest_keys_use_forward_slashes():
     recorded = uth.load_manifest()[_current_version()]
     for name in recorded:
         assert "\\" not in name, f"{name}: backslash in manifest key"
+
+
+# --- --match-dir mode (Spec 4 §3, T7) -------------------------------------
+
+
+def test_known_hashes_unions_all_versions():
+    """known_hashes() flattens every per-version digest into one set."""
+    manifest = {
+        "0.3.0": {"a.md": "aa", "b.md": "bb"},
+        "0.4.0": {"a.md": "cc"},
+    }
+    assert uth.known_hashes(manifest) == {"aa", "bb", "cc"}
+
+
+def test_match_dir_reports_lfg_file_and_ignores_junk(tmp_path, capsys):
+    """A dir with one real LFG template + one junk file: only the real one matches."""
+    target = tmp_path / "templates"
+    target.mkdir()
+    # Real match: copy an actual shipped template (its hash is in the manifest).
+    shutil.copy2(_TEMPLATES / "ADR_template.md", target / "ADR_template.md")
+    # Junk: not an LFG template, so its hash is absent from the manifest.
+    (target / "my_notes.md").write_text("user-authored junk\n", encoding="utf-8")
+
+    rc = uth.match_dir(target)
+    out = capsys.readouterr().out
+
+    assert rc == 0  # at least one match
+    assert "MATCH ADR_template.md" in out
+    assert "my_notes.md" not in out
+    assert "matched 1 of 2 file(s)" in out
+
+
+def test_match_dir_no_matches_is_user_authored(tmp_path, capsys):
+    """A dir of only user-authored files returns exit 1 (nothing matched)."""
+    target = tmp_path / "templates"
+    target.mkdir()
+    (target / "mine.md").write_text("entirely mine\n", encoding="utf-8")
+
+    rc = uth.match_dir(target)
+    out = capsys.readouterr().out
+
+    assert rc == 1
+    assert "MATCH" not in out
+    assert "matched 0 of 1 file(s)" in out
+
+
+def test_match_dir_missing_dir_errors(tmp_path):
+    """A non-existent directory is an error (exit 2)."""
+    assert uth.match_dir(tmp_path / "nope") == 2
+
+
+def test_match_dir_empty_dir_errors(tmp_path):
+    """An empty directory is an error (exit 2) — nothing to inspect."""
+    target = tmp_path / "templates"
+    target.mkdir()
+    assert uth.match_dir(target) == 2

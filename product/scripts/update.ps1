@@ -253,17 +253,33 @@ if ($AiAssistant -ne "unknown") {
     }
 }
 
-$agentsSrc = Join-Path $SourceRoot "product\AGENTS.md"
-if (Test-Path $agentsSrc) {
-    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
-    $tmp = [System.IO.Path]::GetTempFileName()
-    [System.IO.File]::WriteAllText($tmp, $agentsText, (New-Object System.Text.UTF8Encoding $false))
-    $dest = Join-Path $ProjectRoot "AGENTS.md"
-    if (Prompt-Update "AGENTS.md" $tmp $dest) {
-        [System.IO.File]::WriteAllText($dest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
-        Print-Success "Updated: AGENTS.md"
+# Update AGENTS.md at project root via the managed-block merge (Spec 4 §1).
+# REPLACES the old prompt-then-overwrite (a "y" there fully overwrote the file
+# = data loss). The merge preserves user content, only rewrites the LFG block,
+# and is idempotent. The merge entrypoint owns read, merge, and atomic write.
+$LfgPy = Join-Path $SourceRoot "product\scripts\lfg.py"
+$PythonBin = $null
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $PythonBin = "python"
+} elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
+    $PythonBin = "python3"
+}
+
+$agentsDest = Join-Path $ProjectRoot "AGENTS.md"
+if (-not $PythonBin) {
+    # No merge possible without Python. NEVER fall back to overwriting.
+    Print-Warning "Python not found; skipping AGENTS.md update (merge requires Python)."
+} elseif (-not (Test-Path $LfgPy)) {
+    Print-Warning "lfg.py not found at $LfgPy; skipping AGENTS.md update."
+} else {
+    Print-Info "Merging AGENTS.md (preserves your content, refreshes the LFG block)"
+    # Surface the CLI's own output; on non-zero exit warn but keep going.
+    & $PythonBin $LfgPy merge-agents-md --to $agentsDest
+    if ($LASTEXITCODE -eq 0) {
+        Print-Success "AGENTS.md merge complete"
+    } else {
+        Print-Warning "AGENTS.md merge reported a problem (see above); continuing update."
     }
-    Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
 }
 
 # Migrate legacy DEVLOG context into STATE.md for existing installs
@@ -293,10 +309,37 @@ if (Prompt-Update "validate-log-files.ps1" $ps1Script $ps1Dest) {
     Print-Success "Updated: validate-log-files.ps1"
 }
 
-# Templates are NOT copied to a project-root templates/ dir (Spec 4 §3).
+# Templates are NOT copied to a project-root templates\ dir (Spec 4 §3).
 # They live only in .log-file-genius\product\templates\ (the submodule).
-# A root templates\ left over from older versions is cleaned up by the
-# SHA-256-matched backup step (added in a later Spec 4 task).
+# A root templates\ left over from older versions (LFG-installed) is moved
+# to backups; a user-authored templates\ is left untouched. We ONLY ever
+# inspect "$ProjectRoot\templates" here — never the user's root
+# .logfile-config.yml or anything outside that subdir.
+$rootTemplates = Join-Path $ProjectRoot "templates"
+if (Test-Path $rootTemplates -PathType Container) {
+    $matchHelper = Join-Path $SourceRoot "product\scripts\update_template_hashes.py"
+    if (-not $PythonBin) {
+        Print-Warning "Python not found; leaving root templates\ untouched (cannot verify hashes)."
+    } elseif (-not (Test-Path $matchHelper)) {
+        Print-Warning "Template hash helper not found; leaving root templates\ untouched."
+    } else {
+        # --match-dir exit 0 => >=1 file matches an LFG-shipped hash (any version).
+        & $PythonBin $matchHelper --match-dir $rootTemplates | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $unixTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+            $backupsRoot = Join-Path $ProjectRoot ".log-file-genius\.backups"
+            $backupDir = Join-Path $backupsRoot "templates-$unixTime"
+            if (-not (Test-Path $backupsRoot)) {
+                New-Item -ItemType Directory -Path $backupsRoot -Force | Out-Null
+            }
+            $nFiles = (Get-ChildItem -Path $rootTemplates -Recurse -File | Measure-Object).Count
+            Move-Item -Path $rootTemplates -Destination $backupDir -Force
+            Print-Success "Moved $nFiles LFG-installed templates to $backupDir (they now live in .log-file-genius\product\templates\)."
+        } else {
+            Print-Info "Kept your templates\ (not LFG-installed)."
+        }
+    }
+}
 
 Write-Host ""
 Write-Host "+========================================+" -ForegroundColor Green

@@ -24,6 +24,7 @@ version MERGES the new entry in and preserves all prior-version entries.
 Usage:
     python update_template_hashes.py            # write/update for current version
     python update_template_hashes.py --check    # CI gate: exit non-zero on drift
+    python update_template_hashes.py --match-dir <dir>  # report LFG-shipped files in <dir>
 
 Stdlib only; Python 3.11+.
 """
@@ -165,6 +166,61 @@ def check_manifest() -> int:
     return 1
 
 
+def known_hashes(manifest: dict[str, dict[str, str]]) -> set[str]:
+    """Flatten the manifest into the set of every hash any version shipped.
+
+    A file in a project's root ``templates/`` counts as LFG-installed if its
+    SHA-256 matches a template LFG shipped in ANY version — so we union all
+    per-version digests rather than keying on filename or version.
+    """
+    digests: set[str] = set()
+    for version_entry in manifest.values():
+        if isinstance(version_entry, dict):
+            digests.update(version_entry.values())
+    return digests
+
+
+def match_dir(target_dir: Path, manifest_file: Path = _MANIFEST_FILE) -> int:
+    """Report which files under ``target_dir`` match any LFG-shipped hash.
+
+    Hashes every file under ``target_dir`` (recursively) and compares each
+    digest against the union of all hashes in the manifest. Prints one line
+    per matching file (``MATCH <relpath>``) to stdout, then a summary line
+    (``matched N of M file(s)``).
+
+    Exit codes (so a shell caller can branch without parsing text):
+      0 — at least one file matched (the dir holds LFG-installed templates).
+      1 — the directory has files but NONE matched (user-authored).
+      2 — error (dir missing / not a dir / manifest unreadable / dir empty).
+    """
+    if not target_dir.is_dir():
+        print(f"not a directory: {target_dir}", file=sys.stderr)
+        return 2
+
+    try:
+        manifest = load_manifest(manifest_file)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    shipped = known_hashes(manifest)
+
+    files = sorted(p for p in target_dir.rglob("*") if p.is_file())
+    if not files:
+        print(f"no files under {target_dir}", file=sys.stderr)
+        return 2
+
+    matched = 0
+    for path in files:
+        rel = path.relative_to(target_dir).as_posix()
+        if sha256_of_file(path) in shipped:
+            print(f"MATCH {rel}")
+            matched += 1
+
+    print(f"matched {matched} of {len(files)} file(s)")
+    return 0 if matched > 0 else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -172,7 +228,15 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="verify the manifest matches on-disk templates; exit non-zero on drift",
     )
+    parser.add_argument(
+        "--match-dir",
+        metavar="DIR",
+        help="report which files in DIR match any LFG-shipped template hash",
+    )
     args = parser.parse_args(argv)
+
+    if args.match_dir:
+        return match_dir(Path(args.match_dir))
 
     if args.check:
         return check_manifest()
