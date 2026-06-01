@@ -46,9 +46,9 @@ def cmd_validate(args):
     # Build arguments for lint-logs
     sys.argv = ['lint-logs']
     if args.changelog:
-        sys.argv.append('--changelog-only')
+        sys.argv.append('--changelog')
     if args.devlog:
-        sys.argv.append('--devlog-only')
+        sys.argv.append('--devlog')
     if args.verbose:
         sys.argv.append('--verbose')
     if args.json:
