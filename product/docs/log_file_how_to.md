@@ -481,10 +481,12 @@ project-root/
 │   └── specs/
 │       ├── PRD.md                # Product requirements (loaded on-demand)
 │       └── ...
-└── product/scripts/
-    ├── condense_changelog.py     # Transformation script
-    ├── condense_devlog.py        # Transformation script
-    └── check_token_counts.py    # Monitoring script
+└── .log-file-genius/             # LFG submodule (the toolkit — for updates)
+    └── product/scripts/
+        ├── lfg.py                # The CLI: validate, archive, prime, promote, generate, ...
+        ├── archive.py            # Work-aware archival engine
+        ├── migrate_state.py      # Brownfield STATE migration
+        └── ...                   # validators, generator, secret detection
 ```
 
 > **Path resolution:** Agents look for `paths` in `.logfile-config.yml` first; if not present, `logs/` is the default. Templates ship in the submodule at `.log-file-genius/product/templates/` (not copied to your project root).
@@ -933,25 +935,32 @@ When multiple agents work on the same codebase, they read **STATE.md** — not D
 
 ### How to Condense
 
+The deterministic, work-aware way to shed old context is `lfg archive` (see the
+[Archival section](#archival-lfg-archive) below) — it moves the right entries to
+`logs/archive/` for you and protects in-flight work. Use this manual workflow only
+for one-off content rewrites the CLI doesn't cover (e.g. rewording verbose legacy
+entries or extracting ADRs).
+
 **Step 1: Create Safety Snapshot**
 ```bash
 git add logs/CHANGELOG.md logs/DEVLOG.md
 git commit -m "Pre-transformation snapshot: CHANGELOG + DEVLOG"
 ```
 
-**Step 2: Archive Old Entries (Optional)**
-- Move entries >6 months old to `archive/` folder
-- Keep recent entries (last 30-90 days) in main files
-- Update cross-links
+**Step 2: Archive Old Entries**
+```bash
+python .log-file-genius/product/scripts/lfg.py archive --dry-run   # preview
+python .log-file-genius/product/scripts/lfg.py archive             # apply
+```
 
-**Step 3: Transform Entries**
+**Step 3: Transform Remaining Entries (manual, optional)**
 - **CHANGELOG:** Convert verbose entries to single-line format
 - **DEVLOG:** Convert long narratives to Situation/Challenge/Decision/Impact/Files format
 - **Extract ADRs:** Move significant decisions to separate ADR files
 
 **Step 4: Verify**
 ```bash
-python product/scripts/check_token_counts.py
+python .log-file-genius/product/scripts/lfg.py validate   # reports token counts + budget status
 ```
 
 **Step 5: Commit**
@@ -1093,31 +1102,17 @@ def estimate_tokens(file_path):
     return char_count // 4
 ```
 
-### Monitoring Script
+### Monitoring
 
-Create `product/scripts/check_token_counts.py`:
-```python
-import os
+You don't need a DIY script — LFG ships token-budget validation. Run:
 
-def estimate_tokens(file_path):
-    if not os.path.exists(file_path):
-        return 0
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return len(content) // 4
-
-changelog_tokens = estimate_tokens('logs/CHANGELOG.md')
-devlog_tokens = estimate_tokens('logs/DEVLOG.md')
-state_tokens = estimate_tokens('logs/STATE.md')
-total_tokens = changelog_tokens + devlog_tokens
-
-print(f"CHANGELOG.md: ~{changelog_tokens:,} tokens (max 10,000)")
-print(f"DEVLOG.md: ~{devlog_tokens:,} tokens (max 15,000)")
-print(f"STATE.md: ~{state_tokens:,} tokens (max 500)")
-print(f"Combined (CHANGELOG + DEVLOG): ~{total_tokens:,} tokens")
-print(f"Target: <25,000 tokens combined")
-print(f"Status: {'✅ GOOD' if total_tokens < 25000 else '⚠️ NEEDS CONDENSING'}")
+```bash
+python .log-file-genius/product/scripts/lfg.py validate
 ```
+
+It reports per-file token counts (CHANGELOG, DEVLOG, STATE) against their budgets
+and flags anything over, using the same `chars / 4` heuristic shown above. When it
+flags an overage, run `lfg archive --dry-run` to preview a fix.
 
 ---
 
@@ -1183,10 +1178,9 @@ print(f"Status: {'✅ GOOD' if total_tokens < 25000 else '⚠️ NEEDS CONDENSIN
 - Token budget creeps up over time
 
 **Solution:**
-- Set clear triggers (token count, line count, time-based)
-- Archive entries >6 months old
-- Keep recent entries (30-90 days) in main files
-- Monitor monthly with `check_token_counts.py`
+- Let the validators flag overage (`lfg validate` reports budget status)
+- Run `lfg archive` — it keeps the newest entries that fit the budget and moves the rest
+- Monitor monthly with `lfg validate`
 - **Result:** Sustainable long-term maintenance
 
 ### Problem 6: Transformation Breaks Git History
@@ -1528,7 +1522,7 @@ regenerate — that's the only command you need.
 - [ ] Copy starter templates (CHANGELOG.md, DEVLOG.md, STATE.md, ADR README.md)
 - [ ] Set token budget targets (CHANGELOG <10k, DEVLOG <15k, combined <25k, STATE <500)
 - [ ] Add cross-links to all documents (frontmatter with relative paths)
-- [ ] Set up monitoring script (`product/scripts/check_token_counts.py`)
+- [ ] Monitor token budgets with `lfg validate` (ships with LFG — no DIY script needed)
 - [ ] Configure `.logfile-config.yml` with your `paths` if not using `logs/` default
 - [ ] Schedule quarterly maintenance (calendar reminder)
 - [ ] Document project-specific conventions in templates
@@ -1539,8 +1533,8 @@ regenerate — that's the only command you need.
 
 | Task | Frequency | Action |
 |------|-----------|--------|
-| Check token counts | Monthly | Run `check_token_counts.py` |
-| Condense if needed | As needed | When >25k tokens combined (CHANGELOG + DEVLOG) |
+| Check token counts | Monthly | Run `lfg validate` |
+| Condense if needed | As needed | Run `lfg archive --dry-run` when >25k tokens combined (CHANGELOG + DEVLOG) |
 | Archive old entries | Quarterly | Move entries >6 months old |
 | Review ADR index | Quarterly | Update status, add cross-links |
 | Update templates | Annually | Refine based on experience |
@@ -1559,8 +1553,7 @@ regenerate — that's the only command you need.
 
 ---
 
-**Last Updated:** 2025-10-29  
-**Version:** 1.0  
+**Last Updated:** 2026-06-01 (tracks Log File Genius v0.4.0)  
 **License:** CC0 (Public Domain)
 
 
