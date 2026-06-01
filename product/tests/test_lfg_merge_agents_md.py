@@ -158,3 +158,28 @@ def test_newer_marker_refuses_without_force_succeeds_with(tmp_path):
     content = target.read_text(encoding="utf-8")
     assert "future body" not in content
     assert "<!-- LFG:BEGIN v" in content
+
+
+def test_bom_crlf_managed_file_is_renormalized(tmp_path):
+    """A managed AGENTS.md re-saved with a UTF-8 BOM + CRLF must NOT be treated
+    as up-to-date — the idempotency check compares raw bytes, so it gets a
+    normalizing rewrite to clean UTF-8/LF (encoding policy honored)."""
+    target = tmp_path / "AGENTS.md"
+    # First produce a clean managed file.
+    r1 = _run(["merge-agents-md", "--to", str(target)])
+    assert r1.returncode == 0, r1.stderr
+    clean = target.read_bytes()
+
+    # Re-save it with a UTF-8 BOM and CRLF line endings (Notepad-style).
+    target.write_bytes(b"\xef\xbb\xbf" + clean.replace(b"\n", b"\r\n"))
+    assert target.read_bytes()[:3] == b"\xef\xbb\xbf"
+    assert b"\r\n" in target.read_bytes()
+
+    # Re-run: must rewrite (not "already up to date") and normalize the bytes.
+    r2 = _run(["merge-agents-md", "--to", str(target)])
+    assert r2.returncode == 0, r2.stderr
+    assert "already up to date" not in r2.stdout
+    after = target.read_bytes()
+    assert after[:3] != b"\xef\xbb\xbf"  # BOM gone
+    assert b"\r\n" not in after  # CRLF gone
+    assert after == clean  # back to canonical bytes

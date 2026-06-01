@@ -282,8 +282,14 @@ def cmd_merge_agents_md(args):
         )
         return 2
 
-    # Idempotency short-circuit: compare against the normalized on-disk content.
-    if merged == existing:
+    # Idempotency short-circuit: compare against the RAW on-disk bytes, not the
+    # normalized read. atomic_write emits UTF-8, LF, no BOM, so the post-write
+    # bytes equal merged.encode("utf-8"). Comparing raw means a file that only
+    # differs by a UTF-8 BOM or CRLF line endings is NOT treated as up-to-date —
+    # it still gets a normalizing rewrite, honoring the encoding policy.
+    target_path = Path(args.to)
+    raw_existing = target_path.read_bytes() if target_path.is_file() else b""
+    if raw_existing == merged.encode("utf-8"):
         print(f"AGENTS.md already up to date (no change): {args.to}")
         return 0
 
