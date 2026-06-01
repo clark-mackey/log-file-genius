@@ -89,6 +89,53 @@ def test_no_wrap_respected_on_lfg_looking_file(tmp_path):
     assert "Marker-sentinel-line-to-detect." in content
 
 
+def test_corrupt_begin_without_end_refuses_does_not_prepend(tmp_path):
+    # BLOCKER 1: a BEGIN with no END must error (non-zero) and leave the file
+    # untouched — never prepend a second BEGIN that a later merge mis-slices.
+    target = tmp_path / "AGENTS.md"
+    corrupt = (
+        "# User notes\n"
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "orphaned body, no end marker\n"
+    )
+    target.write_text(corrupt, encoding="utf-8", newline="\n")
+    before = target.read_bytes()
+
+    r = _run(["merge-agents-md", "--to", str(target)])
+    assert r.returncode != 0
+    assert "corrupt" in r.stderr.lower()
+    # File untouched, byte-for-byte — no second BEGIN injected.
+    assert target.read_bytes() == before
+
+
+def test_corrupt_begin_without_end_refuses_even_with_no_wrap(tmp_path):
+    # The corrupt-marker error fires regardless of --no-wrap.
+    target = tmp_path / "AGENTS.md"
+    corrupt = (
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "orphaned body\n"
+    )
+    target.write_text(corrupt, encoding="utf-8", newline="\n")
+    before = target.read_bytes()
+
+    r = _run(["merge-agents-md", "--to", str(target), "--no-wrap"])
+    assert r.returncode != 0
+    assert "corrupt" in r.stderr.lower()
+    assert target.read_bytes() == before
+
+
+def test_user_authored_prepend_announces_preservation(tmp_path):
+    # SHOULD-FIX 4: prepend case prints a specific message about preservation.
+    target = tmp_path / "AGENTS.md"
+    target.write_text(
+        "# AGENTS.md\nHand-authored.\n", encoding="utf-8", newline="\n"
+    )
+    r = _run(["merge-agents-md", "--to", str(target)])
+    assert r.returncode == 0, r.stderr
+    assert "preserved" in r.stdout.lower()
+    assert "prepended" in r.stdout.lower()
+
+
 def test_newer_marker_refuses_without_force_succeeds_with(tmp_path):
     target = tmp_path / "AGENTS.md"
     newer = (

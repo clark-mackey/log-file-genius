@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from agents_merge import (  # noqa: E402
     LFG_BEGIN_RE,
     LFG_END_LIT,
+    CorruptMarkerError,
     ForwardVersionError,
     atomic_write,
     looks_like_lfg,
@@ -196,6 +197,79 @@ def test_merge_equal_version_replaces_no_raise():
     assert result == BLOCK
 
 
+# --- Adversarial markers (SHOULD-FIX 3 / BLOCKER 1) --------------------------
+
+def test_merge_begin_without_end_raises_corrupt():
+    # BEGIN marker present, no END anywhere -> cannot slice safely -> error.
+    existing = (
+        "# My notes\n"
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "orphaned body with no end marker\n"
+        "more user content\n"
+    )
+    with pytest.raises(CorruptMarkerError):
+        merge_into_existing(existing, BLOCK, RUNNING)
+
+
+def test_merge_begin_without_end_raises_even_with_no_wrap():
+    # A corrupt half-marker errors regardless of --no-wrap (allow_wrap=False):
+    # the user must repair the file; we never silently prepend a 2nd BEGIN.
+    existing = (
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "orphaned body\n"
+    )
+    with pytest.raises(CorruptMarkerError):
+        merge_into_existing(existing, BLOCK, RUNNING, allow_wrap=False)
+
+
+def test_merge_end_before_begin_raises_corrupt():
+    # END literal appears BEFORE the BEGIN match -> still corrupt (we can't
+    # form a valid [BEGIN..END] region). Now covered by Blocker 1's guard.
+    existing = (
+        "<!-- LFG:END -->\n"
+        "stray content\n"
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "body after a premature end\n"
+    )
+    with pytest.raises(CorruptMarkerError):
+        merge_into_existing(existing, BLOCK, RUNNING)
+
+
+def test_merge_two_full_blocks_rewrites_first_preserves_second():
+    # Two complete BEGIN+END pairs. Behavior (documented & deterministic):
+    # search() finds the FIRST begin, find() finds the FIRST end, so case 2
+    # slices [first-BEGIN .. first-END] and replaces it with `block`. The
+    # SECOND full block is part of `after` and is preserved verbatim. No
+    # content is lost; re-running is idempotent on the first block. We pick
+    # this over erroring because a doubled FULL block (unlike a corrupt
+    # half-marker) is unambiguous to slice.
+    second_block = (
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "second old body\n"
+        "<!-- LFG:END -->\n"
+    )
+    existing = (
+        "# Top notes\n"
+        "<!-- LFG:BEGIN v0.3.0 — DO NOT EDIT BETWEEN THESE MARKERS -->\n"
+        "first old body\n"
+        "<!-- LFG:END -->\n"
+        "# Middle notes\n"
+        + second_block
+        + "# Bottom notes\n"
+    )
+    result = merge_into_existing(existing, BLOCK, RUNNING)
+    # First block rewritten with the new content.
+    assert "first old body" not in result
+    assert "Generated content here." in result
+    # Second block + all user notes preserved verbatim.
+    assert "second old body" in result
+    assert "# Top notes" in result
+    assert "# Middle notes" in result
+    assert "# Bottom notes" in result
+    # Deterministic: exactly one BEGIN was rewritten, the second remains.
+    assert result.count("<!-- LFG:BEGIN v") == 2
+
+
 # --- merge_into_existing: case 3 (no markers + LFG fingerprint) --------------
 
 def test_merge_v030_no_markers_returns_block():
@@ -320,3 +394,22 @@ def test_atomic_write_failure_before_replace_leaves_original(tmp_path, monkeypat
 
     # Original file is byte-for-byte unchanged.
     assert path.read_bytes() == original_bytes
+    # NIT 7: no stray tmp file left behind after a failed replace.
+    assert not (tmp_path / "AGENTS.md.lfg-tmp").exists()
+
+
+def test_atomic_write_failure_during_write_cleans_tmp(tmp_path, monkeypatch):
+    # If fsync raises mid-write, the tmp file must be unlinked (NIT 7) and the
+    # original target (absent here) must not be created.
+    path = tmp_path / "AGENTS.md"
+
+    def boom_fsync(fd):
+        raise OSError("simulated fsync failure")
+
+    monkeypatch.setattr(os, "fsync", boom_fsync)
+
+    with pytest.raises(OSError):
+        atomic_write(path, "CONTENT\n")
+
+    assert not (tmp_path / "AGENTS.md.lfg-tmp").exists()
+    assert not path.exists()

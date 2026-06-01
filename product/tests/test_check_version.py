@@ -133,3 +133,48 @@ def test_parse_version_shape():
     core2, pre2 = parse_version("0.3.0")
     assert core2 == (0, 3, 0)
     assert pre2 == ()
+
+
+# --- Junk handling (SHOULD-FIX 5) -------------------------------------------
+# Truly non-numeric input must NOT parse to (0,0,0) and make garbage look
+# "behind" real versions (the spurious update-available bug). Valid-but-terse
+# inputs (leading v, missing minor/patch) are NOT junk and must still parse.
+
+import pytest  # noqa: E402
+
+UnparseableVersionError = check_version.UnparseableVersionError
+
+
+def test_parse_version_empty_is_junk():
+    with pytest.raises(UnparseableVersionError):
+        parse_version("")
+
+
+def test_parse_version_nonnumeric_is_junk():
+    with pytest.raises(UnparseableVersionError):
+        parse_version("abc")
+
+
+def test_parse_version_whitespace_is_junk():
+    with pytest.raises(UnparseableVersionError):
+        parse_version("   ")
+
+
+def test_parse_version_bare_v_is_junk():
+    # "v" strips to "" -> no numeric core.
+    with pytest.raises(UnparseableVersionError):
+        parse_version("v")
+
+
+def test_compare_versions_junk_returns_none():
+    # None == "cannot determine direction" -> validators stay silent.
+    assert compare_versions("", "0.3.0") is None
+    assert compare_versions("0.3.0", "abc") is None
+    assert compare_versions("garbage", "junk") is None
+
+
+def test_compare_versions_valid_terse_inputs_still_work():
+    # Regression guard: these are valid, not junk.
+    assert compare_versions("v0.4.0", "0.3.0") > 0
+    assert compare_versions("1", "1.0.0") == 0
+    assert compare_versions("1.2", "1.2.1") < 0

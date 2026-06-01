@@ -224,6 +224,27 @@ def cmd_merge_agents_md(args):
 
     existing = agents_merge.read_text_normalized(args.to)
 
+    # Pre-merge visibility (SHOULD-FIX 4): inspect `existing` read-only to tell
+    # the user WHICH merge case will apply before we write. Especially the wrap
+    # case (old LFG body replaced) and the prepend case (user content kept).
+    # This does not change merge_into_existing's behavior or return type.
+    begin_match = agents_merge.LFG_BEGIN_RE.search(existing)
+    has_begin = begin_match is not None
+    end_idx = existing.find(agents_merge.LFG_END_LIT)
+    has_valid_block = has_begin and end_idx != -1 and end_idx > begin_match.end()
+    if not existing.strip():
+        print(f"No existing AGENTS.md; creating managed block at {args.to}.")
+    elif has_begin and not has_valid_block:
+        # Corrupt half-marker — say nothing positive; the error path handles it.
+        pass
+    elif has_begin:
+        print(f"Existing AGENTS.md has an LFG managed block; refreshing it in place: {args.to}")
+    elif not args.no_wrap and agents_merge.looks_like_lfg(existing):
+        print("Existing AGENTS.md matched LFG content; regenerated managed block "
+              "(previous body replaced).")
+    else:
+        print("Existing AGENTS.md preserved; LFG block prepended above your content.")
+
     try:
         merged = agents_merge.merge_into_existing(
             existing or None,
@@ -239,6 +260,17 @@ def cmd_merge_agents_md(args):
         print(
             f"ERROR: AGENTS.md at {args.to} was managed by a newer LFG "
             f"(v{captured}). Re-run with --force-downgrade to overwrite.",
+            file=sys.stderr,
+        )
+        return 2
+    except agents_merge.CorruptMarkerError:
+        # Half-broken managed block (BEGIN with no valid END). We refuse rather
+        # than risk emitting a second BEGIN marker that a later merge would
+        # mis-slice. This errors regardless of --no-wrap — the user must repair
+        # the file by hand (ASCII-only message for cross-platform consoles).
+        print(
+            f"ERROR: AGENTS.md at {args.to} has an LFG:BEGIN marker but no "
+            f"valid END marker (corrupt). Fix it manually, then re-run.",
             file=sys.stderr,
         )
         return 2

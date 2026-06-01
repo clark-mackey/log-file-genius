@@ -42,6 +42,21 @@ class ForwardVersionError(Exception):
     """
 
 
+class CorruptMarkerError(Exception):
+    """Raised when the existing AGENTS.md has a half-broken managed block.
+
+    A BEGIN marker with no valid END (END absent, or END appearing *before*
+    BEGIN) means we cannot safely slice out the managed region. Falling through
+    to the prepend branch would emit a second BEGIN marker and let a later merge
+    mis-slice the file, silently corrupting or losing user content. So we stop.
+
+    This is distinct from ForwardVersionError: a forward-version block is
+    well-formed (just newer); a corrupt block is structurally broken and the
+    user must fix it by hand. There is deliberately no flag that auto-resolves
+    it (not even --no-wrap) — see merge_into_existing for why.
+    """
+
+
 # --- Version comparator (reuse check-version.py; do not reinvent semver) -----
 #
 # check-version.py has a hyphen in its name and is not importable by `import`,
@@ -158,10 +173,28 @@ def merge_into_existing(
     begin_match = LFG_BEGIN_RE.search(existing)
     end_idx = existing.find(LFG_END_LIT)
 
+    # Corrupt half-marker guard (BLOCKER 1): a BEGIN with no usable END.
+    # If END is absent, or END sits before the BEGIN match ends, we cannot
+    # slice the managed region safely. Falling through to prepend would emit a
+    # SECOND BEGIN marker and let a later merge mis-slice the file. Refuse
+    # ALWAYS — even with allow_wrap False (the --no-wrap CLI flag). The user
+    # must repair the file by hand or overwrite it. There is no auto-fix here
+    # by design: silently picking one of two BEGIN markers is exactly the
+    # self-corrupting behavior this guard exists to prevent.
+    if begin_match is not None and (end_idx == -1 or end_idx <= begin_match.end()):
+        raise CorruptMarkerError(
+            "AGENTS.md has an LFG:BEGIN marker but no valid END marker "
+            "(corrupt). Fix manually or pass --no-wrap to overwrite."
+        )
+
     # Case 2: a complete managed block is present.
     if begin_match is not None and end_idx != -1 and end_idx > begin_match.start():
         captured = begin_match.group("ver")
-        if not force_downgrade and _compare_versions(captured, running_version) > 0:
+        # compare returns None for an unparseable captured version; in that
+        # case we cannot confirm the block is "forward", so we do NOT refuse —
+        # we treat it as replaceable rather than raising on junk.
+        relation = _compare_versions(captured, running_version)
+        if not force_downgrade and relation is not None and relation > 0:
             raise ForwardVersionError(
                 f"AGENTS.md was managed by a newer LFG (v{captured} > "
                 f"v{running_version}). Upgrade the submodule or pass "
@@ -213,12 +246,24 @@ def atomic_write(path: str | os.PathLike[str], content: str) -> None:
     """Write content atomically as UTF-8, LF, no BOM.
 
     Writes to <path>.lfg-tmp, flushes + fsyncs, then os.replace() onto the
-    target. A crash mid-write leaves the original file intact.
+    target. A crash mid-write leaves the original file intact. On ANY failure
+    (write, fsync, or replace) the tmp file is unlinked so we never leave a
+    stray <path>.lfg-tmp behind; the original target is untouched until the
+    atomic os.replace succeeds.
     """
     p = Path(path)
     tmp = p.with_name(p.name + ".lfg-tmp")
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(content)
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp, p)
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, p)
+    except BaseException:
+        # Clean up the tmp file on any failure (including the replace). The
+        # original target is left exactly as it was.
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise

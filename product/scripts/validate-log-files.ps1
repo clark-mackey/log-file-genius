@@ -243,7 +243,12 @@ function Load-ProfileConfig {
             } catch { $relation = "" }
         }
         if (-not $relation) {
-            if ($configVersion -eq $latestVersion) { $relation = "current" } else { $relation = "behind" }
+            # Python unavailable: we can only safely confirm equality with a
+            # plain string compare. We must NOT guess a direction — printing
+            # "behind" for an unequal pair would resurrect the reversed
+            # "update available" bug (Spec 4 T2) whenever the user is AHEAD.
+            # So: equal -> current; unequal but undeterminable -> stay silent.
+            if ($configVersion -eq $latestVersion) { $relation = "current" } else { $relation = "unknown" }
         }
 
         if ($relation -eq "behind") {

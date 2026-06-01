@@ -215,7 +215,12 @@ load_profile_config() {
             relation=$(python "$check_script" --compare "$config_version" "$latest_version" 2>/dev/null)
         fi
         if [ -z "$relation" ]; then
-            if [ "$config_version" = "$latest_version" ]; then relation="current"; else relation="behind"; fi
+            # Python unavailable: we can only safely confirm equality with a
+            # plain string compare. We must NOT guess a direction — printing
+            # "behind" for an unequal pair would resurrect the reversed
+            # "update available" bug (Spec 4 T2) whenever the user is AHEAD.
+            # So: equal -> current; unequal but undeterminable -> stay silent.
+            if [ "$config_version" = "$latest_version" ]; then relation="current"; else relation="unknown"; fi
         fi
 
         if [ "$relation" = "behind" ]; then

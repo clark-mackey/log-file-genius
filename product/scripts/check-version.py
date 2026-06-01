@@ -37,6 +37,16 @@ from typing import Dict, List, Optional, Tuple, Union
 _VersionParts = Tuple[Tuple[int, int, int], Tuple[Union[int, str], ...]]
 
 
+class UnparseableVersionError(ValueError):
+    """Raised when a version string has no numeric core (e.g. "" or "abc").
+
+    A leading 'v', missing minor/patch (1.2), and pre-release/build suffixes
+    are all VALID and do NOT raise — only truly non-numeric input where even
+    the major component isn't an integer. Callers that compare versions treat
+    this as "cannot determine direction" rather than guessing.
+    """
+
+
 def parse_version(version: str) -> _VersionParts:
     """Parse a version string into ((major, minor, patch), prerelease_ids).
 
@@ -45,6 +55,11 @@ def parse_version(version: str) -> _VersionParts:
     sorts *after* any non-empty pre-release (per semver precedence).
     A leading 'v' (e.g. "v0.4.0") is tolerated.
     Missing minor/patch components default to 0.
+
+    Raises UnparseableVersionError when the input is junk (empty / non-numeric
+    major), so garbage like "" or "abc" can't masquerade as (0, 0, 0) and make
+    every real version look "ahead" — which previously triggered spurious
+    "update available" nags.
     """
     text = version.strip()
     if text.startswith("v") or text.startswith("V"):
@@ -57,7 +72,11 @@ def parse_version(version: str) -> _VersionParts:
     core, _, prerelease = text.partition("-")
 
     nums = core.split(".")
-    major = int(nums[0]) if len(nums) > 0 and nums[0].isdigit() else 0
+    # The major component MUST be a non-negative integer. Anything else
+    # (empty string, "abc", "1.x" where even major is bad) is junk.
+    if len(nums) == 0 or not nums[0].isdigit():
+        raise UnparseableVersionError(f"unparseable version: {version!r}")
+    major = int(nums[0])
     minor = int(nums[1]) if len(nums) > 1 and nums[1].isdigit() else 0
     patch = int(nums[2]) if len(nums) > 2 and nums[2].isdigit() else 0
 
@@ -89,14 +108,22 @@ def _prerelease_key(pre_ids: Tuple[Union[int, str], ...]) -> tuple:
     return (0, tuple(key))
 
 
-def compare_versions(a: str, b: str) -> int:
+def compare_versions(a: str, b: str) -> Optional[int]:
     """Compare two versions. Returns -1 if a < b, 0 if equal, 1 if a > b.
+
+    Returns None when EITHER side is unparseable junk (empty / non-numeric).
+    Callers must treat None as "cannot determine direction" and stay silent
+    rather than guess — a guessed direction is exactly the bug that produced
+    spurious "update available" nags.
 
     Build metadata is ignored; pre-release versions sort before their
     associated release.
     """
-    core_a, pre_a = parse_version(a)
-    core_b, pre_b = parse_version(b)
+    try:
+        core_a, pre_a = parse_version(a)
+        core_b, pre_b = parse_version(b)
+    except UnparseableVersionError:
+        return None
 
     if core_a != core_b:
         return -1 if core_a < core_b else 1
@@ -242,7 +269,8 @@ def main():
     parser.add_argument('--json', action='store_true', help="Output as JSON")
     parser.add_argument('--compare', nargs=2, metavar=('INSTALLED', 'LATEST'),
                         help="Compare two versions. Prints 'ahead', 'behind', or "
-                             "'current' and exits 0.")
+                             "'current' (exit 0); prints 'unknown' and exits 1 "
+                             "if either version is unparseable.")
 
     args = parser.parse_args()
 
@@ -250,6 +278,11 @@ def main():
     if args.compare:
         installed, latest = args.compare
         result = compare_versions(installed, latest)
+        if result is None:
+            # Unparseable input: emit a neutral token and exit non-zero so the
+            # shell/PS validators DON'T print a direction they can't verify.
+            print("unknown")
+            sys.exit(1)
         print("ahead" if result > 0 else "behind" if result < 0 else "current")
         sys.exit(0)
 
