@@ -1,6 +1,6 @@
 # Log File Genius
 
-**Make your AI agents rip. Not guess, not loop, not forget — rip.**
+**Help your AI agents get it right. Not guess, not loop, not forget — get it right.**
 
 > Five markdown files + AI rules that give any agent (or subagent) instant, complete project context in under 5% of its context window.
 
