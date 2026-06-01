@@ -306,14 +306,51 @@ if [ "$AI_ASSISTANT" = "claude-code" ]; then
     print_success "Rendered .claude/project_instructions.md"
 fi
 
-# Drop AGENTS.md at the project root for tools that read it natively.
-# Strip CRLF in case the source was checked out on Windows with autocrlf — the
-# generator's contract is LF-only, and tools shouldn't see a mixed-line-ending
-# file just because of where the user cloned the repo.
-if [ -f "$SOURCE_ROOT/AGENTS.md" ]; then
-    tr -d '\r' < "$SOURCE_ROOT/AGENTS.md" > "$PROJECT_ROOT/AGENTS.md"
-    CREATED_ITEMS+=("$PROJECT_ROOT/AGENTS.md")
-    print_success "Installed AGENTS.md at project root"
+# Merge the canonical managed block into the project-root AGENTS.md.
+# This is brownfield-safe: it never clobbers user-owned content. The merge CLI
+# (lfg.py merge-agents-md) builds the marker-wrapped block from product/rules/
+# and either creates the file, refreshes the managed block in place, wraps a
+# pre-marker LFG body, or prepends above user content — printing which case
+# applied. Idempotent re-runs write nothing.
+LFG_PY="$SCRIPT_DIR/lfg.py"
+AGENTS_TARGET="$PROJECT_ROOT/AGENTS.md"
+AGENTS_PREEXISTING=false
+[ -f "$AGENTS_TARGET" ] && AGENTS_PREEXISTING=true
+
+# Resolve a python interpreter the same way validate-log-files.sh does.
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+fi
+
+if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
+    if "$PYTHON_BIN" "$LFG_PY" merge-agents-md --to "$AGENTS_TARGET"; then
+        # Only track for rollback if WE created it (merge into a pre-existing
+        # user file must never be rolled back — that would lose their content).
+        [ "$AGENTS_PREEXISTING" = "false" ] && CREATED_ITEMS+=("$AGENTS_TARGET")
+        print_success "Merged AGENTS.md managed block at project root"
+    else
+        # Non-zero = corrupt marker or forward-version block. The merge left the
+        # file untouched. Don't abort the install — everything else succeeded.
+        print_warning "AGENTS.md was left as-is (merge could not complete safely)."
+        print_warning "Resolve it manually, then re-run: $PYTHON_BIN $LFG_PY merge-agents-md --to \"$AGENTS_TARGET\""
+    fi
+elif [ -f "$SOURCE_ROOT/AGENTS.md" ]; then
+    # No python available: degrade gracefully. Only fall back to the old copy
+    # behavior when the target does NOT already exist — never overwrite an
+    # existing AGENTS.md without the merge (preserves the no-data-loss guarantee).
+    if [ "$AGENTS_PREEXISTING" = "true" ]; then
+        print_warning "python not found and AGENTS.md already exists; skipped (will not overwrite)."
+        print_warning "Install python and re-run: <python> $LFG_PY merge-agents-md --to \"$AGENTS_TARGET\""
+    else
+        # Strip CRLF in case the source was checked out on Windows with autocrlf.
+        tr -d '\r' < "$SOURCE_ROOT/AGENTS.md" > "$AGENTS_TARGET"
+        CREATED_ITEMS+=("$AGENTS_TARGET")
+        print_warning "python not found; copied AGENTS.md verbatim (no managed-block merge)."
+        print_success "Installed AGENTS.md at project root"
+    fi
 fi
 
 # ============================================================================
