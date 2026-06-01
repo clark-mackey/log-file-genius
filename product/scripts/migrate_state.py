@@ -35,7 +35,8 @@ from typing import Optional
 # Sibling-module imports (archive.py pattern). Reuse the encoding/atomicity
 # helpers from agents_merge rather than re-implementing them.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config_parser import parse_config
+# Re-exported for the CLI layer (lfg.py calls migrate_state.read_text_normalized
+# / .atomic_write). Keep these even if this module's body doesn't reference one.
 from agents_merge import read_text_normalized, atomic_write
 
 
