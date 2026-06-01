@@ -1,6 +1,6 @@
 # Log File Genius
 
-**Make your AI agents rip. Not guess, not loop, not forget — rip.**
+**Make your AI agents remember. Not guess, not loop, not forget — remember.**
 
 > Five markdown files + AI rules that give any agent (or subagent) instant, complete project context in under 5% of its context window.
 
@@ -40,7 +40,7 @@ The AI maintains the files itself. You don't write documentation — the agent d
 **After Log File Genius:**
 - ⚡ **Agents make informed decisions** from the first message — no ramp-up, no guessing
 - 🔄 **Session continuity** — handoff protocol means zero context lost between sessions
-- 🤖 **Subagents spin up dangerous** — full project context in under 500ms
+- 🤖 **Subagents spin up fully briefed** — complete project context from their first message, no re-explaining
 - 📊 **Up to 93% token reduction** — complete project history in ~7,000-10,000 tokens instead of 90,000+
 
 | Document | The Vibe | Purpose | Token Budget |
@@ -99,7 +99,7 @@ This isn't just documentation. It's an operating system for AI agent performance
 
 - **📊 Up to 93% Token Reduction:** Sheds old context like a snake sheds its skin. Complete project history in <5% of the context window, leaving the rest for what matters: the code you're writing *right now*.
 
-- **🔒 Safety Tools Available:** Optional secret detection and log validation, plus a pre-commit hook you can enable, catch problems before they hit the repo. These are opt-in — run them manually or copy the hook into `.git/hooks/`. Your agent won't accidentally leak API keys into a DEVLOG entry.
+- **🔒 Safety Tools Available:** Optional secret detection and log validation, plus a pre-commit hook you can enable, catch problems before they hit the repo. These are opt-in — run them manually or install the hook with `lfg install-hooks`. Your agent won't accidentally leak API keys into a DEVLOG entry.
 
 - **🔧 Tool Agnostic:** A single canonical `AGENTS.md` ships to your project root for any agent that reads it natively (Claude, Codex, Aider, etc.), with per-tool rule files generated alongside for Augment, Claude Code, and others. Your toaster will probably be running it soon.
 
@@ -224,6 +224,7 @@ After installation, a small Python CLI lives at `.log-file-genius/product/script
 | `lfg migrate-state` | Apply the one-time STATE migration (archives extra content to a DEVLOG snapshot) |
 | `lfg prime` | Print a compact digest for a subagent's initial context |
 | `lfg promote <staged-id>` | Merge a subagent's staged log entries into CHANGELOG/DEVLOG |
+| `lfg install-hooks` | Install the opt-in pre-commit hook (secret + log validation) |
 
 Run `python .log-file-genius/product/scripts/lfg.py --help` for the full list.
 
