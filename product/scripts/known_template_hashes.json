@@ -17,5 +17,15 @@
     "MIGRATION_GUIDE_template.md": "a02a165874977ff2e727d550c5d81805bb5b400016813a36a0ccc8cdf4d8537b",
     "README.md": "c5e71114164fd479673f9d10dfbde65ae3d4aebe23c20095e8ff9de8e2bb8f0f",
     "STATE_template.md": "b08fe7638bc5c02de304870f1e915b110f0f4f5d70ddf5b09101ae6a1cc396f0"
+  },
+  "0.5.0": {
+    ".logfile-config.yml": "90a4f61a82ba6b3be7ac16cab3844f78a79593e38e26233b7917d7c64e2fe38b",
+    "ADR_template.md": "6893acdeb7fed0f35ae080813274fbe604a3a80648053b033e49245bbeb4ed1d",
+    "CHANGELOG_template.md": "c11a02bf21b0b2b4b472acbad9951cb5e7f2c7040b97f29d1b9bc84ee6f8241a",
+    "DEVLOG_template.md": "431a1b61ecf7a1044d8fa10a0bb8566cc125dcce73ab73fefe5c97572ec10130",
+    "INCIDENT_template.md": "97c70bf299514ac98a399738ba8aa62c5cf6d5665b26c29097f220415330f3bb",
+    "MIGRATION_GUIDE_template.md": "a02a165874977ff2e727d550c5d81805bb5b400016813a36a0ccc8cdf4d8537b",
+    "README.md": "c5e71114164fd479673f9d10dfbde65ae3d4aebe23c20095e8ff9de8e2bb8f0f",
+    "STATE_template.md": "b08fe7638bc5c02de304870f1e915b110f0f4f5d70ddf5b09101ae6a1cc396f0"
   }
 }

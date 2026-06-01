@@ -1597,7 +1597,7 @@ regenerate — that's the only command you need.
 
 ---
 
-**Last Updated:** 2026-06-01 (tracks Log File Genius v0.4.0)  
+**Last Updated:** 2026-06-01 (tracks Log File Genius v0.5.0)  
 **License:** CC0 (Public Domain)
 
 
