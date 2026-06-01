@@ -302,14 +302,53 @@ if ($AiAssistant -eq "claude-code") {
     Print-Success "Rendered .claude/project_instructions.md"
 }
 
-$agentsSrc = Join-Path $SourceRoot "AGENTS.md"
-if (Test-Path $agentsSrc) {
-    # Re-emit with LF + no BOM in case the source was checked out CRLF.
-    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
-    $agentsDest = Join-Path $ProjectRoot "AGENTS.md"
-    [System.IO.File]::WriteAllText($agentsDest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
-    $CreatedItems += $agentsDest
-    Print-Success "Installed AGENTS.md at project root"
+# Merge the canonical managed block into the project-root AGENTS.md.
+# Brownfield-safe: the merge CLI (lfg.py merge-agents-md) builds the
+# marker-wrapped block from product/rules/ and either creates the file,
+# refreshes the managed block in place, wraps a pre-marker LFG body, or
+# prepends above user content (printing which case applied). It writes
+# UTF-8 LF no-BOM and is idempotent. Never clobbers user-owned content.
+$lfgPy = Join-Path $ScriptDir "lfg.py"
+$agentsDest = Join-Path $ProjectRoot "AGENTS.md"
+$agentsPreexisting = Test-Path $agentsDest
+
+# Resolve a python interpreter the same way validate-log-files.ps1 does.
+$python = $null
+if (Get-Command python -ErrorAction SilentlyContinue) { $python = "python" }
+elseif (Get-Command python3 -ErrorAction SilentlyContinue) { $python = "python3" }
+
+if ($python -and (Test-Path $lfgPy)) {
+    & $python $lfgPy merge-agents-md --to $agentsDest
+    if ($LASTEXITCODE -eq 0) {
+        # Only track for rollback if WE created it — merging into a pre-existing
+        # user file must never be rolled back (that would lose their content).
+        if (-not $agentsPreexisting) { $CreatedItems += $agentsDest }
+        Print-Success "Merged AGENTS.md managed block at project root"
+    }
+    else {
+        # Non-zero = corrupt marker or forward-version block; the merge left the
+        # file untouched. Don't abort the install — everything else succeeded.
+        Print-Warning "AGENTS.md was left as-is (merge could not complete safely)."
+        Print-Warning "Resolve it manually, then re-run: $python `"$lfgPy`" merge-agents-md --to `"$agentsDest`""
+    }
+}
+else {
+    # No python available: degrade gracefully. Only fall back to the old copy
+    # behavior when the target does NOT already exist — never overwrite an
+    # existing AGENTS.md without the merge (preserves the no-data-loss guarantee).
+    $agentsSrc = Join-Path $SourceRoot "AGENTS.md"
+    if ($agentsPreexisting) {
+        Print-Warning "python not found and AGENTS.md already exists; skipped (will not overwrite)."
+        Print-Warning "Install python and re-run: <python> `"$lfgPy`" merge-agents-md --to `"$agentsDest`""
+    }
+    elseif (Test-Path $agentsSrc) {
+        # Re-emit with LF + no BOM in case the source was checked out CRLF.
+        $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
+        [System.IO.File]::WriteAllText($agentsDest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
+        $CreatedItems += $agentsDest
+        Print-Warning "python not found; copied AGENTS.md verbatim (no managed-block merge)."
+        Print-Success "Installed AGENTS.md at project root"
+    }
 }
 
 # ============================================================================
