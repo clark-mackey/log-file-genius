@@ -313,6 +313,16 @@ if [ -d "$ROOT_TEMPLATES" ]; then
     fi
 fi
 
+# Post-update STATE.md advisory (Spec 4 §2). Run `lfg validate --state-only`;
+# if STATE.md has errors (non-zero exit), print ONE advisory line pointing at
+# the migrate-state dry-run. We never auto-run or prompt — update stays
+# non-interactive. If Python is unavailable, skip silently (no advisory).
+if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
+    if ! "$PYTHON_BIN" "$LFG_PY" validate --state-only > /dev/null 2>&1; then
+        print_warning "STATE.md needs migration to the current spec. Preview with: $PYTHON_BIN $LFG_PY migrate-state --dry-run"
+    fi
+fi
+
 echo ""
 echo -e "${GREEN}===========================================${NC}"
 echo -e "${GREEN}|   Update Complete! ✓                   |${NC}"

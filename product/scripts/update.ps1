@@ -341,6 +341,17 @@ if (Test-Path $rootTemplates -PathType Container) {
     }
 }
 
+# Post-update STATE.md advisory (Spec 4 §2). Run `lfg validate --state-only`;
+# if STATE.md has errors (non-zero exit), print ONE advisory line pointing at
+# the migrate-state dry-run. We never auto-run or prompt — update stays
+# non-interactive. If Python is unavailable, skip silently (no advisory).
+if ($PythonBin -and (Test-Path $LfgPy)) {
+    & $PythonBin $LfgPy validate --state-only > $null 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Print-Warning "STATE.md needs migration to the current spec. Preview with: $PythonBin $LfgPy migrate-state --dry-run"
+    }
+}
+
 Write-Host ""
 Write-Host "+========================================+" -ForegroundColor Green
 Write-Host "|   Update Complete!                     |" -ForegroundColor Green

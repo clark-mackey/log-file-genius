@@ -373,6 +373,73 @@ def cmd_archive(args):
     return 0
 
 
+def cmd_migrate_state(args):
+    """Build a STATE migration plan and (if not --dry-run) apply it.
+
+    Mirrors cmd_archive: resolve config + STATE/DEVLOG paths, build the plan,
+    stream it to stdout, then either dry-run (write nothing), prompt+apply, or
+    --force-apply. The two MigrateError guards (already-compliant/empty plan, or
+    already-migrated snapshot in DEVLOG) are NOT failures — they're no-ops, so
+    they print a clear ASCII message and return 0.
+
+    today's date is sourced here at the CLI layer (the pure planner/apply never
+    calls datetime.now() — same convention archive.py uses for timestamps).
+    """
+    import migrate_state
+    from config_parser import parse_config
+
+    project_root = Path.cwd()
+    config_path = project_root / ".logfile-config.yml"
+    cfg = parse_config(str(config_path))
+    paths = cfg.get("paths", {})
+
+    state_path = project_root / paths.get("state", "logs/STATE.md")
+    devlog_path = project_root / paths.get("devlog", "logs/DEVLOG.md")
+
+    if not state_path.exists():
+        print(f"ERROR: STATE.md not found at {state_path}", file=sys.stderr)
+        return 2
+
+    state_content = migrate_state.read_text_normalized(state_path)
+    plan = migrate_state.build_plan(state_content, cfg)
+
+    # Stream the human-readable plan to stdout (UTF-8 bytes — matches cmd_archive).
+    sys.stdout.buffer.write(plan.to_human().encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
+
+    if args.dry_run:
+        return 0
+
+    if not args.force:
+        try:
+            reply = input("Apply this migration plan? [y/N] ").strip().lower()
+        except EOFError:
+            reply = ""
+        if reply not in ("y", "yes"):
+            print("Aborted.", file=sys.stderr)
+            return 1
+
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        migrate_state.apply(
+            plan,
+            state_path=state_path,
+            devlog_path=devlog_path,
+            today=today,
+            config_path=config_path,
+        )
+    except migrate_state.MigrateError as e:
+        # Guard trips (already-compliant/empty plan, or already-migrated) are
+        # no-ops, not failures: print a clear ASCII message and exit 0.
+        print(str(e).replace("—", "--"))
+        return 0
+
+    print(f"Applied STATE migration ({state_path.name} rewritten).")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -493,6 +560,15 @@ def main():
     p_arch.add_argument('--adr', action='store_true',
                         help='(rejected) ADRs do not archive')
 
+    # migrate-state command
+    p_migrate = subparsers.add_parser(
+        'migrate-state',
+        help="Bring a brownfield STATE.md into the current spec (deterministic, previewable)")
+    p_migrate.add_argument('--dry-run', action='store_true',
+                           help='Show the plan but write nothing')
+    p_migrate.add_argument('--force', action='store_true',
+                           help='Skip the confirmation prompt')
+
     # merge-agents-md command
     p_merge = subparsers.add_parser(
         'merge-agents-md',
@@ -523,6 +599,7 @@ def main():
         'prime': cmd_prime,
         'promote': cmd_promote,
         'archive': cmd_archive,
+        'migrate-state': cmd_migrate_state,
         'merge-agents-md': cmd_merge_agents_md,
     }
 
