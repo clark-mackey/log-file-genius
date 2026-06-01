@@ -160,6 +160,42 @@ def test_newer_marker_refuses_without_force_succeeds_with(tmp_path):
     assert "<!-- LFG:BEGIN v" in content
 
 
+def test_wrap_replace_backs_up_original(tmp_path):
+    """An unmarked LFG-fingerprinted AGENTS.md (e.g. v0.3.0) with user additions
+    gets its body replaced — but the original is backed up first so nothing is
+    truly lost (honors 'never lose user content')."""
+    target = tmp_path / "AGENTS.md"
+    # Minimal LFG-fingerprinted content (doc: AGENTS frontmatter) + a user note.
+    target.write_text(
+        "---\ndoc: AGENTS\n---\n\n# Log File Genius\n\nold body\n"
+        "\n<!-- my own note: KEEP-THIS-SENTINEL -->\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    r = _run(["merge-agents-md", "--to", str(target)])
+    assert r.returncode == 0, r.stderr
+    assert "Backed up" in r.stdout
+    # Result is the clean managed block; the user sentinel is gone from it...
+    result = target.read_text(encoding="utf-8")
+    assert "<!-- LFG:BEGIN v" in result
+    assert "KEEP-THIS-SENTINEL" not in result
+    # ...but preserved in the .bak.
+    backup = target.with_name("AGENTS.md.bak")
+    assert backup.exists()
+    assert "KEEP-THIS-SENTINEL" in backup.read_text(encoding="utf-8")
+
+
+def test_user_authored_prepend_makes_no_backup(tmp_path):
+    """The lossless prepend path must NOT create a backup (nothing is lost)."""
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# My Agents\nCustom only, no LFG.\n", encoding="utf-8", newline="\n")
+    r = _run(["merge-agents-md", "--to", str(target)])
+    assert r.returncode == 0, r.stderr
+    assert "Backed up" not in r.stdout
+    assert not target.with_name("AGENTS.md.bak").exists()
+    assert "Custom only, no LFG." in target.read_text(encoding="utf-8")
+
+
 def test_bom_crlf_managed_file_is_renormalized(tmp_path):
     """A managed AGENTS.md re-saved with a UTF-8 BOM + CRLF must NOT be treated
     as up-to-date — the idempotency check compares raw bytes, so it gets a

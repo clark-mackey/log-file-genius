@@ -239,16 +239,27 @@ def cmd_merge_agents_md(args):
     has_begin = begin_match is not None
     end_idx = existing.find(agents_merge.LFG_END_LIT)
     has_valid_block = has_begin and end_idx != -1 and end_idx > begin_match.end()
+    # The wrap-replace path is the ONLY one that discards existing content: an
+    # unmarked file that fingerprints as LFG (e.g. a v0.3.0 AGENTS.md) has its
+    # whole body replaced, because without markers we cannot tell where old LFG
+    # content ends and a user's additions begin. To honor "never lose user
+    # content", we back the original up before replacing (see below).
+    will_wrap_replace = bool(
+        existing.strip()
+        and not has_valid_block
+        and not args.no_wrap
+        and agents_merge.looks_like_lfg(existing)
+    )
     if not existing.strip():
         print(f"No existing AGENTS.md; creating managed block at {args.to}.")
     elif has_begin and not has_valid_block:
         # Corrupt half-marker — say nothing positive; the error path handles it.
         pass
-    elif has_begin:
+    elif has_valid_block:
         print(f"Existing AGENTS.md has an LFG managed block; refreshing it in place: {args.to}")
-    elif not args.no_wrap and agents_merge.looks_like_lfg(existing):
-        print("Existing AGENTS.md matched LFG content; regenerated managed block "
-              "(previous body replaced).")
+    elif will_wrap_replace:
+        print("Existing AGENTS.md matched LFG content; regenerating managed block "
+              "(original backed up first -- see below).")
     else:
         print("Existing AGENTS.md preserved; LFG block prepended above your content.")
 
@@ -292,6 +303,19 @@ def cmd_merge_agents_md(args):
     if raw_existing == merged.encode("utf-8"):
         print(f"AGENTS.md already up to date (no change): {args.to}")
         return 0
+
+    # Safety net for the lossy wrap-replace path: preserve the original bytes in
+    # a sibling backup before overwriting, so a user who added their own notes to
+    # a pre-marker (v0.3.0) AGENTS.md can recover them. Pick the first free
+    # `<name>.bak`, `<name>.bak.2`, ... so we never clobber an existing backup.
+    if will_wrap_replace and raw_existing:
+        backup = target_path.with_name(target_path.name + ".bak")
+        n = 2
+        while backup.exists():
+            backup = target_path.with_name(f"{target_path.name}.bak.{n}")
+            n += 1
+        backup.write_bytes(raw_existing)
+        print(f"Backed up previous AGENTS.md to {backup}")
 
     agents_merge.atomic_write(args.to, merged)
     print(f"Updated {args.to}")

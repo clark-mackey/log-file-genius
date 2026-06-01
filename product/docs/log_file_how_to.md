@@ -1023,7 +1023,10 @@ in rendered markdown):
   on every update; your edits there would be overwritten.
 - If you already had a hand-authored `AGENTS.md` (e.g., a Codex/Aider file), the LFG block
   is prepended above your content. If you had a prior LFG-generated `AGENTS.md` (no
-  markers), it gets wrapped and regenerated in place.
+  markers — e.g. from v0.3.0), its body is regenerated; because there are no markers to
+  tell your additions apart from old LFG content, the original is **saved to
+  `AGENTS.md.bak` first** so anything you added can be recovered. After your first
+  update the file has markers, so later updates only touch the marked region.
 
 The merge runs automatically during install/update. You can also run it directly:
 
