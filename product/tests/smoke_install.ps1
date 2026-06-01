@@ -55,18 +55,42 @@ try {
         throw "FAIL: CHANGELOG.md missing frontmatter (first line is '$firstLine')"
     }
 
-    # Spec 2: AGENTS.md at project root with frontmatter.
+    # Spec 2: AGENTS.md at project root.
     if (-not (Test-Path "AGENTS.md")) { Write-Host "FAIL: AGENTS.md missing at project root"; exit 1 }
-    $firstLine = (Get-Content "AGENTS.md" -TotalCount 1)
-    if ($firstLine -ne "---") { Write-Host "FAIL: AGENTS.md missing frontmatter"; exit 1 }
 
-    # Spec 2: AGENTS.md must be LF + no BOM.
+    # Spec 4 §1: AGENTS.md is now a managed BLOCK. A fresh install wraps the
+    # canonical body in LFG:BEGIN/END markers, so the file starts with the
+    # BEGIN marker; the YAML frontmatter is INSIDE the block.
+    $agentsText = [System.IO.File]::ReadAllText("$pwd\AGENTS.md")
+    if ($agentsText -notmatch '<!-- LFG:BEGIN v') { Write-Host "FAIL: AGENTS.md missing LFG:BEGIN marker"; exit 1 }
+    if ($agentsText -notmatch '<!-- LFG:END -->') { Write-Host "FAIL: AGENTS.md missing LFG:END marker"; exit 1 }
+    if ($agentsText -notmatch '(?m)^doc: AGENTS$') { Write-Host "FAIL: AGENTS.md missing canonical body (doc: AGENTS)"; exit 1 }
+
+    # Spec 4 §3: NO root templates/ dir is created.
+    if (Test-Path "templates" -PathType Container) { Write-Host "FAIL: install created a root templates/ dir (Spec 4 §3 regression)"; exit 1 }
+
+    # Spec 2 / Spec 4: AGENTS.md must be UTF-8 with NO BOM and LF endings.
+    # Assert by reading raw bytes: first 3 bytes != EF BB BF, and no 0x0D (CR).
     $bytes = [System.IO.File]::ReadAllBytes("$pwd\AGENTS.md")
-    if ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
         Write-Host "FAIL: AGENTS.md has UTF-8 BOM"; exit 1
     }
-    $text = [System.IO.File]::ReadAllText("$pwd\AGENTS.md")
-    if ($text.Contains("`r`n")) { Write-Host "FAIL: AGENTS.md has CRLF line endings"; exit 1 }
+    if ($bytes -contains 0x0D) { Write-Host "FAIL: AGENTS.md has CR (0x0D) bytes - CRLF line endings"; exit 1 }
+
+    # Spec 4 §1: idempotent install — re-running the merge leaves AGENTS.md
+    # byte-identical (merge short-circuits on an up-to-date file).
+    $before = [System.IO.File]::ReadAllBytes("$pwd\AGENTS.md")
+    $py = $null
+    if (Get-Command python -ErrorAction SilentlyContinue) { $py = "python" }
+    elseif (Get-Command python3 -ErrorAction SilentlyContinue) { $py = "python3" }
+    if ($py) {
+        $mergeOut = & $py "$REPO\product\scripts\lfg.py" merge-agents-md --to "$pwd\AGENTS.md" 2>&1 | Out-String
+        if ($mergeOut -notmatch 'up to date') { Write-Host "FAIL: second merge did not report up-to-date: $mergeOut"; exit 1 }
+        $after = [System.IO.File]::ReadAllBytes("$pwd\AGENTS.md")
+        if (-not ([System.Linq.Enumerable]::SequenceEqual($before, $after))) {
+            Write-Host "FAIL: second merge changed AGENTS.md (not idempotent)"; exit 1
+        }
+    }
 
     # Spec 2: installed rule == canonical fragment.
     $installed = (Get-FileHash ".claude\rules\log-file-maintenance.md").Hash

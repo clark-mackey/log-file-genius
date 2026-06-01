@@ -253,17 +253,33 @@ if ($AiAssistant -ne "unknown") {
     }
 }
 
-$agentsSrc = Join-Path $SourceRoot "product\AGENTS.md"
-if (Test-Path $agentsSrc) {
-    $agentsText = (Get-Content $agentsSrc -Raw) -replace "`r`n", "`n"
-    $tmp = [System.IO.Path]::GetTempFileName()
-    [System.IO.File]::WriteAllText($tmp, $agentsText, (New-Object System.Text.UTF8Encoding $false))
-    $dest = Join-Path $ProjectRoot "AGENTS.md"
-    if (Prompt-Update "AGENTS.md" $tmp $dest) {
-        [System.IO.File]::WriteAllText($dest, $agentsText, (New-Object System.Text.UTF8Encoding $false))
-        Print-Success "Updated: AGENTS.md"
+# Update AGENTS.md at project root via the managed-block merge (Spec 4 §1).
+# REPLACES the old prompt-then-overwrite (a "y" there fully overwrote the file
+# = data loss). The merge preserves user content, only rewrites the LFG block,
+# and is idempotent. The merge entrypoint owns read, merge, and atomic write.
+$LfgPy = Join-Path $SourceRoot "product\scripts\lfg.py"
+$PythonBin = $null
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $PythonBin = "python"
+} elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
+    $PythonBin = "python3"
+}
+
+$agentsDest = Join-Path $ProjectRoot "AGENTS.md"
+if (-not $PythonBin) {
+    # No merge possible without Python. NEVER fall back to overwriting.
+    Print-Warning "Python not found; skipping AGENTS.md update (merge requires Python)."
+} elseif (-not (Test-Path $LfgPy)) {
+    Print-Warning "lfg.py not found at $LfgPy; skipping AGENTS.md update."
+} else {
+    Print-Info "Merging AGENTS.md (preserves your content, refreshes the LFG block)"
+    # Surface the CLI's own output; on non-zero exit warn but keep going.
+    & $PythonBin $LfgPy merge-agents-md --to $agentsDest
+    if ($LASTEXITCODE -eq 0) {
+        Print-Success "AGENTS.md merge complete"
+    } else {
+        Print-Warning "AGENTS.md merge reported a problem (see above); continuing update."
     }
-    Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
 }
 
 # Migrate legacy DEVLOG context into STATE.md for existing installs
@@ -293,26 +309,46 @@ if (Prompt-Update "validate-log-files.ps1" $ps1Script $ps1Dest) {
     Print-Success "Updated: validate-log-files.ps1"
 }
 
-# Update templates (careful - users may have customized these)
-Print-Info "Checking templates..."
-Print-Warning "Note: Templates are often customized. Review changes carefully."
-Write-Host ""
-
-$templatesPath = Join-Path $SourceRoot "product\templates"
-if (Test-Path $templatesPath) {
-    Get-ChildItem -Path $templatesPath -Filter "*.md" | ForEach-Object {
-        $templateName = $_.Name
-        $srcTemplate = $_.FullName
-        $destTemplate = Join-Path $ProjectRoot "templates\$templateName"
-        
-        if (Prompt-Update "Template: $templateName" $srcTemplate $destTemplate) {
-            $destDir = Split-Path -Parent $destTemplate
-            if (-not (Test-Path $destDir)) {
-                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+# Templates are NOT copied to a project-root templates\ dir (Spec 4 §3).
+# They live only in .log-file-genius\product\templates\ (the submodule).
+# A root templates\ left over from older versions (LFG-installed) is moved
+# to backups; a user-authored templates\ is left untouched. We ONLY ever
+# inspect "$ProjectRoot\templates" here — never the user's root
+# .logfile-config.yml or anything outside that subdir.
+$rootTemplates = Join-Path $ProjectRoot "templates"
+if (Test-Path $rootTemplates -PathType Container) {
+    $matchHelper = Join-Path $SourceRoot "product\scripts\update_template_hashes.py"
+    if (-not $PythonBin) {
+        Print-Warning "Python not found; leaving root templates\ untouched (cannot verify hashes)."
+    } elseif (-not (Test-Path $matchHelper)) {
+        Print-Warning "Template hash helper not found; leaving root templates\ untouched."
+    } else {
+        # --match-dir exit 0 => >=1 file matches an LFG-shipped hash (any version).
+        & $PythonBin $matchHelper --match-dir $rootTemplates | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $unixTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+            $backupsRoot = Join-Path $ProjectRoot ".log-file-genius\.backups"
+            $backupDir = Join-Path $backupsRoot "templates-$unixTime"
+            if (-not (Test-Path $backupsRoot)) {
+                New-Item -ItemType Directory -Path $backupsRoot -Force | Out-Null
             }
-            Copy-Item -Path $srcTemplate -Destination $destTemplate -Force
-            Print-Success "Updated: $templateName"
+            $nFiles = (Get-ChildItem -Path $rootTemplates -Recurse -File | Measure-Object).Count
+            Move-Item -Path $rootTemplates -Destination $backupDir -Force
+            Print-Success "Moved $nFiles LFG-installed templates to $backupDir (they now live in .log-file-genius\product\templates\)."
+        } else {
+            Print-Info "Kept your templates\ (not LFG-installed)."
         }
+    }
+}
+
+# Post-update STATE.md advisory (Spec 4 §2). Run `lfg validate --state-only`;
+# if STATE.md has errors (non-zero exit), print ONE advisory line pointing at
+# the migrate-state dry-run. We never auto-run or prompt — update stays
+# non-interactive. If Python is unavailable, skip silently (no advisory).
+if ($PythonBin -and (Test-Path $LfgPy)) {
+    & $PythonBin $LfgPy validate --state-only > $null 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Print-Warning "STATE.md needs migration to the current spec. Preview with: $PythonBin $LfgPy migrate-state --dry-run"
     }
 }
 

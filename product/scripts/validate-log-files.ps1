@@ -214,12 +214,51 @@ function Load-ProfileConfig {
     # Extract version and check for updates
     if ($cfg -match 'log_file_genius_version:\s*"?([0-9.]+)"?') {
         $configVersion = $matches[1]
-        $latestVersion = "0.2.0"  # Current version
 
-        if ($configVersion -ne $latestVersion) {
+        # Resolve the latest-known version from VERSION.json (this script lives
+        # in product/scripts/, the manifest in product/). Fall back to a
+        # hardcoded current version if the manifest can't be read.
+        $scriptDir = Split-Path -Parent $PSCommandPath
+        $versionFile = Join-Path $scriptDir "..\VERSION.json"
+        $latestVersion = "0.3.0"  # Fallback if VERSION.json is unreadable
+        if (Test-Path $versionFile) {
+            try {
+                $manifest = Get-Content $versionFile -Raw | ConvertFrom-Json
+                if ($manifest.version) { $latestVersion = $manifest.version }
+            } catch { }
+        }
+
+        # Three-way comparison (ahead / behind / current). Delegate to the
+        # Python comparator (single source of truth, handles pre-release +
+        # build metadata); fall back to a plain string compare if python is
+        # unavailable.
+        $relation = ""
+        $checkScript = Join-Path $scriptDir "check-version.py"
+        $python = $null
+        if (Get-Command python -ErrorAction SilentlyContinue) { $python = "python" }
+        elseif (Get-Command python3 -ErrorAction SilentlyContinue) { $python = "python3" }
+        if ($python -and (Test-Path $checkScript)) {
+            try {
+                $relation = (& $python $checkScript --compare $configVersion $latestVersion 2>$null).Trim()
+            } catch { $relation = "" }
+        }
+        if (-not $relation) {
+            # Python unavailable: we can only safely confirm equality with a
+            # plain string compare. We must NOT guess a direction — printing
+            # "behind" for an unequal pair would resurrect the reversed
+            # "update available" bug (Spec 4 T2) whenever the user is AHEAD.
+            # So: equal -> current; unequal but undeterminable -> stay silent.
+            if ($configVersion -eq $latestVersion) { $relation = "current" } else { $relation = "unknown" }
+        }
+
+        if ($relation -eq "behind") {
             Write-Host ""
             Write-Host "[!] Log File Genius update available: v$latestVersion (you have v$configVersion)" -ForegroundColor Yellow
             Write-Host "    See: https://github.com/clark-mackey/log-file-genius/releases" -ForegroundColor Yellow
+            Write-Host ""
+        } elseif ($relation -eq "ahead") {
+            Write-Host ""
+            Write-Host "[i] Log File Genius: you are on v$configVersion, newer than the latest-known v$latestVersion." -ForegroundColor Cyan
             Write-Host ""
         }
     }
