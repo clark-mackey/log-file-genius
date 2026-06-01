@@ -49,6 +49,13 @@ def cmd_validate(args):
         sys.argv.append('--changelog-only')
     if args.devlog:
         sys.argv.append('--devlog-only')
+    if getattr(args, 'state_only', False):
+        # STATE-only mode: validate STATE.md alone so callers (e.g.
+        # update.{sh,ps1}) can detect a STATE-specific failure without
+        # false-positiving on CHANGELOG/DEVLOG issues. Exits 2 iff STATE.md
+        # has errors (e.g. missing '## Current Context'); budget warnings
+        # stay exit 0 unless --strict is also passed through lint-logs.
+        sys.argv.append('--state')
     if args.verbose:
         sys.argv.append('--verbose')
     if args.json:
@@ -417,6 +424,8 @@ def main():
     p_validate = subparsers.add_parser('validate', help='Validate log files')
     p_validate.add_argument('--changelog', action='store_true', help='Only validate CHANGELOG')
     p_validate.add_argument('--devlog', action='store_true', help='Only validate DEVLOG')
+    p_validate.add_argument('--state-only', dest='state_only', action='store_true',
+                            help='Only validate STATE (non-zero exit iff STATE has errors)')
     p_validate.add_argument('--tokens', action='store_true', help='Only check token counts')
     p_validate.add_argument('--verbose', action='store_true', help='Verbose output')
     p_validate.add_argument('--json', action='store_true', help='JSON output')
