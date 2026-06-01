@@ -55,6 +55,32 @@ The AI maintains the files itself. You don't write documentation — the agent d
 
 ---
 
+## 😫 The Problem: Your Future Developers Are Flying Blind
+
+Your future developers are going to waste hours understanding your codebase — and one of them is *you*, six months from now. The commit history says *what* changed but never *why*. The one person who remembers why you ditched Mongo for Postgres has left the company. So every new hire reverse-engineers decisions that were already made, and re-learns lessons the team already paid for.
+
+**Without Log File Genius:**
+- 🕵️ **Onboarding takes weeks** — new devs spend their first sprint just figuring out how things fit together
+- ❓ **"Why is this here?"** — no record of the reasoning behind key decisions, so nobody dares touch the scary code
+- 🔁 **Lessons re-learned the hard way** — the same bug gets reintroduced because the postmortem lived in someone's head
+- 🗂️ **Tribal knowledge walks out the door** — when a teammate leaves, their context leaves with them
+
+It's like inheriting a house with no manual, no blueprints, and no idea which wires are live.
+
+## 💡 The Solution: Leave a Perfect Breadcrumb Trail
+
+The same five files that orient your AI orient your humans. CHANGELOG records what shipped, DEVLOG captures *why* you decided it, ADRs lock in the big calls, and STATE says where things stand right now — written as the work happens, not bolted on later.
+
+**With Log File Genius:**
+- ⚡ **Onboard in an afternoon** — new devs read five files and understand the project's history, decisions, and current state
+- 🧭 **Every decision has a paper trail** — the "why" is captured next to the "what," so future-you isn't guessing
+- 🛡️ **Mistakes don't repeat** — incidents and their fixes are recorded, so the team learns once and moves on
+- 🤝 **Knowledge outlives the team** — context lives in the repo, not in any one person's memory
+
+The breadcrumb trail you wish every codebase came with — and now yours does.
+
+---
+
 ## 🧠 Why It's Genius
 
 This isn't just documentation. It's an operating system for AI agent performance.
