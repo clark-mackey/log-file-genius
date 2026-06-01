@@ -177,7 +177,9 @@ cd .log-file-genius; git pull; cd ..
 .\.log-file-genius\product\scripts\update.ps1
 ```
 
-The updater preserves your customizations and refreshes `AGENTS.md`, per-tool rules, validators, and the `lfg` CLI in place.
+The updater is brownfield-safe: it **merges** the LFG rules into your `AGENTS.md` instead of overwriting it (anything outside the `<!-- LFG:BEGIN … -->` / `<!-- LFG:END -->` markers stays yours), refreshes per-tool rules, validators, and the `lfg` CLI in place, and never creates a `templates/` folder at your project root.
+
+Upgrading from an older version? If the updater prints a STATE.md advisory, run `python .log-file-genius/product/scripts/lfg.py migrate-state --dry-run` to preview the one-time migration. See [Updating Log File Genius](product/docs/log_file_how_to.md#updating-log-file-genius) for the full story.
 
 ---
 
@@ -191,6 +193,9 @@ After installation, a small Python CLI lives at `.log-file-genius/product/script
 | `lfg archive --dry-run` | Preview a graceful, work-aware archival plan |
 | `lfg archive` | Apply the plan (protects `[Unreleased]` and the most recent DEVLOG entries) |
 | `lfg generate` | Regenerate `AGENTS.md` from `product/rules/` fragments (contributors) |
+| `lfg merge-agents-md --to <path>` | Merge the LFG managed block into a target `AGENTS.md`, preserving your content (run by install/update) |
+| `lfg migrate-state --dry-run` | Preview bringing a pre-v0.4.0 STATE.md into the current spec |
+| `lfg migrate-state` | Apply the one-time STATE migration (archives extra content to a DEVLOG snapshot) |
 | `lfg prime` | Print a compact digest for a subagent's initial context |
 | `lfg promote <staged-id>` | Merge a subagent's staged log entries into CHANGELOG/DEVLOG |
 

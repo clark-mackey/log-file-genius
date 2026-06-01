@@ -189,12 +189,48 @@ load_profile_config() {
     # Extract version and check for updates
     if grep -q "log_file_genius_version:" "$config_file"; then
         local config_version=$(grep "log_file_genius_version:" "$config_file" | sed 's/.*"\([0-9.]*\)".*/\1/')
-        local latest_version="0.2.0"  # Current version
 
-        if [ "$config_version" != "$latest_version" ]; then
+        # Resolve the latest-known version from VERSION.json (this script lives
+        # in product/scripts/, the manifest in product/). Fall back to a
+        # hardcoded current version if the manifest can't be read.
+        local script_dir
+        script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+        local version_file="$script_dir/../VERSION.json"
+        local latest_version="0.3.0"  # Fallback if VERSION.json is unreadable
+        if [ -f "$version_file" ]; then
+            local parsed
+            parsed=$(grep '"version"' "$version_file" | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+            [ -n "$parsed" ] && latest_version="$parsed"
+        fi
+
+        # Three-way comparison (ahead / behind / current). Delegate to the
+        # Python comparator (single source of truth, handles pre-release +
+        # build metadata); fall back to a plain string compare if python is
+        # unavailable.
+        local relation=""
+        local check_script="$script_dir/check-version.py"
+        if [ -f "$check_script" ] && command -v python3 >/dev/null 2>&1; then
+            relation=$(python3 "$check_script" --compare "$config_version" "$latest_version" 2>/dev/null)
+        elif [ -f "$check_script" ] && command -v python >/dev/null 2>&1; then
+            relation=$(python "$check_script" --compare "$config_version" "$latest_version" 2>/dev/null)
+        fi
+        if [ -z "$relation" ]; then
+            # Python unavailable: we can only safely confirm equality with a
+            # plain string compare. We must NOT guess a direction — printing
+            # "behind" for an unequal pair would resurrect the reversed
+            # "update available" bug (Spec 4 T2) whenever the user is AHEAD.
+            # So: equal -> current; unequal but undeterminable -> stay silent.
+            if [ "$config_version" = "$latest_version" ]; then relation="current"; else relation="unknown"; fi
+        fi
+
+        if [ "$relation" = "behind" ]; then
             echo ""
             echo -e "\033[33m[!] Log File Genius update available: v$latest_version (you have v$config_version)\033[0m"
             echo -e "\033[33m    See: https://github.com/clark-mackey/log-file-genius/releases\033[0m"
+            echo ""
+        elif [ "$relation" = "ahead" ]; then
+            echo ""
+            echo -e "\033[36m[i] Log File Genius: you are on v$config_version, newer than the latest-known v$latest_version.\033[0m"
             echo ""
         fi
     fi

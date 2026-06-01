@@ -88,6 +88,36 @@ CI runs `lfg generate --check` on every PR and will fail if `AGENTS.md` is out
 of date relative to the fragments. To avoid forgetting, install the pre-commit
 hook below.
 
+#### AGENTS.md is emitted two ways
+
+The generator renders the fragment content through two entry points (both in
+`product/scripts/generator.py`):
+
+- **`render_full()`** writes the in-repo `product/AGENTS.md` — fully LFG-owned, **no
+  markers**. This is what `lfg generate` produces and what CI checks.
+- **`render_block()`** wraps the same canonical body in `<!-- LFG:BEGIN v… -->` /
+  `<!-- LFG:END -->` markers. This is the block that `install`/`update` (via
+  `lfg merge-agents-md`) merge into a *user's* `AGENTS.md`, leaving their surrounding
+  content intact.
+
+Both share a single `render_canonical_body()` primitive, so editing a fragment under
+`product/rules/` and running `lfg generate` keeps both outputs in sync. **The marker
+format is a documented part of the distributable's contract — don't change the marker
+strings or the `v<version>` token in the BEGIN marker without a deliberate version bump.**
+
+#### Regenerate template hashes when templates change
+
+If you add, remove, or modify any file under `product/templates/`, regenerate the shipped
+hash manifest:
+
+```bash
+python product/scripts/update_template_hashes.py
+```
+
+This updates `product/scripts/known_template_hashes.json`, which the updater uses to
+recognize (and safely back up) LFG-installed root `templates/` folders. CI gates that the
+manifest is current for the present version — a forgotten regen will fail the build.
+
 ### Optional: pre-commit auto-regenerate
 
 ```bash

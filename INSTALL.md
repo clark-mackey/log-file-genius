@@ -42,7 +42,7 @@ The installer will:
 2. **Prompt for profile** - Choose from: solo-developer, team, open-source, or startup
 3. **Create folder structure** - Creates `logs/` and `logs/adr/`
 4. **Install templates** - Copies CHANGELOG, DEVLOG, STATE, and ADR templates to `logs/`
-5. **Install AGENTS.md** - Drops the canonical agent-agnostic rules at the project root
+5. **Install AGENTS.md** - Merges the canonical agent-agnostic rules into a marker-delimited block in your project-root `AGENTS.md` (creating it if absent; preserving any existing content)
 6. **Install per-tool rules** - Generates platform-specific rule files in `.augment/rules/` or `.claude/rules/`
 7. **Create config file** - Generates `.logfile-config.yml` with your profile settings
 8. **Validate installation** - Checks that all required files exist
@@ -67,6 +67,14 @@ All generated from the same canonical fragments in `product/rules/`:
 
 ### Hidden Source Repository
 - `.log-file-genius/` - Git submodule containing templates, scripts, and documentation (for updates)
+
+> **Templates live in the submodule** at `.log-file-genius/product/templates/`. The
+> installer does **not** create a `templates/` directory at your project root.
+
+> **AGENTS.md is merged, not overwritten.** If your project already has an `AGENTS.md`
+> (e.g., a Codex/Aider file), the installer inserts a marker-delimited LFG block
+> (`<!-- LFG:BEGIN … -->` … `<!-- LFG:END -->`) and preserves everything outside the
+> markers. The same merge runs on every update — your content is safe across upgrades.
 
 ---
 
@@ -196,8 +204,9 @@ ls -la logs/
 ## Updating Log File Genius
 
 To update to the latest version, use the bundled `update.sh` / `update.ps1`. The
-updater refreshes `AGENTS.md`, per-tool rules, validators, and the `lfg` CLI
-while preserving your customizations.
+update is **brownfield-safe**: it **merges** the LFG block into your `AGENTS.md`
+(content outside the markers is preserved — never overwritten), refreshes per-tool
+rules, validators, and the `lfg` CLI, and never creates a root `templates/` directory.
 
 ```bash
 # Bash/Mac/Linux
@@ -210,6 +219,19 @@ cd .log-file-genius && git pull && cd ..
 cd .log-file-genius; git pull; cd ..
 .\.log-file-genius\product\scripts\update.ps1
 ```
+
+**Upgrading from an older version?** After the update, you may see a one-line advisory:
+
+```
+STATE.md needs migration to v0.4.0 spec. Preview with: lfg migrate-state --dry-run
+```
+
+This is not an error — it means your STATE.md predates the current spec. Run
+`lfg migrate-state --dry-run` to preview a deterministic migration that keeps the
+canonical sections and archives any extra content into a one-time DEVLOG snapshot, then
+`lfg migrate-state` to apply it. It is one-shot (safe to ignore if STATE already
+conforms). If a prior version left an LFG-installed root `templates/` folder, the updater
+moves it into `.log-file-genius/.backups/`.
 
 ---
 
@@ -230,6 +252,8 @@ Key commands:
 - `lfg archive` — apply it (protects `[Unreleased]` and the most recent DEVLOG entries)
 - `lfg prime` — emit a compact digest for subagent initial context
 - `lfg promote <staged-id>` — merge a subagent's staged entries into CHANGELOG/DEVLOG
+- `lfg migrate-state --dry-run` — preview a one-time STATE.md migration to the current spec; apply with `lfg migrate-state`
+- `lfg merge-agents-md --to <path>` — merge the LFG block into a target `AGENTS.md`, preserving your content (normally run by install/update)
 - `lfg generate` — regenerate `AGENTS.md` from fragments (contributors only)
 
 Run `--help` on any subcommand for flags.

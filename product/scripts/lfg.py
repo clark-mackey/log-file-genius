@@ -49,6 +49,13 @@ def cmd_validate(args):
         sys.argv.append('--changelog')
     if args.devlog:
         sys.argv.append('--devlog')
+    if getattr(args, 'state_only', False):
+        # STATE-only mode: validate STATE.md alone so callers (e.g.
+        # update.{sh,ps1}) can detect a STATE-specific failure without
+        # false-positiving on CHANGELOG/DEVLOG issues. Exits 2 iff STATE.md
+        # has errors (e.g. missing '## Current Context'); budget warnings
+        # stay exit 0 unless --strict is also passed through lint-logs.
+        sys.argv.append('--state')
     if args.verbose:
         sys.argv.append('--verbose')
     if args.json:
@@ -190,6 +197,131 @@ def cmd_generate(args):
     return 0
 
 
+def cmd_merge_agents_md(args):
+    """Merge the canonical managed block into a target AGENTS.md (brownfield-safe).
+
+    Builds the marker-wrapped block from the rules fragments (same loading path
+    as cmd_generate), then merges it into the target via agents_merge, preserving
+    any surrounding user content. Idempotent: re-running on an up-to-date file
+    writes nothing.
+    """
+    import agents_merge
+    import generator
+    from generator import parse_fragment, GeneratorError
+
+    rules_dir = Path(__file__).resolve().parent.parent / "rules"
+    if not rules_dir.is_dir():
+        print(f"ERROR: rules dir not found at {rules_dir}", file=sys.stderr)
+        return 2
+
+    fragments = []
+    for p in sorted(rules_dir.glob("*.md")):
+        try:
+            fragments.append(parse_fragment(p))
+        except GeneratorError as e:
+            print(f"ERROR: {p.name}: {e}", file=sys.stderr)
+            return 2
+
+    try:
+        running_version = generator.read_repo_version()
+        block = generator.render_block(fragments, version=running_version)
+    except GeneratorError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+
+    existing = agents_merge.read_text_normalized(args.to)
+
+    # Pre-merge visibility (SHOULD-FIX 4): inspect `existing` read-only to tell
+    # the user WHICH merge case will apply before we write. Especially the wrap
+    # case (old LFG body replaced) and the prepend case (user content kept).
+    # This does not change merge_into_existing's behavior or return type.
+    begin_match = agents_merge.LFG_BEGIN_RE.search(existing)
+    has_begin = begin_match is not None
+    end_idx = existing.find(agents_merge.LFG_END_LIT)
+    has_valid_block = has_begin and end_idx != -1 and end_idx > begin_match.end()
+    # The wrap-replace path is the ONLY one that discards existing content: an
+    # unmarked file that fingerprints as LFG (e.g. a v0.3.0 AGENTS.md) has its
+    # whole body replaced, because without markers we cannot tell where old LFG
+    # content ends and a user's additions begin. To honor "never lose user
+    # content", we back the original up before replacing (see below).
+    will_wrap_replace = bool(
+        existing.strip()
+        and not has_valid_block
+        and not args.no_wrap
+        and agents_merge.looks_like_lfg(existing)
+    )
+    if not existing.strip():
+        print(f"No existing AGENTS.md; creating managed block at {args.to}.")
+    elif has_begin and not has_valid_block:
+        # Corrupt half-marker — say nothing positive; the error path handles it.
+        pass
+    elif has_valid_block:
+        print(f"Existing AGENTS.md has an LFG managed block; refreshing it in place: {args.to}")
+    elif will_wrap_replace:
+        print("Existing AGENTS.md matched LFG content; regenerating managed block "
+              "(original backed up first -- see below).")
+    else:
+        print("Existing AGENTS.md preserved; LFG block prepended above your content.")
+
+    try:
+        merged = agents_merge.merge_into_existing(
+            existing or None,
+            block,
+            running_version,
+            allow_wrap=not args.no_wrap,
+            force_downgrade=args.force_downgrade,
+        )
+    except agents_merge.ForwardVersionError:
+        # Re-extract the captured version for a precise message.
+        match = agents_merge.LFG_BEGIN_RE.search(existing)
+        captured = match.group("ver") if match else "?"
+        print(
+            f"ERROR: AGENTS.md at {args.to} was managed by a newer LFG "
+            f"(v{captured}). Re-run with --force-downgrade to overwrite.",
+            file=sys.stderr,
+        )
+        return 2
+    except agents_merge.CorruptMarkerError:
+        # Half-broken managed block (BEGIN with no valid END). We refuse rather
+        # than risk emitting a second BEGIN marker that a later merge would
+        # mis-slice. This errors regardless of --no-wrap — the user must repair
+        # the file by hand (ASCII-only message for cross-platform consoles).
+        print(
+            f"ERROR: AGENTS.md at {args.to} has an LFG:BEGIN marker but no "
+            f"valid END marker (corrupt). Fix it manually, then re-run.",
+            file=sys.stderr,
+        )
+        return 2
+
+    # Idempotency short-circuit: compare against the RAW on-disk bytes, not the
+    # normalized read. atomic_write emits UTF-8, LF, no BOM, so the post-write
+    # bytes equal merged.encode("utf-8"). Comparing raw means a file that only
+    # differs by a UTF-8 BOM or CRLF line endings is NOT treated as up-to-date —
+    # it still gets a normalizing rewrite, honoring the encoding policy.
+    target_path = Path(args.to)
+    raw_existing = target_path.read_bytes() if target_path.is_file() else b""
+    if raw_existing == merged.encode("utf-8"):
+        print(f"AGENTS.md already up to date (no change): {args.to}")
+        return 0
+
+    # Safety net for the lossy wrap-replace path: preserve the original bytes in
+    # a sibling backup before overwriting, so a user who added their own notes to
+    # a pre-marker (v0.3.0) AGENTS.md can recover them. Pick the first free
+    # `<name>.bak`, `<name>.bak.2`, ... so we never clobber an existing backup.
+    if will_wrap_replace and raw_existing:
+        backup = target_path.with_name(target_path.name + ".bak")
+        n = 2
+        while backup.exists():
+            backup = target_path.with_name(f"{target_path.name}.bak.{n}")
+            n += 1
+        backup.write_bytes(raw_existing)
+        print(f"Backed up previous AGENTS.md to {backup}")
+
+    agents_merge.atomic_write(args.to, merged)
+    print(f"Updated {args.to}")
+    return 0
+
+
 def cmd_prime(args):
     """Emit a subagent context digest (STATE + last N CHANGELOG entries)."""
     from primer import build_prime
@@ -271,6 +403,73 @@ def cmd_archive(args):
     return 0
 
 
+def cmd_migrate_state(args):
+    """Build a STATE migration plan and (if not --dry-run) apply it.
+
+    Mirrors cmd_archive: resolve config + STATE/DEVLOG paths, build the plan,
+    stream it to stdout, then either dry-run (write nothing), prompt+apply, or
+    --force-apply. The two MigrateError guards (already-compliant/empty plan, or
+    already-migrated snapshot in DEVLOG) are NOT failures — they're no-ops, so
+    they print a clear ASCII message and return 0.
+
+    today's date is sourced here at the CLI layer (the pure planner/apply never
+    calls datetime.now() — same convention archive.py uses for timestamps).
+    """
+    import migrate_state
+    from config_parser import parse_config
+
+    project_root = Path.cwd()
+    config_path = project_root / ".logfile-config.yml"
+    cfg = parse_config(str(config_path))
+    paths = cfg.get("paths", {})
+
+    state_path = project_root / paths.get("state", "logs/STATE.md")
+    devlog_path = project_root / paths.get("devlog", "logs/DEVLOG.md")
+
+    if not state_path.exists():
+        print(f"ERROR: STATE.md not found at {state_path}", file=sys.stderr)
+        return 2
+
+    state_content = migrate_state.read_text_normalized(state_path)
+    plan = migrate_state.build_plan(state_content, cfg)
+
+    # Stream the human-readable plan to stdout (UTF-8 bytes — matches cmd_archive).
+    sys.stdout.buffer.write(plan.to_human().encode("utf-8"))
+    sys.stdout.buffer.write(b"\n")
+
+    if args.dry_run:
+        return 0
+
+    if not args.force:
+        try:
+            reply = input("Apply this migration plan? [y/N] ").strip().lower()
+        except EOFError:
+            reply = ""
+        if reply not in ("y", "yes"):
+            print("Aborted.", file=sys.stderr)
+            return 1
+
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        migrate_state.apply(
+            plan,
+            state_path=state_path,
+            devlog_path=devlog_path,
+            today=today,
+            config_path=config_path,
+        )
+    except migrate_state.MigrateError as e:
+        # Guard trips (already-compliant/empty plan, or already-migrated) are
+        # no-ops, not failures: print a clear ASCII message and exit 0.
+        print(str(e).replace("—", "--"))
+        return 0
+
+    print(f"Applied STATE migration ({state_path.name} rewritten).")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -322,6 +521,8 @@ def main():
     p_validate = subparsers.add_parser('validate', help='Validate log files')
     p_validate.add_argument('--changelog', action='store_true', help='Only validate CHANGELOG')
     p_validate.add_argument('--devlog', action='store_true', help='Only validate DEVLOG')
+    p_validate.add_argument('--state-only', dest='state_only', action='store_true',
+                            help='Only validate STATE (non-zero exit iff STATE has errors)')
     p_validate.add_argument('--tokens', action='store_true', help='Only check token counts')
     p_validate.add_argument('--verbose', action='store_true', help='Verbose output')
     p_validate.add_argument('--json', action='store_true', help='JSON output')
@@ -389,6 +590,26 @@ def main():
     p_arch.add_argument('--adr', action='store_true',
                         help='(rejected) ADRs do not archive')
 
+    # migrate-state command
+    p_migrate = subparsers.add_parser(
+        'migrate-state',
+        help="Bring a brownfield STATE.md into the current spec (deterministic, previewable)")
+    p_migrate.add_argument('--dry-run', action='store_true',
+                           help='Show the plan but write nothing')
+    p_migrate.add_argument('--force', action='store_true',
+                           help='Skip the confirmation prompt')
+
+    # merge-agents-md command
+    p_merge = subparsers.add_parser(
+        'merge-agents-md',
+        help="Merge the canonical managed block into a target AGENTS.md (brownfield-safe)")
+    p_merge.add_argument('--to', required=True,
+                         help='Path to the target AGENTS.md (created if absent)')
+    p_merge.add_argument('--no-wrap', action='store_true',
+                         help='Prepend the block instead of wrapping pre-marker LFG content')
+    p_merge.add_argument('--force-downgrade', action='store_true',
+                         help='Overwrite a block managed by a newer LFG version')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -408,6 +629,8 @@ def main():
         'prime': cmd_prime,
         'promote': cmd_promote,
         'archive': cmd_archive,
+        'migrate-state': cmd_migrate_state,
+        'merge-agents-md': cmd_merge_agents_md,
     }
 
     return handlers[args.command](args)

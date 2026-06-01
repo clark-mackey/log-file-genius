@@ -237,16 +237,32 @@ if [ "$AI_ASSISTANT" != "unknown" ]; then
     fi
 fi
 
-# Update AGENTS.md at project root (strip CRLF as in install).
-AGENTS_SRC="$SOURCE_ROOT/product/AGENTS.md"
-if [ -f "$AGENTS_SRC" ]; then
-    AGENTS_TMP=$(mktemp)
-    tr -d '\r' < "$AGENTS_SRC" > "$AGENTS_TMP"
-    if prompt_update "AGENTS.md" "$AGENTS_TMP" "$PROJECT_ROOT/AGENTS.md"; then
-        cp "$AGENTS_TMP" "$PROJECT_ROOT/AGENTS.md"
-        print_success "Updated: AGENTS.md"
+# Update AGENTS.md at project root via the managed-block merge (Spec 4 §1).
+# This REPLACES the old prompt-then-overwrite: a "y" there fully overwrote the
+# file (data loss). The merge is strictly safer — it preserves user content,
+# only rewrites the LFG block, and is idempotent (no-op on a re-run). The
+# merge entrypoint owns read, merge, and atomic write.
+LFG_PY="$SOURCE_ROOT/product/scripts/lfg.py"
+PYTHON_BIN=""
+if command -v python3 > /dev/null 2>&1; then
+    PYTHON_BIN="python3"
+elif command -v python > /dev/null 2>&1; then
+    PYTHON_BIN="python"
+fi
+
+if [ -z "$PYTHON_BIN" ]; then
+    # No merge possible without Python. NEVER fall back to overwriting.
+    print_warning "Python not found; skipping AGENTS.md update (merge requires Python)."
+elif [ ! -f "$LFG_PY" ]; then
+    print_warning "lfg.py not found at $LFG_PY; skipping AGENTS.md update."
+else
+    print_info "Merging AGENTS.md (preserves your content, refreshes the LFG block)"
+    # Surface the CLI's own output; on non-zero exit warn but keep going.
+    if "$PYTHON_BIN" "$LFG_PY" merge-agents-md --to "$PROJECT_ROOT/AGENTS.md"; then
+        print_success "AGENTS.md merge complete"
+    else
+        print_warning "AGENTS.md merge reported a problem (see above); continuing update."
     fi
-    rm -f "$AGENTS_TMP"
 fi
 
 # Migrate legacy DEVLOG context into STATE.md for existing installs
@@ -269,23 +285,43 @@ if prompt_update "validate-log-files.ps1" \
     print_success "Updated: validate-log-files.ps1"
 fi
 
-# Update templates (careful - users may have customized these)
-print_info "Checking templates..."
-print_warning "Note: Templates are often customized. Review changes carefully."
-echo ""
-
-for template in "$SOURCE_ROOT/product/templates/"*.md; do
-    if [[ -f "$template" ]]; then
-        template_name=$(basename "$template")
-        dest_template="$PROJECT_ROOT/templates/$template_name"
-        
-        if prompt_update "Template: $template_name" "$template" "$dest_template"; then
-            mkdir -p "$PROJECT_ROOT/templates"
-            cp "$template" "$dest_template"
-            print_success "Updated: $template_name"
+# Templates are NOT copied to a project-root templates/ dir (Spec 4 §3).
+# They live only in .log-file-genius/product/templates/ (the submodule).
+# A root templates/ left over from older versions (LFG-installed) is moved
+# to backups; a user-authored templates/ is left untouched. We ONLY ever
+# inspect "$PROJECT_ROOT/templates" here — never the user's root
+# .logfile-config.yml or anything outside that subdir.
+ROOT_TEMPLATES="$PROJECT_ROOT/templates"
+if [ -d "$ROOT_TEMPLATES" ]; then
+    MATCH_HELPER="$SOURCE_ROOT/product/scripts/update_template_hashes.py"
+    if [ -z "$PYTHON_BIN" ]; then
+        print_warning "Python not found; leaving root templates/ untouched (cannot verify hashes)."
+    elif [ ! -f "$MATCH_HELPER" ]; then
+        print_warning "Template hash helper not found; leaving root templates/ untouched."
+    else
+        # --match-dir exit 0 => >=1 file matches an LFG-shipped hash (any version).
+        if "$PYTHON_BIN" "$MATCH_HELPER" --match-dir "$ROOT_TEMPLATES" > /dev/null 2>&1; then
+            BACKUP_DIR="$PROJECT_ROOT/.log-file-genius/.backups/templates-$(date +%s)"
+            mkdir -p "$(dirname "$BACKUP_DIR")"
+            # Count files before the move for the message.
+            N_FILES=$(find "$ROOT_TEMPLATES" -type f | wc -l | tr -d ' ')
+            mv "$ROOT_TEMPLATES" "$BACKUP_DIR"
+            print_success "Moved $N_FILES LFG-installed templates to $BACKUP_DIR (they now live in .log-file-genius/product/templates/)."
+        else
+            print_info "Kept your templates/ (not LFG-installed)."
         fi
     fi
-done
+fi
+
+# Post-update STATE.md advisory (Spec 4 §2). Run `lfg validate --state-only`;
+# if STATE.md has errors (non-zero exit), print ONE advisory line pointing at
+# the migrate-state dry-run. We never auto-run or prompt — update stays
+# non-interactive. If Python is unavailable, skip silently (no advisory).
+if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
+    if ! "$PYTHON_BIN" "$LFG_PY" validate --state-only > /dev/null 2>&1; then
+        print_warning "STATE.md needs migration to the current spec. Preview with: $PYTHON_BIN $LFG_PY migrate-state --dry-run"
+    fi
+fi
 
 echo ""
 echo -e "${GREEN}===========================================${NC}"

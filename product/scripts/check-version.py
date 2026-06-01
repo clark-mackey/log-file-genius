@@ -22,7 +22,117 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
+
+
+# --- Semver-ish version comparison -----------------------------------------
+#
+# Used by the validators to decide whether an installed version is ahead of,
+# behind, or equal to the latest-known version. Handles:
+#   - normal X.Y.Z
+#   - pre-release suffix (1.2.3-rc.1) — sorts BEFORE its release (1.2.3)
+#   - build metadata (1.2.3+local.abc) — ignored for precedence
+# Follows semver.org precedence rules (minus exotic edge cases we don't ship).
+
+_VersionParts = Tuple[Tuple[int, int, int], Tuple[Union[int, str], ...]]
+
+
+class UnparseableVersionError(ValueError):
+    """Raised when a version string has no numeric core (e.g. "" or "abc").
+
+    A leading 'v', missing minor/patch (1.2), and pre-release/build suffixes
+    are all VALID and do NOT raise — only truly non-numeric input where even
+    the major component isn't an integer. Callers that compare versions treat
+    this as "cannot determine direction" rather than guessing.
+    """
+
+
+def parse_version(version: str) -> _VersionParts:
+    """Parse a version string into ((major, minor, patch), prerelease_ids).
+
+    Build metadata (everything after '+') is stripped and ignored.
+    A missing pre-release is represented by an empty tuple, which always
+    sorts *after* any non-empty pre-release (per semver precedence).
+    A leading 'v' (e.g. "v0.4.0") is tolerated.
+    Missing minor/patch components default to 0.
+
+    Raises UnparseableVersionError when the input is junk (empty / non-numeric
+    major), so garbage like "" or "abc" can't masquerade as (0, 0, 0) and make
+    every real version look "ahead" — which previously triggered spurious
+    "update available" nags.
+    """
+    text = version.strip()
+    if text.startswith("v") or text.startswith("V"):
+        text = text[1:]
+
+    # Build metadata does not affect precedence — discard it.
+    text = text.split("+", 1)[0]
+
+    # Split off the pre-release segment (first '-').
+    core, _, prerelease = text.partition("-")
+
+    nums = core.split(".")
+    # The major component MUST be a non-negative integer. Anything else
+    # (empty string, "abc", "1.x" where even major is bad) is junk.
+    if len(nums) == 0 or not nums[0].isdigit():
+        raise UnparseableVersionError(f"unparseable version: {version!r}")
+    major = int(nums[0])
+    minor = int(nums[1]) if len(nums) > 1 and nums[1].isdigit() else 0
+    patch = int(nums[2]) if len(nums) > 2 and nums[2].isdigit() else 0
+
+    pre_ids: Tuple[Union[int, str], ...] = ()
+    if prerelease:
+        ids: List[Union[int, str]] = []
+        for ident in prerelease.split("."):
+            ids.append(int(ident) if ident.isdigit() else ident)
+        pre_ids = tuple(ids)
+
+    return (major, minor, patch), pre_ids
+
+
+def _prerelease_key(pre_ids: Tuple[Union[int, str], ...]) -> tuple:
+    """Sort key for the pre-release segment honoring semver rules.
+
+    - No pre-release outranks any pre-release: (1,) > (0, ...).
+    - Numeric identifiers compare numerically and rank below alphanumerics.
+    """
+    if not pre_ids:
+        # Release version: sorts after any pre-release.
+        return (1,)
+    key: List[tuple] = []
+    for ident in pre_ids:
+        if isinstance(ident, int):
+            key.append((0, ident, ""))
+        else:
+            key.append((1, 0, ident))
+    return (0, tuple(key))
+
+
+def compare_versions(a: str, b: str) -> Optional[int]:
+    """Compare two versions. Returns -1 if a < b, 0 if equal, 1 if a > b.
+
+    Returns None when EITHER side is unparseable junk (empty / non-numeric).
+    Callers must treat None as "cannot determine direction" and stay silent
+    rather than guess — a guessed direction is exactly the bug that produced
+    spurious "update available" nags.
+
+    Build metadata is ignored; pre-release versions sort before their
+    associated release.
+    """
+    try:
+        core_a, pre_a = parse_version(a)
+        core_b, pre_b = parse_version(b)
+    except UnparseableVersionError:
+        return None
+
+    if core_a != core_b:
+        return -1 if core_a < core_b else 1
+
+    key_a = _prerelease_key(pre_a)
+    key_b = _prerelease_key(pre_b)
+    if key_a == key_b:
+        return 0
+    return -1 if key_a < key_b else 1
 
 
 def get_script_dir() -> Path:
@@ -157,9 +267,25 @@ def main():
     parser = argparse.ArgumentParser(description="Check Log File Genius version synchronization")
     parser.add_argument('--update', action='store_true', help="Update checksums in VERSION.json")
     parser.add_argument('--json', action='store_true', help="Output as JSON")
-    
+    parser.add_argument('--compare', nargs=2, metavar=('INSTALLED', 'LATEST'),
+                        help="Compare two versions. Prints 'ahead', 'behind', or "
+                             "'current' (exit 0); prints 'unknown' and exits 1 "
+                             "if either version is unparseable.")
+
     args = parser.parse_args()
-    
+
+    # Lightweight version-comparison mode for the validators (no manifest needed).
+    if args.compare:
+        installed, latest = args.compare
+        result = compare_versions(installed, latest)
+        if result is None:
+            # Unparseable input: emit a neutral token and exit non-zero so the
+            # shell/PS validators DON'T print a direction they can't verify.
+            print("unknown")
+            sys.exit(1)
+        print("ahead" if result > 0 else "behind" if result < 0 else "current")
+        sys.exit(0)
+
     manifest = load_version_manifest()
     
     # Check version synchronization

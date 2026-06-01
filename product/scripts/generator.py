@@ -1,16 +1,28 @@
 """Generator: fragments -> AGENTS.md.
 
-Pure functions: parse_fragment(path) returns (frontmatter_dict, body_str);
-render_agents_md(fragments) returns the rendered AGENTS.md string. Neither
-function does I/O on AGENTS.md itself — the caller writes.
+Pure functions: parse_fragment(path) returns (frontmatter_dict, body_str).
+
+Rendering has one primitive and two wrappers (Spec 4 §1):
+  - render_canonical_body(fragments) -> the canonical AGENTS.md content
+    (frontmatter + intro + section index + all fragment bodies), no markers.
+  - render_full(fragments) -> alias for render_canonical_body. This is what
+    writes the in-repo product/AGENTS.md (fully LFG-owned, no markers).
+  - render_block(fragments) -> the canonical body wrapped in LFG:BEGIN/END
+    managed-block markers. Used by the install/update merge.
+
+render_agents_md remains as a backward-compatible alias for render_full so
+existing callers (lfg.py `generate`) keep producing byte-identical output.
+None of these do I/O on AGENTS.md itself — the caller writes.
 
 Output is LF, UTF-8 (no BOM), single trailing newline. Fails loudly on
 malformed frontmatter or above-budget output. Same inputs => byte-identical
 output (idempotent).
 """
 from __future__ import annotations
+import json
+import re
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 AGENTS_TOKEN_BUDGET = 4500  # chars/4 heuristic. Re-bumped to 4500 after T11's
 # subagent contract block landed AGENTS.md at 3999/4000 — zero headroom would
@@ -79,7 +91,13 @@ def parse_fragment(path: Path) -> Tuple[Dict[str, Any], str]:
     return fm, body
 
 
-def render_agents_md(fragments: List[Tuple[Dict[str, Any], str]]) -> str:
+def render_canonical_body(fragments: List[Tuple[Dict[str, Any], str]]) -> str:
+    """Emit the canonical AGENTS.md content (no enclosing markers).
+
+    This is the single source of truth for AGENTS.md content: frontmatter +
+    intro + available commands + section index + all fragment bodies. It is
+    exactly what product/AGENTS.md contains today.
+    """
     # Keep only fragments destined for AGENTS.md; sort by order.
     in_agents = [f for f in fragments if "agents_md" in f[0].get("targets", [])]
     in_agents.sort(key=lambda fb: fb[0]["order"])
@@ -142,3 +160,88 @@ def render_agents_md(fragments: List[Tuple[Dict[str, Any], str]]) -> str:
             "compress fragments or raise the budget intentionally"
         )
     return out
+
+
+def render_full(fragments: List[Tuple[Dict[str, Any], str]]) -> str:
+    """Return the canonical body unchanged.
+
+    Used to emit the in-repo product/AGENTS.md, which is fully LFG-owned and
+    carries no markers.
+    """
+    return render_canonical_body(fragments)
+
+
+# Backward-compatible alias for the original public entry point. lfg.py's
+# `generate` command imports this name; keeping it identical to render_full
+# guarantees byte-identical output (the CI drift gate `lfg generate --check`).
+render_agents_md = render_full
+
+
+# --- Managed-block markers (Spec 4 §1) --------------------------------------
+
+# BEGIN line uses an em-dash separator exactly as the spec shows. The strip
+# regex below matches the spec's strict BEGIN regex so render_block output is
+# round-trippable back to render_full output.
+_BLOCK_BEGIN_TEMPLATE = "<!-- LFG:BEGIN v{version} — DO NOT EDIT BETWEEN THESE MARKERS -->"
+_BLOCK_END = "<!-- LFG:END -->"
+
+# Mirror of the spec's BEGIN-marker regex:
+#   <!--\s*LFG:BEGIN\s+v(\S+)\s*(?:—[^>]*)?-->
+_BLOCK_BEGIN_RE = re.compile(r"<!--\s*LFG:BEGIN\s+v(\S+)\s*(?:—[^>]*)?-->")
+
+
+def read_repo_version() -> str:
+    """Read the `version` field from product/VERSION.json.
+
+    Follows the same lookup pattern as check-version.py: VERSION.json lives in
+    the product/ directory (the parent of this scripts/ dir).
+    """
+    version_file = Path(__file__).resolve().parent.parent / "VERSION.json"
+    with open(version_file, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+    version = manifest.get("version")
+    if not version:
+        raise GeneratorError(f"VERSION.json missing 'version' field at {version_file}")
+    return str(version)
+
+
+def render_block(
+    fragments: List[Tuple[Dict[str, Any], str]],
+    version: Optional[str] = None,
+) -> str:
+    """Wrap the canonical body in LFG:BEGIN/END managed-block markers.
+
+    The BEGIN marker captures the running LFG version (from VERSION.json by
+    default). Used by the install/update merge so the block can be located and
+    rewritten in place without clobbering surrounding user content.
+
+    Output is LF, UTF-8-safe, single trailing newline.
+    """
+    if version is None:
+        version = read_repo_version()
+    body = render_canonical_body(fragments)
+    begin = _BLOCK_BEGIN_TEMPLATE.format(version=version)
+    # body already ends in exactly one "\n"; emit BEGIN + body + END + newline.
+    return f"{begin}\n{body}{_BLOCK_END}\n"
+
+
+def strip_block_markers(text: str) -> str:
+    """Inverse of render_block: return the canonical body inside the markers.
+
+    Strips the BEGIN line (matching the spec's strict regex) and the literal
+    END line, returning the interior byte-for-byte as render_full would emit
+    it. Raises GeneratorError if the markers are not found.
+    """
+    begin_match = _BLOCK_BEGIN_RE.search(text)
+    if begin_match is None:
+        raise GeneratorError("no LFG:BEGIN marker found")
+    end_idx = text.find(_BLOCK_END)
+    if end_idx == -1:
+        raise GeneratorError("no LFG:END marker found")
+
+    # Interior starts after the BEGIN line's trailing newline.
+    body_start = text.find("\n", begin_match.end())
+    if body_start == -1:
+        raise GeneratorError("malformed block: BEGIN marker has no following newline")
+    body_start += 1
+    return text[body_start:end_idx]

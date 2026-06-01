@@ -35,11 +35,37 @@ head -1 logs/CHANGELOG.md | grep -q '^---$' || { echo "FAIL: CHANGELOG.md missin
 
 # Spec 2: AGENTS.md must land at project root.
 test -f AGENTS.md || { echo "FAIL: AGENTS.md missing at project root"; exit 1; }
-head -1 AGENTS.md | grep -q '^---$' || { echo "FAIL: AGENTS.md missing frontmatter"; exit 1; }
+
+# Spec 4 §1: AGENTS.md is now a managed BLOCK. A fresh install wraps the
+# canonical body in LFG:BEGIN/END markers, so the file no longer starts with
+# the YAML frontmatter '---' — the BEGIN marker comes first, frontmatter is
+# inside the block.
+grep -q '<!-- LFG:BEGIN v' AGENTS.md || { echo "FAIL: AGENTS.md missing LFG:BEGIN marker"; exit 1; }
+grep -q '<!-- LFG:END -->' AGENTS.md || { echo "FAIL: AGENTS.md missing LFG:END marker"; exit 1; }
+# The canonical body (frontmatter + guidance) lives inside the block.
+grep -q '^doc: AGENTS$' AGENTS.md || { echo "FAIL: AGENTS.md missing canonical body (doc: AGENTS)"; exit 1; }
+
+# Spec 4 §3: NO root templates/ dir is created. Templates live only in
+# .log-file-genius/product/templates/. Only logs/ gets template-derived files.
+test -d templates && { echo "FAIL: install created a root templates/ dir (Spec 4 §3 regression)"; exit 1; } || true
 
 # Spec 2: AGENTS.md must be LF + no BOM (generator's documented contract).
 if grep -q $'\r' AGENTS.md; then echo "FAIL: AGENTS.md has CRLF line endings"; exit 1; fi
 head -c 3 AGENTS.md | grep -q $'\xEF\xBB\xBF' && { echo "FAIL: AGENTS.md has UTF-8 BOM"; exit 1; } || true
+
+# Spec 4 §1: idempotent install — re-running the merge leaves AGENTS.md
+# byte-identical (the merge short-circuits on an up-to-date file). We invoke
+# the same entrypoint install.sh uses rather than re-running the whole script.
+AGENTS_BEFORE_HASH="$(cksum < AGENTS.md)"
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then PYTHON_BIN="python3";
+elif command -v python >/dev/null 2>&1; then PYTHON_BIN="python"; fi
+if [ -n "$PYTHON_BIN" ]; then
+    MERGE_OUT="$("$PYTHON_BIN" "$REPO/product/scripts/lfg.py" merge-agents-md --to "$TMP/AGENTS.md" 2>&1)"
+    echo "$MERGE_OUT" | grep -qi 'up to date' || { echo "FAIL: second merge did not report up-to-date: $MERGE_OUT"; exit 1; }
+    AGENTS_AFTER_HASH="$(cksum < AGENTS.md)"
+    [ "$AGENTS_BEFORE_HASH" = "$AGENTS_AFTER_HASH" ] || { echo "FAIL: second merge changed AGENTS.md (not idempotent)"; exit 1; }
+fi
 
 # Spec 2: installed rule must equal the canonical fragment.
 diff -q .claude/rules/log-file-maintenance.md \

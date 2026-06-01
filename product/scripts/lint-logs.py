@@ -445,7 +445,7 @@ class LogLinter:
         return result
 
     def validate_state(self) -> ValidationResult:
-        """Validate STATE.md exists and is within its token budget."""
+        """Validate STATE.md exists, is structurally sound, and within budget."""
         result = ValidationResult(file=self.state_path)
         if not os.path.exists(self.state_path):
             result.add_issue('warning', None, f"STATE not found at {self.state_path}",
@@ -453,6 +453,15 @@ class LogLinter:
             return result
         with open(self.state_path, 'r', encoding='utf-8') as f:
             text = f.read()
+        # Structural check (ERROR): the v0.3.0 STATE spec requires a
+        # `## Current Context` section. Its absence means STATE is malformed or
+        # predates the v0.3.0 layout and needs `lfg migrate-state`. This is the
+        # only STATE condition that should fail validation (exit 2); budget
+        # issues stay warnings (see below).
+        if not re.search(r'(?m)^##\s+Current Context\b', text):
+            result.add_issue('error', None,
+                             "STATE missing '## Current Context' section",
+                             "Run `lfg migrate-state` or add a '## Current Context' section")
         token_count = self._estimate_tokens(text)
         # WARNING not error: STATE has no archival (you trim it), and a freshly
         # installed template carries removable guidance that exceeds the budget.
@@ -602,6 +611,7 @@ def main():
     parser = argparse.ArgumentParser(description="Validate Log File Genius log files")
     parser.add_argument('--changelog', action='store_true', help="Validate only CHANGELOG")
     parser.add_argument('--devlog', action='store_true', help="Validate only DEVLOG")
+    parser.add_argument('--state', action='store_true', help="Validate only STATE")
     parser.add_argument('--strict', action='store_true', help="Fail on warnings")
     parser.add_argument('--json', action='store_true', help="Output as JSON")
     parser.add_argument('--config', default=".logfile-config.yml", help="Config file path")
@@ -634,6 +644,8 @@ def main():
         results = [linter.validate_changelog()]
     elif args.devlog:
         results = [linter.validate_devlog()]
+    elif args.state:
+        results = [linter.validate_state()]
     else:
         results = linter.run_all_validations()
 

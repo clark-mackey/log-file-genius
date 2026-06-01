@@ -16,10 +16,11 @@
 6. [Entry Formats](#entry-formats)
 7. [Update Cadence](#update-cadence---when-to-update-each-document)
 8. [Maintenance Workflow](#maintenance-workflow)
-9. [Token Budget Management](#token-budget-management)
-10. [Problem/Solution Pairs](#problemsolution-pairs)
-11. [Examples Directory](#examples-directory)
-12. [Starter Templates](#starter-templates)
+9. [Updating Log File Genius](#updating-log-file-genius)
+10. [Token Budget Management](#token-budget-management)
+11. [Problem/Solution Pairs](#problemsolution-pairs)
+12. [Examples Directory](#examples-directory)
+13. [Starter Templates](#starter-templates)
 
 ---
 
@@ -486,7 +487,7 @@ project-root/
     └── check_token_counts.py    # Monitoring script
 ```
 
-> **Path resolution:** Agents look for `paths` in `.logfile-config.yml` first; if not present, `logs/` is the default. Templates live wherever your installer placed them.
+> **Path resolution:** Agents look for `paths` in `.logfile-config.yml` first; if not present, `logs/` is the default. Templates ship in the submodule at `.log-file-genius/product/templates/` (not copied to your project root).
 
 ### Document Relationships
 
@@ -991,6 +992,79 @@ The dry-run prints a plan: which version blocks (CHANGELOG) and which old entrie
 Each source file retains a `## Archive` section with one bullet per archive file (relative link + summary).
 
 **If `[Unreleased]` alone exceeds budget**, `lfg archive` refuses with exit 2 — you trim Unreleased manually. There is no `--force-include-unreleased` flag by design.
+
+---
+
+## Updating Log File Genius
+
+Updates are **brownfield-safe**: the updater never clobbers content you own. Pull the
+submodule and run the bundled updater:
+
+```bash
+cd .log-file-genius && git pull && cd ..
+./.log-file-genius/product/scripts/update.sh      # update.ps1 on Windows
+```
+
+### AGENTS.md is merged, not overwritten
+
+`AGENTS.md` (introduced in v0.3.0) is now maintained as a **marker-delimited managed
+block** inside whatever `AGENTS.md` lives at your project root. Install and update merge
+the LFG block; they no longer replace the file. The markers are HTML comments (invisible
+in rendered markdown):
+
+```
+<!-- LFG:BEGIN v0.4.0 — DO NOT EDIT BETWEEN THESE MARKERS -->
+...LFG-generated rules...
+<!-- LFG:END -->
+```
+
+- **Anything outside the markers is yours** and is preserved across updates.
+- **Do not edit between the markers** — that region is regenerated from `product/rules/`
+  on every update; your edits there would be overwritten.
+- If you already had a hand-authored `AGENTS.md` (e.g., a Codex/Aider file), the LFG block
+  is prepended above your content. If you had a prior LFG-generated `AGENTS.md` (no
+  markers — e.g. from v0.3.0), its body is regenerated; because there are no markers to
+  tell your additions apart from old LFG content, the original is **saved to
+  `AGENTS.md.bak` first** so anything you added can be recovered. After your first
+  update the file has markers, so later updates only touch the marked region.
+
+The merge runs automatically during install/update. You can also run it directly:
+
+```bash
+python .log-file-genius/product/scripts/lfg.py merge-agents-md --to AGENTS.md
+```
+
+It is idempotent — re-running on an up-to-date file writes nothing.
+
+### Migrating a pre-v0.4.0 STATE.md
+
+v0.3.0+ enforces a stricter STATE.md spec (canonical sections: Current Context, Active
+Work, Blockers, etc.). If you upgraded from an older project, the updater may print:
+
+```
+STATE.md needs migration to v0.4.0 spec. Preview with: lfg migrate-state --dry-run
+```
+
+`lfg migrate-state` brings STATE.md into compliance deterministically — it keeps the
+canonical sections and archives any extra content into a single one-time DEVLOG snapshot
+entry (`### YYYY-MM-DD: STATE snapshot pre-v0.4.0 migration`) so nothing is lost. Preview,
+then apply:
+
+```bash
+python .log-file-genius/product/scripts/lfg.py migrate-state --dry-run   # preview the plan
+python .log-file-genius/product/scripts/lfg.py migrate-state             # confirm + apply
+```
+
+It is **one-shot**: once STATE.md is compliant (or the DEVLOG snapshot already exists),
+re-running is a no-op. Use `--force` to skip the confirmation prompt in scripts.
+
+### Where templates live
+
+Templates ship in the submodule at `.log-file-genius/product/templates/` only — the
+updater no longer creates a `templates/` directory at your project root. If a prior LFG
+version left an LFG-installed root `templates/` behind, the updater moves it into
+`.log-file-genius/.backups/` (user-authored templates that don't match shipped versions
+are left untouched).
 
 ---
 
