@@ -40,7 +40,7 @@ The installer will:
 
 1. **Detect your AI assistant** - Automatically detects Augment Code, Claude Code, or prompts for manual selection
 2. **Prompt for profile** - Choose from: solo-developer, team, open-source, or startup
-3. **Create folder structure** - Creates `logs/` and `logs/adr/`
+3. **Create folder structure** - Creates `logs/`, `logs/adr/`, and `logs/incidents/`
 4. **Install templates** - Copies CHANGELOG, DEVLOG, STATE, and ADR templates to `logs/`
 5. **Install AGENTS.md** - Merges the canonical agent-agnostic rules into a marker-delimited block in your project-root `AGENTS.md` (creating it if absent; preserving any existing content)
 6. **Install per-tool rules** - Generates platform-specific rule files in `.augment/rules/` or `.claude/rules/`
@@ -56,6 +56,7 @@ The installer will:
 - `logs/DEVLOG.md` - Development narrative (why changes were made, decisions, context)
 - `logs/STATE.md` - Current project state (active agent, current task)
 - `logs/adr/TEMPLATE.md` - Architecture Decision Record template
+- `logs/incidents/TEMPLATE.md` + `logs/incidents/README.md` - Incident report template and index (escalation from inline DEVLOG `🚨 INCIDENT` entries)
 - `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
 - `.logfile-config.yml` - Profile configuration and settings
 
@@ -252,6 +253,7 @@ Key commands:
 - `lfg archive` — apply it (protects `[Unreleased]` and the most recent DEVLOG entries)
 - `lfg prime` — emit a compact digest for subagent initial context
 - `lfg promote <staged-id>` — merge a subagent's staged entries into CHANGELOG/DEVLOG
+- `lfg incidents-index` — regenerate the incident-report index (`logs/incidents/README.md`)
 - `lfg migrate-state --dry-run` — preview a one-time STATE.md migration to the current spec; apply with `lfg migrate-state`
 - `lfg merge-agents-md --to <path>` — merge the LFG block into a target `AGENTS.md`, preserving your content (normally run by install/update)
 - `lfg generate` — regenerate `AGENTS.md` from fragments (contributors only)

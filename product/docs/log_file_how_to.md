@@ -198,6 +198,45 @@ The complete documentation system consists of five interconnected documents:
 - Breaking changes
 - Decisions with long-term impact
 
+### Incident Reports
+
+**Purpose:** A standalone, detailed record of a significant incident — ADR-parallel,
+loaded on-demand, never token-budgeted.
+
+The **default** is still the lightweight inline `🚨 INCIDENT` DEVLOG entry. Escalate
+to a standalone report only when the rubric flags a **major** incident — security
+exposure, data loss, repeated/silent failure, or a regression.
+
+**To escalate:**
+1. Copy `logs/incidents/TEMPLATE.md` to `logs/incidents/YYYY-MM-DD-slug.md`
+   (date-prefixed filename) and fill it in.
+2. Link both ways: from the DEVLOG entry (`→ logs/incidents/YYYY-MM-DD-slug.md`)
+   and back to DEVLOG from the report's frontmatter/Files section.
+3. Run `python .log-file-genius/product/scripts/lfg.py incidents-index` to
+   regenerate the index at `logs/incidents/README.md`.
+
+**The index command:**
+
+```bash
+python .log-file-genius/product/scripts/lfg.py incidents-index   # [--dir <path>]
+```
+
+`lfg incidents-index` rebuilds `logs/incidents/README.md` (a newest-first table of
+Date / Severity / Status / Incident) from whatever report files are present. It is
+idempotent and uses a tolerant parser: the date comes from the filename's
+`YYYY-MM-DD` prefix, headers are read leniently, and missing fields fall back to a
+placeholder. **Reports from older versions are picked up automatically — no
+reformatting needed.** It resolves the directory from `.logfile-config.yml`
+(`paths.incidents_dir`, default `logs/incidents`); `--dir` overrides. A
+hand-written `README.md` is backed up to `README.md.bak` before the generated index
+replaces it.
+
+**Characteristics:**
+- ✅ Standalone, on-demand (like ADRs) — never counted against token budgets
+- ✅ Date-prefixed filename (`YYYY-MM-DD-slug.md`) is the authoritative date
+- ✅ Linked from and to the inline DEVLOG `🚨 INCIDENT` entry
+- ❌ Not for routine incidents — those stay inline in DEVLOG
+
 ---
 
 ## Context Layers - Progressive Disclosure
@@ -473,6 +512,11 @@ project-root/
 │   │   ├── README.md             # ADR index
 │   │   ├── 001-decision-title.md
 │   │   ├── 002-decision-title.md
+│   │   └── ...
+│   ├── incidents/                # Standalone incident reports (escalated from DEVLOG)
+│   │   ├── README.md             # Incident index (lfg incidents-index)
+│   │   ├── TEMPLATE.md           # Incident report template
+│   │   ├── 2025-11-19-slug.md    # YYYY-MM-DD-slug.md per report
 │   │   └── ...
 │   └── archive/                  # Old entries (if needed)
 │       ├── CHANGELOG-2024-Q4.md
