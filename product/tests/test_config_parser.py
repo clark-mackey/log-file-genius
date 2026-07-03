@@ -1,3 +1,4 @@
+import json
 import textwrap
 import pytest
 from pathlib import Path
@@ -56,10 +57,14 @@ def test_template_config_parses():
     # profiles/*.yml files are documentation using YAML features (block scalars,
     # lists, deep nesting) deliberately outside this parser's subset, so they are
     # NOT parsed at runtime and are not exercised here.
-    template = Path(__file__).resolve().parents[1] / "templates" / ".logfile-config.yml"
+    product_root = Path(__file__).resolve().parents[1]
+    template = product_root / "templates" / ".logfile-config.yml"
     cfg = parse_config(str(template))
     assert cfg["profile"] == "solo-developer"
-    assert cfg["log_file_genius_version"] == "0.2.0"
+    # The template must ship the current release version, or manual-copy
+    # installs report a phantom pending update forever (issue #9).
+    released = json.loads((product_root / "VERSION.json").read_text())["version"]
+    assert cfg["log_file_genius_version"] == released
 
 
 def test_bom_prefixed_config_parses_first_key(tmp_path):
