@@ -193,6 +193,8 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 
 **Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
 
+**Escalation — standalone report:** For rubric-flagged incidents, also write a detailed report at `logs/incidents/YYYY-MM-DD-slug.md` (copy `logs/incidents/TEMPLATE.md`), link it from the DEVLOG entry (`→ logs/incidents/YYYY-MM-DD-slug.md`), and run `lfg incidents-index` to refresh the index. The inline entry stays the default; the standalone report holds the depth (timeline, root cause, prevention), loaded on-demand like an ADR.
+
 ---
 
 ## 🔗 CROSS-REFERENCES

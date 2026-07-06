@@ -129,6 +129,8 @@ Files: `file1.py`, `file2.py` → CHANGELOG: `v1.2.1`
 
 > **For AI Agents:** Use the `🚨 INCIDENT` prefix so incidents are findable by text search. Not every bug is an incident — only failures where root-cause analysis prevents recurrence. When in doubt, use compact format with a note instead.
 
+> For major incidents, link a standalone report: `→ logs/incidents/YYYY-MM-DD-slug.md` (see log-file-maintenance rule).
+
 **Decision guide:** Security/data/regression → incident. Needs an ADR → standard. Everything else → compact.
 
 ### Best Practices for AI Efficiency

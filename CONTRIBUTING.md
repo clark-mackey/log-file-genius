@@ -107,8 +107,8 @@ strings or the `v<version>` token in the BEGIN marker without a deliberate versi
 
 #### Regenerate template hashes when templates change
 
-If you add, remove, or modify any file under `product/templates/`, regenerate the shipped
-hash manifest:
+If you add, remove, or modify any file under `product/templates/` — including
+`INCIDENT_template.md` — regenerate the shipped hash manifest:
 
 ```bash
 python product/scripts/update_template_hashes.py

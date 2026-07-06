@@ -3,7 +3,15 @@
 **Priority:** P1 - HIGH  
 **Estimated Effort:** 3-5 days  
 **Dependencies:** Epic 12 (Security), Epic 13 (Validation)  
-**Status:** Planned  
+**Status:** RE-SCOPED → delivered as Spec 5 (v0.5.0). The heavy standalone-report
+machinery in this epic (SEV levels, hazard statements, 210-line template,
+Open→Mitigated→Resolved→Verified lifecycle) was rejected as scope creep in PRD
+v0.9. Spec 5 re-scoped it to a **lightweight, ADR-parallel** form: the inline
+`🚨 INCIDENT` DEVLOG entry stays the default; for rubric-flagged major incidents
+you also write a lightweight standalone report at
+`logs/incidents/YYYY-MM-DD-slug.md` linked from the DEVLOG entry, with
+`lfg incidents-index` generating the index. See
+`project/specs/SPEC-05-first-class-incident-reports.md`.  
 **Owner:** TBD
 
 ---

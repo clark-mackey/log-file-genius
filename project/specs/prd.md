@@ -164,9 +164,9 @@ No runtime services. The core system is markdown files and AI rules. Optional Py
 **Goal:** Verify AI agents maintain logs correctly with automated validation and self-assessment.
 **Status:** Shipped across Specs 1–3. `lfg validate` + bash/PowerShell validators + pre-commit hook + GitHub Actions (`validate-logs.yml`, `lfg generate --check`). Closes GH issue #1 — rule adherence backed by deterministic CLI verbs. Open polish items (validation dashboard, examples) tracked separately under Epic 6. Spec: `project/specs/EPIC-13-validation-reliability.md`
 
-### ~~Epic 17: Incident Reports & Learning~~ ❌ REJECTED → DEVLOG Enhancement
-**Goal:** ~~Standalone incident report document type with 210-line template, severity levels, verification framework.~~
-**Status:** REJECTED - Scope creep (enterprise incident management for solo project). Replaced by lightweight incident entry format in DEVLOG template. See DEVLOG template → "Incident format". Spec: `project/specs/EPIC-17-incident-reports-learning.md`
+### Epic 17: Incident Reports & Learning 🔄 RE-SCOPED → Spec 5 (v0.5.0)
+**Goal:** ~~Standalone incident report document type with 210-line template, severity levels, verification framework.~~ Re-scoped to lightweight, ADR-parallel incident reports.
+**Status:** The heavy version was REJECTED in v0.9 (scope creep). **Spec 5 (v0.5.0)** delivered the lightweight form: inline `🚨 INCIDENT` DEVLOG entry stays the default; rubric-flagged major incidents also get a lightweight standalone `logs/incidents/YYYY-MM-DD-slug.md` (linked both ways), with `lfg incidents-index` generating the index. Backward-compatible with pre-existing date-prefixed reports. Spec: `project/specs/SPEC-05-first-class-incident-reports.md`
 
 ### ~~Epic 15: Governance & Review~~ ⏸️ DEFERRED
 **Goal:** ~~Human review workflows for AI-generated documentation.~~
