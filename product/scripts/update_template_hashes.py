@@ -43,9 +43,6 @@ _TEMPLATES_DIR = _PRODUCT_ROOT / "templates"
 _VERSION_FILE = _PRODUCT_ROOT / "VERSION.json"
 _MANIFEST_FILE = _PRODUCT_ROOT / "scripts" / "known_template_hashes.json"
 
-_CHUNK = 65536
-
-
 def read_current_version(version_file: Path = _VERSION_FILE) -> str:
     """Return the top-level ``version`` string from VERSION.json."""
     try:
@@ -62,12 +59,20 @@ def read_current_version(version_file: Path = _VERSION_FILE) -> str:
 
 
 def sha256_of_file(path: Path) -> str:
-    """Return the lowercase hex SHA-256 of a file's raw bytes."""
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(_CHUNK), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    """Return the lowercase hex SHA-256 of a file's normalized content.
+
+    Templates are text files subject to git EOL conversion: the same blob
+    checks out as CRLF (autocrlf on Windows) or LF (CI, Linux, macOS), and
+    a user's copy may carry a UTF-8 BOM. Hashing raw bytes would make the
+    manifest — and `--match-dir` recognition of LFG-shipped files in user
+    projects — depend on the checkout's line endings. Strip a leading BOM
+    and fold CRLF/CR to LF before hashing, matching the checksum policy in
+    check-version.py and the read policy in agents_merge.py."""
+    raw = path.read_bytes()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 
 def hash_templates(templates_dir: Path = _TEMPLATES_DIR) -> dict[str, str]:

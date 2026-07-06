@@ -470,6 +470,76 @@ def cmd_migrate_state(args):
     return 0
 
 
+def cmd_incidents_index(args):
+    """Regenerate logs/incidents/README.md as a navigable index (Spec 5 §3).
+
+    Flat verb (no nested `incidents` group — index is the only action). Resolves
+    the incidents dir from --dir, else config paths.incidents_dir (fallback
+    logs/incidents). Missing dir -> graceful exit 0. Reuses incidents.build_index
+    for the content and agents_merge.atomic_write (UTF-8/LF) for the write.
+
+    README-clobber safety mirrors cmd_merge_agents_md: a pre-existing README that
+    does NOT carry the generated-marker is a user's hand-written file, so we back
+    it up to the first-free README.md.bak before overwriting. A marker-bearing
+    README is our own prior output and is overwritten in place. Idempotent:
+    byte-identical regeneration writes nothing (and never backs up).
+
+    ASCII-only stdout (Windows cp1252-safe); the README itself may carry
+    em-dashes, but that only ever lands in the file via atomic_write.
+    """
+    import agents_merge
+    import incidents
+    from config_parser import parse_config
+
+    project_root = Path.cwd()
+
+    if getattr(args, "dir", None):
+        incidents_dir = (project_root / args.dir).resolve()
+    else:
+        config_path = project_root / ".logfile-config.yml"
+        cfg = parse_config(str(config_path))
+        paths = cfg.get("paths", {})
+        incidents_dir = (project_root / paths.get("incidents_dir", "logs/incidents")).resolve()
+
+    if not incidents_dir.is_dir():
+        print(f"No incidents directory at {incidents_dir}; nothing to index.")
+        return 0
+
+    new_content = incidents.build_index(incidents_dir)
+    new_bytes = new_content.encode("utf-8")
+
+    target = incidents_dir / "README.md"
+    raw_existing = target.read_bytes() if target.is_file() else b""
+
+    # Idempotency short-circuit: identical bytes -> no write, no backup.
+    if raw_existing == new_bytes:
+        print("Incident index already up to date (no change).")
+        return 0
+
+    # README-clobber safety: back up a non-marker (user-authored) README first.
+    # A README carrying the generated-marker is our own output -> overwrite in
+    # place, no backup. Mirror cmd_merge_agents_md's first-free .bak loop.
+    if raw_existing and incidents.GENERATED_MARKER not in raw_existing.decode("utf-8", errors="replace"):
+        backup = target.with_name(target.name + ".bak")
+        n = 2
+        while backup.exists():
+            backup = target.with_name(f"{target.name}.bak.{n}")
+            n += 1
+        backup.write_bytes(raw_existing)
+        print(f"Backed up existing README.md to {backup}")
+
+    # Count indexed incident files (glob, skipping README/TEMPLATE) for the
+    # success line — cheap and avoids re-parsing.
+    count = sum(
+        1 for p in incidents_dir.glob("*.md")
+        if p.name.lower() not in ("readme.md", "template.md")
+    )
+
+    agents_merge.atomic_write(target, new_content)
+    print(f"Wrote incident index {target} ({count} incident(s) indexed).")
+    return 0
+
+
 def cmd_install_hooks(args):
     """Install git pre-commit hooks"""
     import shutil
@@ -610,6 +680,14 @@ def main():
     p_merge.add_argument('--force-downgrade', action='store_true',
                          help='Overwrite a block managed by a newer LFG version')
 
+    # incidents-index command (flat verb — index is the only incidents action;
+    # see Spec 5 §3 for why this is not a nested subcommand group)
+    p_incidents = subparsers.add_parser(
+        'incidents-index',
+        help="Regenerate logs/incidents/README.md as a navigable index")
+    p_incidents.add_argument('--dir',
+                             help='Incidents directory (default: config paths.incidents_dir or logs/incidents)')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -631,6 +709,7 @@ def main():
         'archive': cmd_archive,
         'migrate-state': cmd_migrate_state,
         'merge-agents-md': cmd_merge_agents_md,
+        'incidents-index': cmd_incidents_index,
     }
 
     return handlers[args.command](args)
