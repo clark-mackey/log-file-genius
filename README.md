@@ -143,7 +143,7 @@ The installer will:
 - ✅ Configure everything for immediate use
 
 **What gets installed:**
-- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs)
+- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs, incidents)
 - `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
 - `.augment/` or `.claude/` - Per-tool rule files generated from the same source
 - `.logfile-config.yml` - Profile configuration
@@ -224,6 +224,7 @@ After installation, a small Python CLI lives at `.log-file-genius/product/script
 | `lfg migrate-state` | Apply the one-time STATE migration (archives extra content to a DEVLOG snapshot) |
 | `lfg prime` | Print a compact digest for a subagent's initial context |
 | `lfg promote <staged-id>` | Merge a subagent's staged log entries into CHANGELOG/DEVLOG |
+| `lfg incidents-index` | Regenerate the incident-report index (`logs/incidents/README.md`) |
 | `lfg install-hooks` | Install the opt-in pre-commit hook (secret + log validation) |
 
 Run `python .log-file-genius/product/scripts/lfg.py --help` for the full list.

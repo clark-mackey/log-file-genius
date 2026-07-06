@@ -1,15 +1,15 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "release_date": "2026-06-01",
   "components": {
-    "installer": "0.4.0",
-    "validator": "0.4.0",
-    "linter": "0.4.0",
-    "ai-rules": "0.4.0",
-    "templates": "0.4.0",
-    "profiles": "0.4.0",
-    "secrets": "0.4.0",
-    "cli": "0.4.0"
+    "installer": "0.5.0",
+    "validator": "0.5.0",
+    "linter": "0.5.0",
+    "ai-rules": "0.5.0",
+    "templates": "0.5.0",
+    "profiles": "0.5.0",
+    "secrets": "0.5.0",
+    "cli": "0.5.0"
   },
   "compatibility": {
     "min_python": "3.8",
@@ -17,8 +17,8 @@
     "min_bash": "4.0"
   },
   "checksums": {
-    "install.ps1": "aa1020ff63d76644",
-    "install.sh": "444415d6a3773c05",
+    "install.ps1": "851b696dcc2f4e7e",
+    "install.sh": "947ea56a4f5b3d83",
     "lint-logs.py": "6ec1b128ee08b1b9",
     "validate-log-files.ps1": "47cbe9b9fe70e163",
     "validate-log-files.sh": "0e84daca84bb530d"
