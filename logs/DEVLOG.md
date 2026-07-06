@@ -71,6 +71,32 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2026-07-05: 🚨 INCIDENT - Own Logs Went Stale for Five Months (+ Spec 5 Landed, v0.5.0)
+
+**What happened:** Pre-improvement context review found the dogfooded logs frozen in the Spec 1 era: STATE.md claimed v0.2.0 while the product had shipped v0.3.0 and v0.4.0 and finished building v0.5.0; this DEVLOG's newest entry was 2026-02-01; CHANGELOG had five months pooled in `[Unreleased]` with mojibake emoji. Full report: [2026-07-05-dogfood-logs-went-stale.md](incidents/2026-07-05-dogfood-logs-went-stale.md) — filed as the first standalone incident report, dogfooding Spec 5 on day one.
+
+**Root cause (short):** Spec work lived in isolated worktrees and sessions ended at "code done," never triggering SESSION END against `development`'s logs; release promotion had no cut-a-version-block step.
+
+**Also today — Spec 5 landed:** Merged `lfg-spec5` into `development` (v0.5.0: INCIDENT template, `incidents.py`, `lfg incidents-index`, installer seeding, escalation rule). The merge surfaced a real bug: `update_template_hashes.py` hashed raw bytes, so manifest digests depended on the checkout's CRLF/LF state — tests passed on one working copy and failed on a fresh Windows clone. Fixed with the same BOM+EOL normalization check-version.py got in `5a262a0`, and rebuilt the manifest from git blobs (0.3.0 from tag, 0.4.0 from shipped main, 0.5.0 from HEAD) so all three entries share the normalized basis. Promotion PR: [#12](https://github.com/clark-mackey/log-file-genius/pull/12).
+
+**Files:** `logs/*`, `product/scripts/update_template_hashes.py`, `product/scripts/known_template_hashes.json` → CHANGELOG v0.5.0
+
+---
+
+### 2026-07-05: Catch-Up Narrative — Specs 1–5 (February → July 2026)
+
+Written retroactively during the stale-logs repair; condensed from git history and spec docs. The arc:
+
+- **Spec 1 — Consistency & Correctness (v0.3.0, PR #5):** Killed the install-vs-update rule divergence and starter packs; stdlib YAML-subset config parser (PyYAML dropped); STATE.md became the single owner of "the now" (DEVLOG trimmed to narrative); `logs/` path standardization; frontmatter link graph.
+- **Spec 2 — Agent-Agnostic Core (v0.3.0, PR #6):** Rules became canonical fragments in `product/rules/`; `lfg generate` renders AGENTS.md + per-tool files with a CI drift gate; subagent contract (`lfg prime` digest, staged writes, `lfg promote`).
+- **Spec 3 — Graceful Work-Aware Archival (v0.3.0, PR #7, tagged 2026-05-29):** `lfg archive` made archival deterministic — fit-the-budget DEVLOG trimming, version-block CHANGELOG archival, `[Unreleased]`/STATE/ADRs protected.
+- **Spec 4 — Brownfield-Safe Install & Update (v0.4.0, PR #8, tagged 2026-06-01):** Managed-block AGENTS.md merging instead of clobbering; SHA-256 template manifest so cleanup only touches files LFG actually shipped; `lfg migrate-state` for brownfield STATE adoption.
+- **Spec 5 — First-Class Incident Reports (v0.5.0, PR #12):** Epic 17 re-scoped light: inline `🚨 INCIDENT` DEVLOG entries stay the default; big incidents escalate to ADR-style standalone reports in `logs/incidents/` with a generated index (`lfg incidents-index`). Validated against 5 real pre-existing incident files — zero edits needed.
+
+**The meta-lesson:** every spec shipped through code-owl design review → worktree implementation → promotion PR, and the discipline held for *product* quality while *project* logs decayed — see today's incident report.
+
+---
+
 ### 2026-02-01: Planning Files Cleanup for Autonomous Agent Clarity
 
 **The Situation:** Project will be accessed by an autonomous coding agent using fork/PR process. Reviewed 28 planning files and found significant problems: stale/conflicting information (old epics 8-11 just rejected), broken cross-references (paths like `../planning/DEVLOG.md` no longer valid), duplicate information (PRD has all details but separate EPIC-*.md files had outdated task lists).

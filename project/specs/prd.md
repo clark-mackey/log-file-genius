@@ -19,9 +19,9 @@
 
 AI coding assistants struggle when project context grows large — traditional documentation consumes too much of the context window, leaving less room for code. Log File Genius is a 5-document system that provides complete project context while consuming less than 5% of an AI's context window. Packaged as an installable GitHub repository with AI assistant rules and templates.
 
-### Current State (As of May 2026, post v0.3.0)
+### Current State (As of July 2026, post v0.5.0)
 
-**Repository Status:** ✅ Live on GitHub — public repository, tagged `v0.3.0`
+**Repository Status:** ✅ Live on GitHub — public repository, tagged `v0.4.0`; v0.5.0 promotion PR #12 open
 
 **What's Working:**
 - ✅ **Canonical `AGENTS.md`** at project root, generated from `product/rules/` fragments — read natively by Claude, Codex, Aider, Cursor (agent mode), and any other AGENTS.md-aware tool
@@ -35,7 +35,9 @@ AI coding assistants struggle when project context grows large — traditional d
 - ✅ Session handoff protocol, stale context detection, entry verbosity control
 - ✅ Validation: `lfg validate` + bash/PowerShell validators + pre-commit hook (incl. auto-regen of AGENTS.md)
 - ✅ Secret detection script (`detect-secrets.py`) with entropy + pattern + context layers
-- ✅ 80 tests under `product/tests/` covering generator, primer, promoter, archive, validators, config parser
+- ✅ **Brownfield-safe install & update** (v0.4.0) — managed-block AGENTS.md merging (no clobbering), SHA-256 template manifest so cleanup only touches LFG-shipped files, `lfg migrate-state` for existing STATE.md adoption
+- ✅ **First-class incident reports** (v0.5.0) — inline `🚨 INCIDENT` DEVLOG entry stays the default; big incidents escalate to ADR-style standalone reports in `logs/incidents/` with `lfg incidents-index` generating the index; backward-compatible with pre-existing date-prefixed reports
+- ✅ 222 tests under `product/tests/` covering generator, primer, promoter, archive, validators, config parser, agents-merge, migrate-state, incidents
 
 **Known Issues / Open Work:**
 1. **Epic 6 (Examples & Community)** — no before/after example projects, success stories, or community guidelines yet
@@ -60,6 +62,8 @@ AI coding assistants struggle when project context grows large — traditional d
 | 2026-04-XX | 1.0     | **Spec 1 (Consistency & Correctness):** killed install-vs-update rule divergence; killed starter packs; stdlib YAML-subset config parser; STATE owns "the now"; budget consistency; brownfield STATE migration. Released as PR #5. | Claude Code |
 | 2026-05-XX | 1.1     | **Spec 2 (Agent-Agnostic Core):** moved rules to `product/rules/` fragments; built canonical `AGENTS.md` via `lfg generate`; added `lfg prime` (subagent digest) + `lfg promote` (staged writes); CI drift gate. Released as PR #6. | Claude Code |
 | 2026-05-29 | 1.2 (v0.3.0) | **Spec 3 (Graceful Work-Aware Archival):** `lfg archive` deterministic CLI; fit-the-budget DEVLOG archival; version-block CHANGELOG archival; `[Unreleased]` + STATE + ADRs protected. Released as PR #7, tagged `v0.3.0`. | Claude Code |
+| 2026-06-01 | 1.3 (v0.4.0) | **Spec 4 (Brownfield-Safe Install & Update):** managed-block AGENTS.md merge; SHA-256 template manifest (`known_template_hashes.json`); `lfg migrate-state`; `lfg validate --state-only`. Released as PR #8, tagged `v0.4.0`. | Claude Code |
+| 2026-07-05 | 1.4 (v0.5.0) | **Spec 5 (First-Class Incident Reports):** Epic 17 re-scoped light — INCIDENT template, `incidents.py`, `lfg incidents-index`, installer seeding of `logs/incidents/`. Template-hash BOM/EOL normalization. Current State refreshed to July 2026. Promotion PR #12. | Claude Code |
 
 ---
 

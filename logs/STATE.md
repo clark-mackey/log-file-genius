@@ -8,8 +8,8 @@ related:
 
 # Current State
 
-**Last Updated:** 2026-05-27
-**Updated By:** Claude (branch `lfg-cleanup-spec1`)
+**Last Updated:** 2026-07-05
+**Updated By:** Claude Code (session: Spec 5 landing + dogfood repair)
 
 ---
 
@@ -26,20 +26,21 @@ related:
 ## Current Context
 
 - **Project:** Log File Genius
-- **Version:** v0.2.0
+- **Version:** v0.5.0 (release pending — [PR #12](https://github.com/clark-mackey/log-file-genius/pull/12) open to `main`; tag after merge)
 - **Active Branch:** `development`
-- **Phase:** Spec 1 cleanup — consistency & correctness (single config source, STATE-as-now, `logs/` paths, starter-packs removed, frontmatter linking, zero-dependency validation)
+- **Phase:** Spec 5 shipped (first-class incident reports); general-improvements round in progress
 - **Current Objectives:**
-  - [ ] Land Spec 1 cleanup (this branch)
-  - [ ] Spec 2 — agent-agnostic entry point (`AGENTS.md`) + subagent conventions + deterministic commands
-  - [ ] Spec 3 — graceful, work-aware archival
+  - [ ] Merge PR #12, tag `v0.5.0` on `main`
+  - [ ] Epic 12 remainder — SECURITY.md, redaction guide, security rule fragment
+  - [ ] Epic 6 — before/after examples, success stories, community guidelines
+- **Standing rule:** release promotion = cut CHANGELOG version block + refresh STATE in the same session (see incident 2026-07-05)
 - **Known Risks/Blockers:** None
 
 ---
 
 ## Last Session
 
-- **Done:** Implemented Spec 1 cleanup end-to-end (Phases 1–6): stdlib config parser (dropped PyYAML), validators + installer read a single `.logfile-config.yml` `paths:`/`token_targets:` block, STATE owns "the now" (DEVLOG trimmed to narrative), `logs/` path standardization, frontmatter link graph, killed `starter-packs/` (fixed install≠update downgrade bug), brownfield migration, cross-platform smoke tests.
-- **In Progress:** Re-dogfooding this repo (STATE.md created here).
-- **Next:** Final review, merge `lfg-cleanup-spec1` into `development`; then start Spec 2.
-- **Branch:** `lfg-cleanup-spec1` | **Last Commit:** `2f09f1a`
+- **Done:** Merged `lfg-spec5` → `development` (222 tests green); fixed cross-platform template-hash bug (BOM/EOL normalization, manifest rebuilt from git blobs); opened promotion PR #12 to `main`; dogfood repair — CHANGELOG rebuilt with v0.3.0–v0.5.0 blocks, DEVLOG catch-up narrative, first standalone incident report filed + `lfg incidents-index` run, PRD Current State refreshed, config bumped to 0.5.0.
+- **In Progress:** Awaiting PR #12 merge + tag.
+- **Next:** Epic 12 security docs.
+- **Branch:** `development`
