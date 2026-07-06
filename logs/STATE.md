@@ -26,11 +26,11 @@ related:
 ## Current Context
 
 - **Project:** Log File Genius
-- **Version:** v0.5.0 (release pending — [PR #12](https://github.com/clark-mackey/log-file-genius/pull/12) open to `main`; tag after merge)
+- **Version:** v0.5.0 (released — [PR #12](https://github.com/clark-mackey/log-file-genius/pull/12) merged to `main`, tagged 2026-07-05)
 - **Active Branch:** `development`
-- **Phase:** Spec 5 shipped (first-class incident reports); general-improvements round in progress
+- **Phase:** v0.5.0 released; general-improvements round in progress
 - **Current Objectives:**
-  - [ ] Merge PR #12, tag `v0.5.0` on `main`
+  - [x] Merge PR #12, tag `v0.5.0` on `main`
   - [ ] Epic 12 remainder — SECURITY.md, redaction guide, security rule fragment
   - [ ] Epic 6 — before/after examples, success stories, community guidelines
 - **Standing rule:** release promotion = cut CHANGELOG version block + refresh STATE in the same session (see incident 2026-07-05)
