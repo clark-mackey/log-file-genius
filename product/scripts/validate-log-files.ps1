@@ -359,7 +359,16 @@ function Test-Devlog {
     }
 
     # Check entry date formats (### YYYY-MM-DD: Title)
-    $entryPattern = '###\s+\d{4}-\d{2}-\d{2}:'
+    $entryPattern = '^###\s+\d{4}-\d{2}-\d{2}(?:[ :]|$)'
+    $inDaily = $false
+    foreach ($line in $lines) {
+        if ($line -match '^##\s+Daily Log') { $inDaily = $true; continue }
+        if ($inDaily -and $line -match '^##\s+Archive') { break }
+        if ($inDaily -and $line -match '^#{2,3} ' -and $line -notmatch $entryPattern) {
+            Write-ValidationResult "DEVLOG" "WARNING" "Entry headings require migration before archival; preserve a backup and use ### YYYY-MM-DD: Title"
+            break
+        }
+    }
     $invalidEntries = $lines | Where-Object { 
         $_ -match '###\s+\d' -and $_ -notmatch $entryPattern 
     }
@@ -411,13 +420,8 @@ function Test-State {
         $errors += "Missing '## Current Context' section"
     }
 
-    # Check for required fields in Current Context
-    $requiredFields = @('Version', 'Active Branch', 'Phase')
-    foreach ($field in $requiredFields) {
-        if ($content -notmatch "\*\*$field") {
-            $errors += "Missing required field in Current Context: $field"
-        }
-    }
+    # Match Python's structural contract; freshness assesses evidence fields.
+    # Legacy Version/Phase fields are not mandatory.
 
     # Token budget: STATE should stay lean (the now), default <500. WARNING not
     # error — STATE has no archival, and a fresh template carries removable guidance.
@@ -625,4 +629,3 @@ if ($VALIDATION_STRICTNESS -eq "disabled") {
 exit $exitCode
 
 #endregion
-

@@ -1,4 +1,5 @@
 ---
+type: Project State
 doc: STATE
 related:
   changelog: ./CHANGELOG.md
@@ -8,39 +9,24 @@ related:
 
 # Current State
 
-**Last Updated:** 2026-07-05
-**Updated By:** Claude Code (session: Spec 5 landing + dogfood repair)
-
----
-
-## Related Documents
-
-📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
-📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
-⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
-
-> **For AI Agents:** Read this FIRST. It is the single source for current project state and session handoff. DEVLOG holds the *why* (narrative); CHANGELOG holds the *what* (facts).
-
----
-
 ## Current Context
 
-- **Project:** Log File Genius
-- **Version:** v0.5.0 (released — [PR #12](https://github.com/clark-mackey/log-file-genius/pull/12) merged to `main`, tagged 2026-07-05)
-- **Active Branch:** `development`
-- **Phase:** v0.5.0 released; general-improvements round in progress
-- **Current Objectives:**
-  - [x] Merge PR #12, tag `v0.5.0` on `main`
-  - [ ] Epic 12 remainder — SECURITY.md, redaction guide, security rule fragment
-  - [ ] Epic 6 — before/after examples, success stories, community guidelines
-- **Standing rule:** release promotion = cut CHANGELOG version block + refresh STATE in the same session (see incident 2026-07-05)
-- **Known Risks/Blockers:** None
+**Baseline branch:** codex/context-discovery
+**Baseline commit:** 7dffd54
+**Next action:** Finish context-workplan checks and submit the development PR.
+**Tests:** 248 Python tests and four Bash smoke/regression checks passed; platform CI pending.
+**Blockers:** Native host/model trials and blinded human handoffs remain unmeasured; no main release authorized by passing unit tests alone.
 
----
+Implementing v0.6.0-dev: compact discovery, canonical ADR routing, evidence-based
+handoffs, selected packets and optional OKF migration. Compare uncommitted code
+against the baseline before reuse. [Workplan](../project/specs/WORKPLAN-context-discovery-and-portability.md).
 
 ## Last Session
 
-- **Done:** Merged `lfg-spec5` → `development` (222 tests green); fixed cross-platform template-hash bug (BOM/EOL normalization, manifest rebuilt from git blobs); opened promotion PR #12 to `main`; dogfood repair — CHANGELOG rebuilt with v0.3.0–v0.5.0 blocks, DEVLOG catch-up narrative, first standalone incident report filed + `lfg incidents-index` run, PRD Current State refreshed, config bumped to 0.5.0.
-- **In Progress:** Awaiting PR #12 merge + tag.
-- **Next:** Epic 12 security docs.
-- **Branch:** `development`
+The earlier PR #12 pending-merge note was stale; main already contains v0.5.0.
+This session implemented the reviewed workplan and repaired two rounds of code-owl
+preservation findings. [Execution evidence](../project/specs/context-execution.md).
+
+## In Progress
+
+Current task owns the context-discovery branch. Keep unrelated worktree state separate.

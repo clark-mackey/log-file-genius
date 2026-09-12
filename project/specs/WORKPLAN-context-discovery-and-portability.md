@@ -3,7 +3,7 @@ type: Work Plan
 doc: WORKPLAN
 title: Reliable, Efficient Project Context Across Agents
 description: Build order for LFG reliability, ADR discovery, routing, portable startup, freshness, and OKF compatibility.
-status: draft
+status: stable
 related:
   prd: ./prd.md
   workflow: ../WORKFLOW.md
@@ -14,7 +14,7 @@ related:
 # Workplan: Reliable, Efficient Project Context Across Agents
 
 Date: 2026-09-12
-Status: Proposed implementation sequence; creating this plan does not authorize implementation or release.
+Status: Implementation authorized by the user on 2026-09-12. See [execution evidence](context-execution.md); release gates remain separate.
 Baseline: v0.5.0; `main` at `0d622e8`, `development` at `b37826c`. Product content matched across those refs when inspected.
 
 ## 1. Outcome and scope

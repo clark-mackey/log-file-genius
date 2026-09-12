@@ -1,3 +1,8 @@
+---
+type: "Project Reference"
+title: "Changelog"
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -19,13 +24,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Implemented compact startup, canonical ADR routing, checkout-aware handoffs, explicit context packets and optional recoverable OKF migration. Preserved project-owned instructions and historical metadata; removed automatic-amend and every-commit logging defaults. Scope and evidence: [execution record](../project/specs/context-execution.md). Files: `product/scripts/`, `product/templates/`, `product/docs/context-guide.md`.
+
 ### Fixed
+
+- Fixed #13–15: generated guidance uses repo-local Python commands, oversized unparsed DEVLOGs refuse archival, and read commands suppress bytecode. Archive writes now preserve source bytes, refuse collisions/stale plans, constrain paths and relocate links. Installer/update preserves existing logs, mixed user templates and edited rules. Files: `product/scripts/`, `product/tests/test_context_workplan.py`.
+
 
 - Dogfood repair: rebuilt this CHANGELOG with v0.3.0–v0.5.0 version blocks (entries had pooled in `[Unreleased]` since February), fixed mojibake emoji (UTF-8 read as cp1252), repointed stale "current state → DEVLOG" header note at STATE.md, removed leftover template-guidelines section. STATE.md and DEVLOG brought current. Files: `logs/CHANGELOG.md`, `logs/DEVLOG.md`, `logs/STATE.md`.
 
 ### Added
 
-- Added the reviewed workplan for reliable context discovery, ADR routing, portable agent startup, OKF compatibility, and evidence-based handoffs, including all eight code-owl review fixes. Files: `project/specs/WORKPLAN-context-discovery-and-portability.md`. Commit: `pending`
+- Added the reviewed workplan for reliable context discovery, ADR routing, portable agent startup, OKF compatibility, and evidence-based handoffs, including all eight code-owl review fixes. Files: `project/specs/WORKPLAN-context-discovery-and-portability.md`. Commit: `7dffd54`
 - Dogfood Spec 5: filed first standalone incident report (stale-logs dogfooding failure) and generated `logs/incidents/README.md` index via `lfg incidents-index`. Files: `logs/incidents/2026-07-05-dogfood-logs-went-stale.md`, `logs/incidents/README.md`.
 
 ## [0.5.0] - 2026-07-05

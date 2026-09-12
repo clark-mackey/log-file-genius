@@ -1,4 +1,6 @@
 ---
+type: "Project Reference"
+title: "Incident Reports"
 doc: INCIDENTS-INDEX
 related:
   changelog: ../CHANGELOG.md

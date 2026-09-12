@@ -25,6 +25,9 @@ import importlib.util
 import sys
 from pathlib import Path
 
+# Read-only CLI commands must not dirty a repo-local/submodule installation.
+sys.dont_write_bytecode = True
+
 # Add scripts directory to path for imports
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -224,7 +227,8 @@ def cmd_merge_agents_md(args):
 
     try:
         running_version = generator.read_repo_version()
-        block = generator.render_block(fragments, version=running_version)
+        block = generator.render_block(fragments, version=running_version,
+                                       root=Path(args.to).resolve().parent)
     except GeneratorError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 2
@@ -328,7 +332,14 @@ def cmd_prime(args):
     if args.n < 1:
         print(f"ERROR: --n must be >= 1 (got {args.n})", file=sys.stderr)
         return 2
-    out = build_prime(project_root=Path.cwd(), n=args.n, as_json=args.json)
+    from context_paths import project_root
+    try:
+        out = build_prime(project_root=project_root(Path.cwd()), n=args.n, as_json=args.json,
+                          role=args.role, selected=args.include, objective=args.objective,
+                          budget=args.budget)
+    except (ValueError, OSError) as exc:
+        print(f'ERROR: {exc}', file=sys.stderr)
+        return 2
     # STATE/CHANGELOG content can include non-ASCII (emoji in templates,
     # Unicode in entries). On Windows, the console default is cp1252, so
     # `print()` raises UnicodeEncodeError. Write UTF-8 bytes directly to
@@ -379,7 +390,7 @@ def cmd_archive(args):
     sys.stdout.buffer.write(plan.to_human().encode("utf-8"))
     sys.stdout.buffer.write(b"\n")
 
-    if plan.refusal_reasons and not plan.actions:
+    if plan.refusal_reasons:
         return 2
 
     if args.dry_run or plan.is_empty():
@@ -580,6 +591,31 @@ def cmd_install_hooks(args):
     return 0
 
 
+def cmd_context(args):
+    import json
+    from context_paths import project_root
+    root = project_root(Path.cwd())
+    try:
+        if args.command == 'routes':
+            from routing import run
+            code, text = run(root, args.write, args.check, args.path, args.select, args.budget)
+        elif args.command == 'metadata':
+            from metadata import run
+            code, text = run(root, args.bundle, args.write, args.index, args.restore)
+        elif args.command == 'freshness':
+            from freshness import assess
+            result = assess(root)
+            code, text = (1 if result['issues'] else 0), json.dumps(result, indent=2)
+        else:
+            from startup import install
+            code, text = 0, '\n'.join(install(root))
+        sys.stdout.buffer.write((text + '\n').encode('utf-8'))
+        return code
+    except (ValueError, OSError) as exc:
+        print(f'ERROR: {exc}', file=sys.stderr)
+        return 2
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Log File Genius - Unified CLI',
@@ -636,6 +672,11 @@ def main():
     p_prime.add_argument('--n', type=int, default=5,
                          help='Number of CHANGELOG Unreleased entries to include (default 5)')
     p_prime.add_argument('--json', action='store_true', help='JSON output')
+    p_prime.add_argument('--role', choices=['subagent', 'reader'], default='subagent')
+    p_prime.add_argument('--include', action='append', default=[], metavar='PATH[#SECTION]',
+                         help='Explicit context selection; repeat for every applicable ADR/incident')
+    p_prime.add_argument('--objective', default='', help='Task objective; no semantic filtering')
+    p_prime.add_argument('--budget', type=int, default=2000, help='Complete output budget (characters/4 estimate)')
 
     # promote command
     p_prom = subparsers.add_parser(
@@ -688,6 +729,21 @@ def main():
     p_incidents.add_argument('--dir',
                              help='Incidents directory (default: config paths.incidents_dir or logs/incidents)')
 
+    p_routes = subparsers.add_parser('routes', help='Inspect or regenerate explicit ADR routing')
+    mode = p_routes.add_mutually_exclusive_group()
+    mode.add_argument('--write', action='store_true')
+    mode.add_argument('--check', action='store_true')
+    p_routes.add_argument('--path', action='append', default=[])
+    p_routes.add_argument('--select', action='append', default=[], help='Reader-selected ADR ID')
+    p_routes.add_argument('--budget', type=int, default=500)
+    subparsers.add_parser('freshness', help='Compare handoff with checkout evidence; read only')
+    subparsers.add_parser('setup-context', help='Seed routes and native context pointers safely')
+    p_meta = subparsers.add_parser('metadata', help='Preview additive OKF migration; unsupported YAML preserved')
+    p_meta.add_argument('--bundle', help='Explicit repository-relative bundle root; default STATE directory')
+    meta_mode = p_meta.add_mutually_exclusive_group()
+    meta_mode.add_argument('--write', action='store_true', help='Apply or resume the journaled migration')
+    meta_mode.add_argument('--restore', action='store_true', help='Restore original bytes from the last journal')
+    p_meta.add_argument('--index', action='store_true', help='Generate optional OKF directory index')
     args = parser.parse_args()
 
     if not args.command:
@@ -710,6 +766,10 @@ def main():
         'migrate-state': cmd_migrate_state,
         'merge-agents-md': cmd_merge_agents_md,
         'incidents-index': cmd_incidents_index,
+        'routes': cmd_context,
+        'freshness': cmd_context,
+        'setup-context': cmd_context,
+        'metadata': cmd_context,
     }
 
     return handlers[args.command](args)
@@ -717,4 +777,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-

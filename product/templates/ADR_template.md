@@ -1,4 +1,5 @@
 ---
+type: Architecture Decision
 doc: ADR
 related:
   changelog: ../CHANGELOG.md
@@ -20,6 +21,14 @@ related:
 📊 **[CHANGELOG](../CHANGELOG.md)** · 📖 **[DEVLOG](../DEVLOG.md)** · 📈 **[STATE](../STATE.md)**
 
 ---
+
+## Routing
+
+**Read when:** [Task or question that requires this decision]
+**Applies to:** [Repository-relative globs separated by commas, or project-wide]
+**Constraint:** [One sentence stating the governing constraint]
+
+For Superseded status, add `**Superseded by:** [ADR-NNN](NNN-replacement.md)` near Status.
 
 ## Context
 

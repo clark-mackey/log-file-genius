@@ -360,11 +360,11 @@ class LogLinter:
         if token_count > self.changelog_target:
             result.add_issue('error', None,
                            f"CHANGELOG exceeds token target ({token_count} > {self.changelog_target})",
-                           "Run `lfg archive --dry-run` to preview an archival plan")
+                           "From repo root: `python3 .log-file-genius/product/scripts/lfg.py archive --dry-run` (Windows: python); without Python, review logs manually")
         elif token_count > self.changelog_target * 0.8:
             result.add_issue('warning', None,
                            f"CHANGELOG approaching token target ({token_count}/{self.changelog_target})",
-                           "Run `lfg archive --dry-run` to preview an archival plan")
+                           "From repo root: `python3 .log-file-genius/product/scripts/lfg.py archive --dry-run` (Windows: python); without Python, review logs manually")
 
         # Validate frontmatter links
         self._validate_frontmatter_links(self.changelog_path, lines, result)
@@ -417,27 +417,21 @@ class LogLinter:
         with open(self.devlog_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         
-        # Check for Daily Log section
-        has_daily_log = False
-
-        for i, line in enumerate(lines, 1):
-            if 'Daily Log' in line or 'Development Log' in line:
-                has_daily_log = True
-
-        if not has_daily_log:
-            result.add_issue('warning', None, "Missing 'Daily Log' section",
-                           "Add '## Daily Log' section for development entries")
+        from archive import devlog_structure_issues
+        for issue in devlog_structure_issues(''.join(lines)):
+            result.add_issue('warning', None, 'DEVLOG requires migration: ' + issue,
+                             "Preserve a backup; use ## Daily Log and ### YYYY-MM-DD: Title before archival")
         
         # Token count validation
-        token_count = self._estimate_tokens('\n'.join(lines))
+        token_count = self._estimate_tokens(''.join(lines))
         if token_count > self.devlog_target:
             result.add_issue('error', None,
                            f"DEVLOG exceeds token target ({token_count} > {self.devlog_target})",
-                           "Run `lfg archive --dry-run` to preview an archival plan")
+                           "From repo root: `python3 .log-file-genius/product/scripts/lfg.py archive --dry-run` (Windows: python); without Python, review logs manually")
         elif token_count > self.devlog_target * 0.8:
             result.add_issue('warning', None,
                            f"DEVLOG approaching token target ({token_count}/{self.devlog_target})",
-                           "Run `lfg archive --dry-run` to preview an archival plan")
+                           "From repo root: `python3 .log-file-genius/product/scripts/lfg.py archive --dry-run` (Windows: python); without Python, review logs manually")
 
         # Validate frontmatter links
         self._validate_frontmatter_links(self.devlog_path, lines, result)
@@ -665,4 +659,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
