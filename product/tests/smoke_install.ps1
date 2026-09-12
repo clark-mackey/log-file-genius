@@ -29,7 +29,7 @@ try {
         "logs\DEVLOG.md",
         "logs\STATE.md",
         ".logfile-config.yml",
-        ".claude\rules\log-file-maintenance.md"
+        "CLAUDE.md"
     )
     foreach ($f in $expectedFiles) {
         if (-not (Test-Path $f)) {
@@ -121,10 +121,8 @@ try {
         }
     }
 
-    # Spec 2: installed rule == canonical fragment.
-    $installed = (Get-FileHash ".claude\rules\log-file-maintenance.md").Hash
-    $canonical = (Get-FileHash "$REPO\product\rules\log-file-maintenance.md").Hash
-    if ($installed -ne $canonical) { Write-Host "FAIL: installed rule != canonical fragment"; exit 1 }
+    if ((Get-Content "CLAUDE.md" -Raw) -notmatch '@AGENTS.md') { throw "Missing Claude import" }
+    if (Test-Path ".claude/rules/log-file-maintenance.md") { throw "Duplicate full rule injection" }
 
     # update.sh must not reference starter-packs
     $updateSh = Get-Content "$REPO\product\scripts\update.sh" -Raw

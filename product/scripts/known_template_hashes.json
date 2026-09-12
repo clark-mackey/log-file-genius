@@ -26,5 +26,27 @@
     "MIGRATION_GUIDE_template.md": "95a4f3bf3950edee32fc3cee33d821965095575e3319c46b43b2064c94d2d27a",
     "README.md": "05b60441f8e37030e4f0c5f118a30a140161e5b500a2c8b1fda5a229bcc0a6ea",
     "STATE_template.md": "fb7370d8159fe27bce7ebe505e579121b0b3acdad4975537b8d0cd4d6057b8a2"
+  },
+  "0.6.0-dev": {
+    ".logfile-config.yml": "2b4daf82ad170c6136c13cc7cab49c12a192e01763cb177ed599670606f8d02b",
+    "ADR_README_template.md": "249f64daf2596939ec514f663dc0f950a47e820560ac1c699740d1ba53eb2b61",
+    "ADR_template.md": "d24fcffef33a0606bb8ec14734922dab155126718db2e85e4f61526c5c6acebf",
+    "CHANGELOG_template.md": "07104ac75b650fd4b56aff544094438cacfbdca667bda1233fc5f47e68e30b7a",
+    "DEVLOG_template.md": "9a233e4f291fa11f58b92ae13905ae20b89637b2ccd54e6bcd6df7874c630fce",
+    "INCIDENT_template.md": "6d2874a9d9b12b6089e1151d263a85321c6305437261b480974aebc8cb969645",
+    "MIGRATION_GUIDE_template.md": "95a4f3bf3950edee32fc3cee33d821965095575e3319c46b43b2064c94d2d27a",
+    "README.md": "05b60441f8e37030e4f0c5f118a30a140161e5b500a2c8b1fda5a229bcc0a6ea",
+    "STATE_template.md": "f8c1163756cbf19640c8d678f16b4ae0de2abaa5f92f54d57c16440c829f18d4"
+  },
+  "0.6.0-rc.1": {
+    ".logfile-config.yml": "75e0abefa4f070142d1ad04de683c29c27a78710721d336425e33326be8e7845",
+    "ADR_README_template.md": "249f64daf2596939ec514f663dc0f950a47e820560ac1c699740d1ba53eb2b61",
+    "ADR_template.md": "d24fcffef33a0606bb8ec14734922dab155126718db2e85e4f61526c5c6acebf",
+    "CHANGELOG_template.md": "07104ac75b650fd4b56aff544094438cacfbdca667bda1233fc5f47e68e30b7a",
+    "DEVLOG_template.md": "9a233e4f291fa11f58b92ae13905ae20b89637b2ccd54e6bcd6df7874c630fce",
+    "INCIDENT_template.md": "6d2874a9d9b12b6089e1151d263a85321c6305437261b480974aebc8cb969645",
+    "MIGRATION_GUIDE_template.md": "95a4f3bf3950edee32fc3cee33d821965095575e3319c46b43b2064c94d2d27a",
+    "README.md": "05b60441f8e37030e4f0c5f118a30a140161e5b500a2c8b1fda5a229bcc0a6ea",
+    "STATE_template.md": "f8c1163756cbf19640c8d678f16b4ae0de2abaa5f92f54d57c16440c829f18d4"
   }
 }

@@ -42,44 +42,38 @@ def test_parse_fragment_missing_frontmatter_raises(tmp_path):
         parse_fragment(p)
 
 
-def test_render_agents_md_includes_sections_in_order(tmp_path):
-    a = write(tmp_path, "a.md",
-              "fragment: a\norder: 20\ntargets: agents_md\nsummary: Second.",
-              "Body of A.")
-    b = write(tmp_path, "b.md",
-              "fragment: b\norder: 10\ntargets: agents_md\nsummary: First.",
-              "Body of B.")
-    out = render_agents_md([parse_fragment(b), parse_fragment(a)])
-    # b before a (order 10 < 20)
-    assert out.index("## b") < out.index("## a")
-    # both bodies present
-    assert "Body of A." in out
-    assert "Body of B." in out
-    # frontmatter present
-    assert out.startswith("---\n")
-    assert "doc: AGENTS" in out
-    # read-this-first block
-    assert "Read this first" in out
-    # available commands
-    assert "lfg validate" in out
-    assert "lfg prime" in out
-    assert "lfg promote" in out
-    # section index
-    assert "- **a**" in out
-    assert "- **b**" in out
+def test_startup_keeps_procedures_on_demand(tmp_path):
+    fragment = write(tmp_path, "a.md",
+                     "fragment: a\norder: 10\ntargets: agents_md\nsummary: Detail.",
+                     "ON_DEMAND_SENTINEL " * 1000)
+    out = render_agents_md([parse_fragment(fragment)])
+    assert "ON_DEMAND_SENTINEL" not in out
+    assert "logs/STATE.md" in out and "logs/adr/README.md" in out
+    assert "context-guide.md" in out
+    assert len(out) <= 1000
+    assert "last checked code commit/branch" in out
+    assert "reuse sources/citations" in out
+    assert "Target: 8 reads" in out
+    assert "Read more for required evidence" in out
+    assert "Check Git diffs" in out
+    assert "pending tasks/tests/blockers" in out
+    assert "resolved with evidence or explicit cancellation" in out
 
 
-def test_render_skips_fragments_not_targeted_for_agents_md(tmp_path):
-    a = write(tmp_path, "a.md",
-              "fragment: a\norder: 10\ntargets: agents_md\nsummary: s",
-              "in agents")
-    b = write(tmp_path, "b.md",
-              "fragment: b\norder: 20\ntargets: claude_rules\nsummary: s",
-              "claude only")
-    out = render_agents_md([parse_fragment(a), parse_fragment(b)])
-    assert "in agents" in out
-    assert "claude only" not in out
-    assert "## b" not in out
+@pytest.mark.parametrize('custom,previous_estimate', [(False, 271), (True, 285)])
+def test_startup_improves_observed_native_envelope(tmp_path, custom, previous_estimate):
+    from generator import render_block
+    if custom:
+        (tmp_path / '.logfile-config.yml').write_text(
+            'paths:\n  state: "knowledge space/STATE.md"\n  adr: "knowledge space/decisions"\n')
+    # Recorded Codex 0.149.1 wrapper, including a real-length consumer path.
+    # This is a regression fixture, not a guarantee for arbitrary host/owner text.
+    host_path = '/private/var/folders/pk/6_xf538s34dclwzlx3g6n37c0000gn/T/receipt-isolation-12345678/workspace'
+    block = render_block([], root=tmp_path)
+    wrapped = f'# AGENTS.md instructions for {host_path}\n\n<INSTRUCTIONS>\n{block}\n</INSTRUCTIONS>'
+    # The 250-token goal is advisory under the approved prerelease criteria.
+    # Still reject a regression to the pre-fix candidate's measured overhead.
+    assert (len(wrapped) + 3) // 4 < previous_estimate
 
 
 def test_render_uses_lf_no_bom_trailing_newline(tmp_path):

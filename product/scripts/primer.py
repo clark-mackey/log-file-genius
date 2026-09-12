@@ -23,11 +23,8 @@ SUBAGENT_MARKER = "LFG_SUBAGENT_PRIME"
 
 
 def _resolve_log_path(project_root: Path, key: str, default_rel: str) -> Path:
-    cfg = parse_config(str(project_root / ".logfile-config.yml"))
-    path = cfg.get("paths", {}).get(key)
-    if path:
-        return project_root / path
-    return project_root / default_rel
+    from context_paths import context_paths
+    return context_paths(project_root)[key]
 
 
 def _read_state(project_root: Path) -> str:
@@ -60,7 +57,13 @@ def _last_n_changelog_entries(project_root: Path, n: int) -> List[str]:
     return entries
 
 
-def build_prime(project_root: Path, n: int = 5, as_json: bool = False) -> str:
+def build_prime(project_root: Path, n: int = 5, as_json: bool = False,
+                role='subagent', selected=(), objective='', budget=2000) -> str:
+    from context_paths import context_paths, tokens
+    from freshness import assess
+    import re
+    if budget < 1 or role not in ('subagent', 'reader'):
+        raise ValueError('Positive budget and valid role required')
     state = _read_state(project_root)
     entries = _last_n_changelog_entries(project_root, n)
 
@@ -70,18 +73,49 @@ def build_prime(project_root: Path, n: int = 5, as_json: bool = False) -> str:
         "devlog": str(_resolve_log_path(project_root, "devlog", "logs/DEVLOG.md").relative_to(project_root)),
     }
 
-    if as_json:
-        return json.dumps({
-            "marker": SUBAGENT_MARKER,
-            "role": "subagent",
-            "state": state,
-            "changelog_entries": entries,
-            "paths": paths_block,
-        }, indent=2)
+    paths_block['adr_index'] = str(context_paths(project_root)['adr_dir'].relative_to(project_root) / 'README.md')
+    excerpts, missing, seen = [], [], set()
+    for selection in selected:
+        name, _, section = selection.partition('#')
+        path = (project_root / name).resolve()
+        if not path.is_relative_to(project_root.resolve()):
+            raise ValueError(f'Selection escapes repository: {name}')
+        key = (path, section)
+        if key in seen:
+            continue
+        seen.add(key)
+        if not path.is_file():
+            missing.append(selection)
+            continue
+        content = path.read_text(encoding='utf-8')
+        if section:
+            pattern = r'^(#{1,6}) ' + re.escape(section) + r'\s*$'
+            matches = list(re.finditer(pattern, content, re.M))
+            if len(matches) != 1:
+                missing.append(selection + ' (section absent or ambiguous)')
+                continue
+            match = matches[0]
+            end = re.search(r'^#{1,' + str(len(match[1])) + r'} ', content[match.end():], re.M)
+            content = content[match.start(): match.end() + end.start() if end else len(content)]
+        excerpts.append({'source': selection, 'content': content})
+    evidence = assess(project_root)
+    payload = {'marker': SUBAGENT_MARKER if role == 'subagent' else 'LFG_READER_CONTEXT',
+               'role': role, 'objective': objective, 'state': state,
+               'changelog_entries': entries, 'paths': paths_block,
+               'evidence': evidence, 'selected_context': excerpts, 'missing': missing,
+               'coverage': 'explicit selections only; reroute if task scope expands'}
 
-    out: List[str] = [SUBAGENT_MARKER, ""]
-    out += ["You are a subagent. Follow the subagent contract in log-file-maintenance.md.",
-            ""]
+    if as_json:
+        output = json.dumps(payload, indent=2)
+        if tokens(output) > budget:
+            raise ValueError(f'INCOMPLETE: packet exceeds {budget} estimated tokens; '
+                             f'narrow STATE/selection or increase budget. Unread selections: {list(selected)}')
+        return output
+
+    out: List[str] = [payload['marker'], "", 'Objective: ' + objective, '']
+    out += (["You are a subagent. Stage findings in .lfg/staged/<id>/; do not write canonical logs. "
+             "Report ADR IDs and unresolved scope. Lead reviews and promotes."] if role == 'subagent' else
+            ["Context for a human or lead reader; no subagent identity assigned."])
     out += ["# STATE.md", "", state.rstrip(), ""]
     out += [f"# Last {len(entries)} CHANGELOG entries", ""]
     if entries:
@@ -91,5 +125,14 @@ def build_prime(project_root: Path, n: int = 5, as_json: bool = False) -> str:
     out += ["", "# Canonical paths", ""]
     for k, v in paths_block.items():
         out.append(f"- {k}: {v}")
+    out += ['', '# Checkout evidence', json.dumps(evidence, indent=2), '', payload['coverage']]
+    for excerpt in excerpts:
+        out += ['', '# Source: ' + excerpt['source'], excerpt['content']]
+    if missing:
+        out += ['', 'MISSING: ' + ', '.join(missing)]
     out.append("")
-    return "\n".join(out)
+    output = "\n".join(out)
+    if tokens(output) > budget:
+        raise ValueError(f'INCOMPLETE: packet exceeds {budget} estimated tokens; '
+                         f'narrow selection or increase budget. Unread selections: {list(selected)}')
+    return output

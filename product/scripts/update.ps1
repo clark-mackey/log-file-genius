@@ -211,47 +211,7 @@ switch ($AiAssistant) {
     default       { Print-Warning "Unknown assistant: $AiAssistant"; $AiAssistant = "unknown" }
 }
 
-if ($AiAssistant -ne "unknown") {
-    if (-not (Test-Path $rulesDest)) {
-        New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
-    }
-
-    Get-ChildItem -Path (Join-Path $SourceRoot "product\rules") -Filter "*.md" | ForEach-Object {
-        $text = Get-Content $_.FullName -Raw
-        if ($text -match "(?ms)^---\s*\r?\n(.*?)\r?\n---") {
-            $fm = $Matches[1]
-            if ($fm -match "(?m)^targets:\s*(.+)$") {
-                $targets = ($Matches[1] -replace '\[|\]','' -split ',' | ForEach-Object { $_.Trim() })
-                if ($targets -contains $rulesTarget) {
-                    $dest = Join-Path $rulesDest $_.Name
-                    if (Prompt-Update "Rule: $($_.Name)" $_.FullName $dest) {
-                        Copy-Item -Path $_.FullName -Destination $dest -Force
-                        Print-Success "Updated: $($_.Name)"
-                    }
-                }
-            }
-        }
-    }
-
-    if ($AiAssistant -eq "claude-code") {
-        $tmpl = Join-Path $SourceRoot "product\install-templates\claude\project_instructions.md.tmpl"
-        $dest = Join-Path $ProjectRoot ".claude\project_instructions.md"
-        if (Test-Path $tmpl) {
-            $rendered = (Get-Content $tmpl -Raw) `
-                -replace '\{\{paths\.changelog\}\}','logs/CHANGELOG.md' `
-                -replace '\{\{paths\.devlog\}\}','logs/DEVLOG.md' `
-                -replace '\{\{paths\.state\}\}','logs/STATE.md' `
-                -replace '\{\{paths\.adr_dir\}\}','logs/adr/'
-            $tmp = [System.IO.Path]::GetTempFileName()
-            [System.IO.File]::WriteAllText($tmp, $rendered, (New-Object System.Text.UTF8Encoding $false))
-            if (Prompt-Update "Claude project_instructions.md" $tmp $dest) {
-                [System.IO.File]::WriteAllText($dest, $rendered, (New-Object System.Text.UTF8Encoding $false))
-                Print-Success "Updated: project_instructions.md"
-            }
-            Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
-        }
-    }
-}
+# Detailed procedures remain on demand; setup-context manages native pointers.
 
 # Update AGENTS.md at project root via the managed-block merge (Spec 4 §1).
 # REPLACES the old prompt-then-overwrite (a "y" there fully overwrote the file
@@ -323,8 +283,8 @@ if (Test-Path $rootTemplates -PathType Container) {
     } elseif (-not (Test-Path $matchHelper)) {
         Print-Warning "Template hash helper not found; leaving root templates\ untouched."
     } else {
-        # --match-dir exit 0 => >=1 file matches an LFG-shipped hash (any version).
-        & $PythonBin $matchHelper --match-dir $rootTemplates | Out-Null
+        # --match-dir --all succeeds only when every file is a known shipped template.
+        & $PythonBin $matchHelper --match-dir $rootTemplates --all | Out-Null
         if ($LASTEXITCODE -eq 0) {
             $unixTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
             $backupsRoot = Join-Path $ProjectRoot ".log-file-genius\.backups"
@@ -350,6 +310,12 @@ if ($PythonBin -and (Test-Path $LfgPy)) {
     if ($LASTEXITCODE -ne 0) {
         Print-Warning "STATE.md needs migration to the current spec. Preview with: $PythonBin $LfgPy migrate-state --dry-run"
     }
+}
+
+
+if ($PythonBin -and (Test-Path $LfgPy)) {
+    & $PythonBin $LfgPy setup-context
+    if ($LASTEXITCODE -ne 0) { exit 2 }
 }
 
 Write-Host ""

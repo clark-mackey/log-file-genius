@@ -19,7 +19,9 @@ def test_generate_writes_agents_md(tmp_path):
     text = out.read_text(encoding="utf-8")
     assert text.startswith("---\n")
     assert "doc: AGENTS" in text
-    assert "## log-file-maintenance" in text
+    assert "logs/adr/README.md" in text
+    assert len(text) <= 1000
+    assert "## log-file-maintenance" not in text
 
 
 def test_generate_idempotent(tmp_path):
