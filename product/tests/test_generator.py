@@ -49,9 +49,23 @@ def test_startup_keeps_procedures_on_demand(tmp_path):
     out = render_agents_md([parse_fragment(fragment)])
     assert "ON_DEMAND_SENTINEL" not in out
     assert "logs/STATE.md" in out and "logs/adr/README.md" in out
-    assert "context-guide.md" in out and "lfg.py" in out
+    assert "context-guide.md" in out
     assert len(out) <= 1000
     assert "baseline branch/commit" in out
+
+
+@pytest.mark.parametrize('custom', [False, True])
+def test_startup_fits_observed_native_envelope(tmp_path, custom):
+    from generator import render_block
+    if custom:
+        (tmp_path / '.logfile-config.yml').write_text(
+            'paths:\n  state: "knowledge space/STATE.md"\n  adr: "knowledge space/decisions"\n')
+    # Recorded Codex 0.149.1 wrapper, including a real-length consumer path.
+    # This is a regression fixture, not a guarantee for arbitrary host/owner text.
+    host_path = '/private/var/folders/pk/6_xf538s34dclwzlx3g6n37c0000gn/T/receipt-isolation-12345678/workspace'
+    block = render_block([], version='0.6.0-dev', root=tmp_path)
+    wrapped = f'# AGENTS.md instructions for {host_path}\n\n<INSTRUCTIONS>\n{block}\n</INSTRUCTIONS>'
+    assert (len(wrapped) + 3) // 4 <= AGENTS_TOKEN_BUDGET
 
 
 def test_render_uses_lf_no_bom_trailing_newline(tmp_path):

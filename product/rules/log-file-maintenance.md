@@ -28,6 +28,10 @@ At a meaningful handoff, record baseline branch/code commit (before the handoff
 commit), next action, tests/outcomes and blockers in STATE. Keep it under 500 estimated
 tokens. Read-only questions require no rewrite. Keep session/worktree-specific scratch
 separate; preserve another task's ownership and facts.
+Compare the old and new handoff before saving. Carry forward unresolved tasks and
+blockers until resolved with evidence or explicitly cancelled, including work outside
+this session's task. Add new incident work without replacing pending fixes. Associate
+tests with the task they verify; shorten wording rather than dropping open work.
 
 ## ENTRY VERBOSITY AND FORMATS
 

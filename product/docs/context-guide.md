@@ -11,6 +11,13 @@ manifest, even when it links to partitions. Match all project-wide rows, affecte
 paths, and semantic task triggers. Union matches; read each active ADR once. Follow
 replacement links. Reader judgment selects semantic matches; LFG does no fuzzy ranking.
 On task expansion, revisit the manifest. Reuse unchanged records already read.
+Read task sources with line numbers on the first pass if citations need them; do not
+reread unchanged sources just to format citations. Follow the handoff's code and
+verification links before scanning unrelated components or historical logs. Expand
+only for a concrete evidence gap, changed scope, or another applicable decision.
+From a nested directory, locate the repository root once (`git rev-parse --show-toplevel`)
+and resolve the configured pointers there. Follow applicable directory instructions;
+do not search above the root or repeatedly enumerate the tree to rediscover it.
 
 On a missing or stale index, search the configured ADR directory using one or two
 literal terms for the task and affected components. Inspect candidate status and
@@ -70,6 +77,11 @@ STATE is a small shared snapshot, normally at most 500 estimated tokens. Record
 baseline branch and code commit before committing the handoff itself, next action,
 tests with outcomes, and blockers. Keep task-local scratch and ownership in the
 session/worktree; avoid replacing another active task's state.
+Before saving, compare the old and new handoff: carry forward every unresolved task
+and blocker, even when this session worked on something else. Remove one only with
+resolution evidence or explicit cancellation. A new incident adds work; it does not
+replace a pending fix. Keep each verification result attached to the task it checks.
+Compress wording or link supporting detail to fit the budget; do not drop open work.
 
 Compare the current checkout with that baseline. Code differences call for checking
 affected claims, not declaring all history false. Reconcile Current Context and Last

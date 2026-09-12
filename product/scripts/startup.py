@@ -15,14 +15,15 @@ def render(root=None):
         runtime = source.relative_to(root).as_posix() if source.is_relative_to(root) else '.log-file-genius/product/scripts/lfg.py'
     return ("---\ndoc: AGENTS\ntype: Agent Instructions\nrelated:\n"
             f"  state: {paths['state']}\n  adr_index: {paths['adr_dir']}/README.md\n---\n\n# LFG context\n\n"
-            f"Read `{paths['state']}` then `{paths['adr_dir']}/README.md`. Union global, path and task matches; "
+            "Read STATE/index. Union global/path/task matches; "
             "read active ADRs, follow replacements. Missing/stale index or no match: search ADR sources. "
-            "Report unread scope; never assume coverage.\n\n"
-            "Compare STATE baseline branch/commit with Git and reconcile Current Context/Last Session contradictions. "
-            "Missing evidence is unknown. Log meaningful changes/handoffs; read-only questions need no rewrite. "
+            "Report unread scope.\n\n"
+            "Read sources once; reuse unchanged text/citations. Expand for task gaps.\n"
+            "Compare STATE baseline branch/commit with Git; reconcile Current Context/Last Session. "
+            "Missing evidence is unknown.\n"
+            "Keep pending tasks/blockers until resolved with evidence or explicit cancellation. "
+            "Log changes/handoffs; no read-only rewrite. "
             "Subagents stage; lead promotes. Follow project instructions.\n\n"
-            f"Repo-root CLI: `python3 \"{runtime}\" --help` (Windows: `python`). "
-            "No Python: read Markdown. Missing submodule: `git submodule update --init`. "
             "Procedures: `" + str(Path(runtime).parent.parent.as_posix()) + "/docs/context-guide.md`.\n")
 
 
