@@ -1,11 +1,23 @@
+---
+type: "Architecture Decision"
+title: "ADR-012: Single /logs/ Folder for All Log Files"
+---
+
 # ADR-012: Single /logs/ Folder for All Log Files
 
-**Status:** Accepted
+**Status:** Superseded
+**Superseded by:** [ADR-015](015-portable-context-discovery.md)
 **Date:** 2025-11-04
 **Deciders:** Clark Mackey
 **Related:** ADR-011 (Single Folder Installation), ADR-010 (Hidden Source Folder), ADR-008 (Product/Project Separation)
 
 ---
+
+## Routing
+
+**Read when:** Changing default log paths or configuration
+**Applies to:** logs/*, product/templates/*, product/scripts/config_parser.py
+**Constraint:** Use one default logs collection; follow the replacement for configurable path behavior.
 
 ## Context
 

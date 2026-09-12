@@ -18,7 +18,6 @@ log-file-genius/
 │
 ├── project/          # DEVELOPMENT - Planning and specs (this directory)
 │   ├── specs/        # Requirements and epic specifications
-│   ├── adr/          # Architecture Decision Records
 │   ├── docs/         # How-to guides and troubleshooting
 │   ├── templates/    # WIP templates (move to product/ when complete)
 │   ├── qa/           # Bug reports and testing
@@ -27,6 +26,9 @@ log-file-genius/
 └── logs/             # ACTIVE LOGS - Project's own documentation
     ├── CHANGELOG.md  # What changed and when
     ├── DEVLOG.md     # Why decisions were made
+    ├── STATE.md      # Current state and handoff evidence
+    ├── adr/          # Decisions and routing manifest
+    ├── incidents/    # Durable failure analysis
     └── archive/      # Archived log entries
 ```
 
@@ -36,8 +38,8 @@ log-file-genius/
 |------|------|
 | **All requirements, epics, stories** | `project/specs/prd.md` |
 | **What changed recently** | `logs/CHANGELOG.md` |
-| **Current objectives & context** | `logs/DEVLOG.md` → "Current Context" section |
-| **Architecture decisions** | `project/adr/*.md` |
+| **Current objectives & context** | `logs/STATE.md` |
+| **Architecture decisions** | `logs/adr/README.md` and selected ADRs |
 | **Git workflow** | `project/WORKFLOW.md` |
 
 ## ⚠️ Important Notes
@@ -50,7 +52,7 @@ log-file-genius/
    - `main` branch: Only `product/` directory (for distribution)
    - `development` branch: Both `product/` and `project/` (for work)
 
-4. **Log file maintenance rule:** Before every commit, update `logs/CHANGELOG.md`. See `.augment/rules/log-file-maintenance.md`.
+4. **Log file maintenance rule:** Record meaningful changes and handoffs. See `product/docs/context-guide.md`.
 
 5. **Mission alignment:** Features must either (a) reduce tokens or (b) help AI agents navigate. Reject features that only serve human developers.
 
@@ -79,7 +81,7 @@ See `project/specs/prd.md` → "Rejected Ideas" section for details.
 - `project/specs/EPIC-12-*.md`, `EPIC-13-*.md`, `EPIC-15-*.md`, `EPIC-17-*.md` - Detailed epic specs
 
 ### Decision Records
-- `project/adr/` - Architecture Decision Records (ADR-001 through ADR-011)
+- `logs/adr/README.md` - Current decision routing and source ADRs
 
 ### Workflow
 - `project/WORKFLOW.md` - Git workflow and branch strategy

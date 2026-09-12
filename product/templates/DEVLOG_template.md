@@ -1,4 +1,5 @@
 ---
+type: Development Log
 doc: DEVLOG
 related:
   changelog: ./CHANGELOG.md

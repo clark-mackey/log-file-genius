@@ -193,49 +193,7 @@ case "$AI_ASSISTANT" in
     *)           print_warning "Unknown assistant: $AI_ASSISTANT"; AI_ASSISTANT="unknown" ;;
 esac
 
-if [ "$AI_ASSISTANT" != "unknown" ]; then
-    mkdir -p "$RULES_DEST"
-
-    # Walk fragments; route by frontmatter `targets`.
-    for frag in "$SOURCE_ROOT/product/rules/"*.md; do
-        [ -f "$frag" ] || continue
-        targets=$(awk '
-            /^---$/{count++; if(count==2)exit; next}
-            count==1 && /^targets:/{ sub(/^targets:[[:space:]]*/,""); print; exit }
-        ' "$frag")
-        case ",$(echo "$targets" | tr -d '[] ')," in
-            *",$RULES_TARGET,"*)
-                fname=$(basename "$frag")
-                dest="$RULES_DEST/$fname"
-                if prompt_update "Rule: $fname" "$frag" "$dest"; then
-                    cp "$frag" "$dest"
-                    print_success "Updated: $fname"
-                fi
-                ;;
-        esac
-    done
-
-    # Render Claude project_instructions template (claude-code only).
-    if [ "$AI_ASSISTANT" = "claude-code" ]; then
-        TMPL="$SOURCE_ROOT/product/install-templates/claude/project_instructions.md.tmpl"
-        DEST="$PROJECT_ROOT/.claude/project_instructions.md"
-        if [ -f "$TMPL" ]; then
-            # Render to a temp file so prompt_update can diff against existing.
-            RENDERED=$(mktemp)
-            sed \
-                -e 's|{{paths.changelog}}|logs/CHANGELOG.md|g' \
-                -e 's|{{paths.devlog}}|logs/DEVLOG.md|g' \
-                -e 's|{{paths.state}}|logs/STATE.md|g' \
-                -e 's|{{paths.adr_dir}}|logs/adr/|g' \
-                "$TMPL" > "$RENDERED"
-            if prompt_update "Claude project_instructions.md" "$RENDERED" "$DEST"; then
-                cp "$RENDERED" "$DEST"
-                print_success "Updated: project_instructions.md"
-            fi
-            rm -f "$RENDERED"
-        fi
-    fi
-fi
+# Detailed procedures remain on demand; setup-context manages native pointers.
 
 # Update AGENTS.md at project root via the managed-block merge (Spec 4 §1).
 # This REPLACES the old prompt-then-overwrite: a "y" there fully overwrote the
@@ -273,6 +231,7 @@ print_info "Checking validation scripts..."
 if prompt_update "validate-log-files.sh" \
     "$SOURCE_ROOT/product/scripts/validate-log-files.sh" \
     "$PROJECT_ROOT/scripts/validate-log-files.sh"; then
+    mkdir -p "$PROJECT_ROOT/scripts"
     cp "$SOURCE_ROOT/product/scripts/validate-log-files.sh" "$PROJECT_ROOT/scripts/"
     chmod +x "$PROJECT_ROOT/scripts/validate-log-files.sh"
     print_success "Updated: validate-log-files.sh"
@@ -281,6 +240,7 @@ fi
 if prompt_update "validate-log-files.ps1" \
     "$SOURCE_ROOT/product/scripts/validate-log-files.ps1" \
     "$PROJECT_ROOT/scripts/validate-log-files.ps1"; then
+    mkdir -p "$PROJECT_ROOT/scripts"
     cp "$SOURCE_ROOT/product/scripts/validate-log-files.ps1" "$PROJECT_ROOT/scripts/"
     print_success "Updated: validate-log-files.ps1"
 fi
@@ -299,8 +259,8 @@ if [ -d "$ROOT_TEMPLATES" ]; then
     elif [ ! -f "$MATCH_HELPER" ]; then
         print_warning "Template hash helper not found; leaving root templates/ untouched."
     else
-        # --match-dir exit 0 => >=1 file matches an LFG-shipped hash (any version).
-        if "$PYTHON_BIN" "$MATCH_HELPER" --match-dir "$ROOT_TEMPLATES" > /dev/null 2>&1; then
+        # --match-dir --all succeeds only when every file is a known shipped template.
+        if "$PYTHON_BIN" "$MATCH_HELPER" --match-dir "$ROOT_TEMPLATES" --all > /dev/null 2>&1; then
             BACKUP_DIR="$PROJECT_ROOT/.log-file-genius/.backups/templates-$(date +%s)"
             mkdir -p "$(dirname "$BACKUP_DIR")"
             # Count files before the move for the message.
@@ -321,6 +281,11 @@ if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
     if ! "$PYTHON_BIN" "$LFG_PY" validate --state-only > /dev/null 2>&1; then
         print_warning "STATE.md needs migration to the current spec. Preview with: $PYTHON_BIN $LFG_PY migrate-state --dry-run"
     fi
+fi
+
+
+if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
+    "$PYTHON_BIN" "$LFG_PY" setup-context || exit 2
 fi
 
 echo ""

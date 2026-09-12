@@ -1,3 +1,8 @@
+---
+type: "Project Reference"
+title: "ADR 007: Agent OS-Inspired Enhancements to Log File Genius"
+---
+
 # ADR 007: Agent OS-Inspired Enhancements to Log File Genius
 
 **Status:** Accepted  
@@ -6,6 +11,12 @@
 **Related:** [Agent OS Repository](https://github.com/buildermethods/agent-os)
 
 ---
+
+## Routing
+
+**Read when:** Considering feature scope, profiles or workflows
+**Applies to:** product/profiles/*, product/scripts/*
+**Constraint:** Keep enhancements lightweight and modular.
 
 ## Context
 

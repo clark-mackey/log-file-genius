@@ -7,7 +7,7 @@
 #
 # Options:
 #   -Profile        Profile to use (solo-developer, team, open-source, startup)
-#   -AiAssistant    AI assistant to install rules for (augment, claude-code)
+#   -AiAssistant    AI assistant to install rules for (augment, claude-code, codex, hermes, grok-build, generic, aider)
 #   -Force          Skip confirmation prompts (validation still runs)
 
 param(
@@ -29,7 +29,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Profile <name>       Profile to use (solo-developer, team, open-source, startup)"
-    Write-Host "  -AiAssistant <name>   AI assistant (augment, claude-code)"
+    Write-Host "  -AiAssistant <name>   AI assistant (augment, claude-code, codex, hermes, grok-build, generic, aider)"
     Write-Host "  -Force                Skip confirmation prompts"
     Write-Host "  -Help                 Show this help message"
     Write-Host ""
@@ -129,12 +129,14 @@ if (-not $AiAssistant) {
         Write-Host "Which AI assistant are you using?"
         Write-Host "  1) Augment"
         Write-Host "  2) Claude Code"
+        Write-Host "  3) Generic / Codex / Hermes / Grok / human"
         Write-Host ""
-        $choice = Read-Host "Enter choice (1-2)"
+        $choice = Read-Host "Enter choice (1-3)"
         
         switch ($choice) {
             "1" { $AiAssistant = "augment" }
             "2" { $AiAssistant = "claude-code" }
+            "3" { $AiAssistant = "generic" }
             default {
                 Print-Error "Invalid choice. Exiting."
                 exit 1
@@ -187,7 +189,7 @@ if ($logsExists -or $configExists) {
     Write-Host ""
     
     if (-not $Force) {
-        $continue = Read-Host "Continue and overwrite? (y/N)"
+        $continue = Read-Host "Preserve existing logs/config and refresh guidance? (y/N)"
         if ($continue -ne 'y' -and $continue -ne 'Y') {
             Print-Info "Installation cancelled."
             exit 0
@@ -239,7 +241,9 @@ foreach ($mapping in $templateMappings.GetEnumerator()) {
     $source = Join-Path $SourceRoot $mapping.Key
     $dest = $mapping.Value
 
-    if (Test-Path $source) {
+    if (Test-Path $dest) {
+        Print-Info "Preserved $dest"
+    } elseif (Test-Path $source) {
         Copy-Item -Path $source -Destination $dest -Force
         $CreatedItems += $dest
         Print-Success "Copied $dest"
@@ -262,6 +266,7 @@ if ($templateErrors.Count -gt 0) {
 # incidents.build_index's empty-dir output byte-for-byte. Written no-BOM, LF.
 $incidentsReadme = @"
 ---
+type: Incident Index
 doc: INCIDENTS-INDEX
 related:
   changelog: ../CHANGELOG.md
@@ -282,9 +287,11 @@ _No incidents recorded yet._
 # incidents.build_index's output byte-for-byte (the closing "@ drops the final
 # newline, so append one explicitly).
 $incidentsReadme = ($incidentsReadme -replace "`r`n", "`n") + "`n"
+if (-not (Test-Path "logs/incidents/README.md")) {
 [System.IO.File]::WriteAllText((Join-Path $ProjectRoot "logs/incidents/README.md"), $incidentsReadme, (New-Object System.Text.UTF8Encoding $false))
 $CreatedItems += "logs/incidents/README.md"
 Print-Success "Seeded logs/incidents/README.md (empty-state index)"
+}
 
 # ============================================================================
 # INSTALL AI RULES
@@ -295,45 +302,19 @@ Print-Info "Installing AI assistant rules..."
 switch ($AiAssistant) {
     "augment"     { $rulesTarget = "augment_rules"; $rulesDest = Join-Path $ProjectRoot ".augment\rules" }
     "claude-code" { $rulesTarget = "claude_rules";  $rulesDest = Join-Path $ProjectRoot ".claude\rules"  }
-    default       { Rollback-Installation "Unknown assistant: $AiAssistant" }
-}
-
-if (-not (Test-Path $rulesDest)) {
-    New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
-}
-$CreatedItems += $rulesDest
-
-Get-ChildItem -Path (Join-Path $SourceRoot "rules") -Filter "*.md" | ForEach-Object {
-    $text = Get-Content $_.FullName -Raw
-    # Extract frontmatter block (between the first two '---' lines).
-    if ($text -match "(?ms)^---\s*\r?\n(.*?)\r?\n---") {
-        $fm = $Matches[1]
-        if ($fm -match "(?m)^targets:\s*(.+)$") {
-            $targets = ($Matches[1] -replace '\[|\]','' -split ',' | ForEach-Object { $_.Trim() })
-            if ($targets -contains $rulesTarget) {
-                $dest = Join-Path $rulesDest $_.Name
-                Copy-Item -Path $_.FullName -Destination $dest -Force
-                $CreatedItems += $dest
-                Print-Success "Installed $($_.Name)"
-            }
-        }
+    default       {
+        if ($AiAssistant -in @("codex", "hermes", "grok-build", "generic", "aider")) { $rulesDest = $null }
+        else { Rollback-Installation "Unknown assistant: $AiAssistant" }
     }
 }
 
-if ($AiAssistant -eq "claude-code") {
-    $tmpl = Join-Path $SourceRoot "install-templates\claude\project_instructions.md.tmpl"
-    $dest = Join-Path $ProjectRoot ".claude\project_instructions.md"
-    $rendered = (Get-Content $tmpl -Raw) `
-        -replace '\{\{paths\.changelog\}\}','logs/CHANGELOG.md' `
-        -replace '\{\{paths\.devlog\}\}','logs/DEVLOG.md' `
-        -replace '\{\{paths\.state\}\}','logs/STATE.md' `
-        -replace '\{\{paths\.adr_dir\}\}','logs/adr/'
-    # Spec requires no BOM. Windows PowerShell 5.1's `Set-Content -Encoding utf8`
-    # writes UTF-8 *with* BOM, so use .NET directly with a no-BOM encoding.
-    [System.IO.File]::WriteAllText($dest, $rendered, (New-Object System.Text.UTF8Encoding $false))
-    $CreatedItems += $dest
-    Print-Success "Rendered .claude/project_instructions.md"
+if ($rulesDest -and -not (Test-Path $rulesDest)) {
+    New-Item -ItemType Directory -Path $rulesDest -Force | Out-Null
+    $CreatedItems += $rulesDest
 }
+
+
+# Detailed procedures remain on demand; setup-context manages native pointers.
 
 # Merge the canonical managed block into the project-root AGENTS.md.
 # Brownfield-safe: the merge CLI (lfg.py merge-agents-md) builds the
@@ -414,9 +395,23 @@ token_targets:
 # Presets and customization: .log-file-genius/product/profiles/*.yml
 "@
 
+if (-not (Test-Path ".logfile-config.yml")) {
 Set-Content -Path ".logfile-config.yml" -Value $configContent -Force
 $CreatedItems += ".logfile-config.yml"
 Print-Success "Created .logfile-config.yml"
+}
+if ($python) {
+    & $python $lfgPy setup-context
+    if ($LASTEXITCODE -ne 0) { exit 2 }
+} else {
+    if (-not (Test-Path "logs/adr/README.md")) {
+        Copy-Item (Join-Path $SourceRoot "templates/ADR_README_template.md") "logs/adr/README.md"
+    }
+    if ($AiAssistant -eq "claude-code" -and -not (Test-Path "CLAUDE.md")) {
+        Set-Content "CLAUDE.md" "@AGENTS.md"
+    }
+    Print-Warning "Python unavailable: inspect native instructions; use Markdown navigation."
+}
 
 # ============================================================================
 # VALIDATION
@@ -432,12 +427,8 @@ if (-not (Test-Path "logs/DEVLOG.md")) { $errors += "logs/DEVLOG.md missing" }
 if (-not (Test-Path "logs/STATE.md")) { $errors += "logs/STATE.md missing" }
 if (-not (Test-Path ".logfile-config.yml")) { $errors += ".logfile-config.yml missing" }
 
-if ($AiAssistant -eq "augment" -and -not (Test-Path ".augment/rules/log-file-maintenance.md")) {
-    $errors += ".augment/rules/log-file-maintenance.md missing"
-}
-if ($AiAssistant -eq "claude-code" -and -not (Test-Path ".claude/rules/log-file-maintenance.md")) {
-    $errors += ".claude/rules/log-file-maintenance.md missing"
-}
+if (-not (Test-Path "AGENTS.md")) { $errors += "AGENTS.md missing" }
+
 
 if ($errors.Count -gt 0) {
     Print-Error "Installation validation failed:"

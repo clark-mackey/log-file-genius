@@ -1,3 +1,8 @@
+---
+type: "Architecture Decision"
+title: "ADR-009: Two-Branch Strategy for Version Control"
+---
+
 # ADR-009: Two-Branch Strategy for Version Control
 
 **Status:** Accepted  
@@ -6,6 +11,12 @@
 **Supersedes:** Partially modifies ADR-008
 
 ---
+
+## Routing
+
+**Read when:** Promoting releases or changing branches
+**Applies to:** product/VERSION.json, project/WORKFLOW.md
+**Constraint:** Keep development history on development and selectively promote distributables to main.
 
 ## Context
 

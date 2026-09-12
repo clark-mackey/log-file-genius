@@ -1,107 +1,28 @@
-# Architectural Decision Records (ADRs)
-
-This directory contains records of architectural decisions made during the development of Log File Genius.
-
+---
+type: ADR Index
+doc: ADR-INDEX
 ---
 
-## What is an ADR?
+# Decisions
 
-An Architectural Decision Record (ADR) is a document that captures an important architectural decision made along with its context and consequences.
+[Template](../../product/templates/ADR_template.md) · [Notes](../../project/archive/context/adr-index-before-routing.md).
 
-**When to create an ADR:**
-- Making architectural decisions with long-term impact
-- Choosing between multiple viable alternatives
-- Establishing patterns that will be used across the codebase
-- Making security or performance tradeoffs
-- Deciding on external dependencies or frameworks
+<!-- LFG:ROUTES:BEGIN -->
+Source SHA-256: b4ce7ded469fd2919721bd316cdd11c61de4b54d83d58d52990ca19f3a8cbaeb
 
-**When NOT to create an ADR:**
-- Routine bug fixes
-- Obvious implementation details
-- Temporary workarounds
-- Decisions that can be easily reversed
+Read globals and every path/task match. Follow replacements; search sources on a miss. Report unread scope.
 
----
+| Decision / status | Read when | Applies to | Constraint |
+|---|---|---|---|
+| [ADR-015: Portable Context and Routing](015-portable-context-discovery.md) (accepted) | Changing context or distribution | project-wide | Keep context local and low-dependency; preserve ownership and history; report unread or unverified scope. |
 
-## ADR Index - Newest First
+| Partition | Read when | Applies to |
+|---|---|---|
+| [ADR-007](routes/adr-007.md) | Considering feature scope, profiles or workflows | product/profiles/*, product/scripts/* |
+| [ADR-009](routes/adr-009.md) | Promoting releases or changing branches | product/VERSION.json, project/WORKFLOW.md |
+| [ADR-010](routes/adr-010.md) | Installing or updating the source checkout | .gitmodules, product/scripts/install.*, product/scripts/update.* |
+| [ADR-013](routes/adr-013.md) | Considering composable installers or hook extensibility | product/scripts/install.*, product/scripts/update.* |
+| [ADR-014](routes/adr-014.md) | Changing development branch log locations | logs/*, project/* |
 
-- **[ADR-008: Product/Project Directory Separation](008-product-project-directory-separation.md)** - *Accepted* (2025-11-02)
-  - Restructure repository into `product/` and `project/` directories to eliminate AI agent confusion between distributable content and development logs
-- **[ADR-007: Agent OS-Inspired Enhancements](007-agent-os-inspired-enhancements.md)** - *Status TBD*
-  - Agent OS-inspired enhancements for verification, profiles, skills, workflows, and layered context
-
----
-
-## ADR Template
-
-Use the template at `../../templates/ADR_template.md` to create new ADRs.
-
-**Naming convention:** `NNN-short-title-in-kebab-case.md`
-
-Examples:
-- `001-github-pages-deployment.md`
-- `002-template-repository-structure.md`
-- `003-multi-platform-ai-support.md`
-
----
-
-## Status Values
-
-- **Proposed:** Decision is under discussion
-- **Accepted:** Decision is approved and being implemented
-- **Deprecated:** Decision is no longer recommended but may still be in use
-- **Superseded by ADR-XXX:** Decision has been replaced by a newer ADR
-
----
-
-## Related Documents
-
-📋 **[PRD](../../project/specs/prd.md)** - Product requirements and specifications
-📖 **[DEVLOG](../DEVLOG.md)** - Development narrative and decision rationale
-📊 **[CHANGELOG](../CHANGELOG.md)** - Technical changes and version history
-
----
-
-## How to Use ADRs
-
-1. **Before making a significant architectural decision:**
-   - Copy `../../templates/ADR_template.md` to `docs/adr/NNN-title.md`
-   - Fill in the context, decision, consequences, and alternatives
-   - Set status to "Proposed"
-   - Discuss with team/stakeholders
-
-2. **After decision is approved:**
-   - Update status to "Accepted"
-   - Add entry to this README index
-   - Link to ADR from DEVLOG entry
-   - Reference ADR in CHANGELOG when implemented
-
-3. **When implementing the decision:**
-   - Reference the ADR in code comments where relevant
-   - Update CHANGELOG with "Per ADR-NNN" notation
-
-4. **If decision is superseded:**
-   - Update old ADR status to "Superseded by ADR-XXX"
-   - Create new ADR explaining the change
-   - Update this index
-
----
-
-## Token Efficiency
-
-ADRs are designed to be:
-- **Concise but complete** - Aim for 300-500 words per ADR
-- **Scannable** - Use bullet points and clear structure
-- **Linked, not duplicated** - Reference external docs instead of copying
-- **Focused** - One decision per ADR
-
-**Target:** Each ADR should consume ~400-600 tokens when loaded by AI.
-
----
-
-## Further Reading
-
-- **[ADR How-To Guide](../ADR_how_to.md)** - Comprehensive guide to creating and using ADRs
-- **[ADR Template](../../templates/ADR_template.md)** - Template for new ADRs
-- **[Log File How-To](../log_file_how_to.md)** - How ADRs fit into the overall log file system
-
+Superseded history (follow replacements): [ADR-008](routes/adr-008.md), [ADR-011](routes/adr-011.md), [ADR-012](routes/adr-012.md).
+<!-- LFG:ROUTES:END -->

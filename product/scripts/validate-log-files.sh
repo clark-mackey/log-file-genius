@@ -316,8 +316,18 @@ validate_devlog() {
         errors+=("Missing '## Daily Log' section")
     fi
 
+    # Do not silently recommend archival for legacy/unrecognized entry headings.
+    local unsupported=$(awk '
+        /^## Daily Log/ {daily=1; next}
+        daily && /^## Archive/ {exit}
+        daily && /^##[#]? / {print}
+    ' "$DEVLOG_PATH" | grep -v -E '^### [0-9]{4}-[0-9]{2}-[0-9]{2}([ :]|$)' || true)
+    if [ -n "$unsupported" ]; then
+        write_validation_result "DEVLOG" "WARNING" "Entry headings require migration before archival; preserve a backup and use ### YYYY-MM-DD: Title"
+    fi
+
     # Check entry date format (### YYYY-MM-DD: Title)
-    local invalid_entries=$(grep -E "^### [0-9]" "$DEVLOG_PATH" | grep -v -E "^### [0-9]{4}-[0-9]{2}-[0-9]{2}:" || true)
+    local invalid_entries=$(grep -E "^### [0-9]" "$DEVLOG_PATH" | grep -v -E "^### [0-9]{4}-[0-9]{2}-[0-9]{2}([ :]|$)" || true)
     if [ -n "$invalid_entries" ]; then
         errors+=("Invalid entry date format (expected ### YYYY-MM-DD: Title)")
         if [ "$VERBOSE" = true ]; then
@@ -360,13 +370,8 @@ validate_state() {
         errors+=("Missing '## Current Context' section")
     fi
 
-    # Check for required fields in Current Context
-    local required_fields=("Version" "Active Branch" "Phase")
-    for field in "${required_fields[@]}"; do
-        if ! grep -q "\*\*$field" "$STATE_PATH"; then
-            errors+=("Missing required field in Current Context: $field")
-        fi
-    done
+    # Match the Python validator's structural contract. Evidence fields are
+    # assessed by `freshness`; legacy Version/Phase fields are not mandatory.
 
     # Token budget: STATE should stay lean (the now), default <500. This is a
     # WARNING not an error — STATE has no archival (you trim it), and a freshly
@@ -563,4 +568,3 @@ else
 fi
 
 exit $EXIT_CODE
-

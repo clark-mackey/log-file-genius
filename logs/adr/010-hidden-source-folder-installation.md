@@ -1,3 +1,8 @@
+---
+type: "Architecture Decision"
+title: "ADR-010: Hidden Source Folder Installation Architecture"
+---
+
 # ADR-010: Hidden Source Folder Installation Architecture
 
 **Status:** Accepted  
@@ -6,6 +11,12 @@
 **Related:** ADR-009 (Two-Branch Strategy)
 
 ---
+
+## Routing
+
+**Read when:** Installing or updating the source checkout
+**Applies to:** .gitmodules, product/scripts/install.*, product/scripts/update.*
+**Constraint:** Keep the upstream source checkout in the hidden .log-file-genius folder.
 
 ## Context
 

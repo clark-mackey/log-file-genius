@@ -1,3 +1,8 @@
+---
+type: "Architecture Decision"
+title: "ADR-013: Composable Installer Architecture"
+---
+
 # ADR-013: Composable Installer Architecture
 
 **Status:** Proposed
@@ -6,6 +11,12 @@
 **Related:** ADR-010 (Hidden Source Folder), Epic 12-15 (upcoming features)
 
 ---
+
+## Routing
+
+**Read when:** Considering composable installers or hook extensibility
+**Applies to:** product/scripts/install.*, product/scripts/update.*
+**Constraint:** This proposal does not authorize implementation; evaluate its alternatives before adoption.
 
 ## Context
 

@@ -1,4 +1,6 @@
 ---
+type: "Development Log"
+title: "Development Log"
 doc: DEVLOG
 related:
   changelog: ./CHANGELOG.md
@@ -70,6 +72,27 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ---
 
 ## Daily Log - Newest First
+
+### 2026-09-12: Explicit context discovery and preservation
+
+**Decision:** Execute the reviewed workplan with a small startup protocol, ADR-owned
+routing and optional stdlib metadata migration. Preserve local Markdown/Git context
+for humans and agents. [ADR-015](adr/015-portable-context-discovery.md) records authority
+and replacements for older installation conventions.
+
+**Evidence:** Baseline 222 Python checks passed. New tests exercise source preservation,
+unknown routing, packet budgets, native pointers and full local install/update lifecycle.
+Code-owl found archival and mixed-template preservation gaps; fixes add frozen source
+bytes, exact-byte recovery, collision refusal and ownership checks.
+
+**Delivery:** [Draft PR #16](https://github.com/clark-mackey/log-file-genius/pull/16)
+targets development. All 252 tests pass across Linux/macOS/Windows and Python
+3.10/3.14, plus Bash/PowerShell lifecycle checks. Windows uncovered CRLF drift and
+redirected Unicode crashes; regression fixes preserve source bytes and emit UTF-8.
+
+**Limits:** Model/native-loader and human retrieval outcomes are not inferred from
+unit tests. Release gates and measured budgets live in the [execution record](../project/specs/context-execution.md).
+
 
 ### 2026-07-05: 🚨 INCIDENT - Own Logs Went Stale for Five Months (+ Spec 5 Landed, v0.5.0)
 

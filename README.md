@@ -2,7 +2,7 @@
 
 **Make your AI agents remember. Not guess, not loop, not forget — remember.**
 
-> Five markdown files + AI rules that give any agent (or subagent) instant, complete project context in under 5% of its context window.
+> Low-dependency project context for humans and agents: current state, change history, decisions and lessons in Markdown and Git.
 
 [![GitHub stars](https://img.shields.io/github/stars/clark-mackey/log-file-genius?style=social)](https://github.com/clark-mackey/log-file-genius/stargazers)
 [![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
@@ -33,13 +33,13 @@ Or maybe you're vibe coding your first projects and wondering why the AI keeps g
 
 ## 💡 The Solution: A Shared Brain for Every Agent
 
-Log File Genius is five markdown files and a set of AI rules. Any agent — lead, subagent, teammate, or a fresh session — reads them and instantly knows: what are we building, what changed, why we decided that, what's happening right now, and what rules we follow.
+Log File Genius combines Markdown logs, decision records and reading instructions. Start with current state, follow relevant decision routes, and check the evidence against your checkout.
 
-The AI maintains the files itself. You don't write documentation — the agent does, as part of its workflow.
+Humans and agents maintain the same records as part of meaningful changes and handoffs.
 
 **After Log File Genius:**
-- ⚡ **Agents make informed decisions** from the first message — no ramp-up, no guessing
-- 🔄 **Session continuity** — handoff protocol means zero context lost between sessions
+- ⚡ **Readers find recorded decisions** through state links and task/path routing
+- 🔄 **Session continuity** — handoff protocol preserves recorded state and next actions
 - 🤖 **Subagents spin up fully briefed** — complete project context from their first message, no re-explaining
 - 📊 **Up to 93% token reduction** — complete project history in ~7,000-10,000 tokens instead of 90,000+
 
@@ -87,15 +87,15 @@ This isn't just documentation. It's an operating system for AI agent performance
 
 - **🚀 Agents That Actually Perform:** Your agent reads 5 files and knows everything — what we're building, what changed, why, what's happening now, and what rules to follow. No ramp-up. No guessing. Just execution.
 
-- **🔄 Zero Context Loss Between Sessions:** The handoff protocol means a new session picks up exactly where the last one left off. No more "let me re-read the codebase to understand what's going on."
+- **🔄 Session continuity:** Handoffs preserve recorded decisions, current work and next actions. Readers still reconcile the record with the current checkout.
 
-- **🤖 Multi-Agent & Subagent Ready:** Spin up a subagent and it has full project context in seconds. `STATE.md` prevents collisions. The handoff protocol prevents duplicated work. Agent teams that actually coordinate.
+- **🤖 Selected context for subagents:** Share STATE and explicitly selected decisions or incidents. Handoff evidence helps readers coordinate; it does not lock files or prevent concurrent edits.
 
 - **🧠 Self-Regulating:** Agents manage their own token budgets, estimate entry sizes, and archive proactively. No babysitting. No external tools. The AI maintains the files as part of its workflow — you don't write documentation, the agent does.
 
 - **🚨 Learns From Failures:** The `🚨 INCIDENT` format in DEVLOG means agents document what broke, why, and how to prevent it. Next time a similar problem comes up, the agent already knows the answer.
 
-- **⚡ Zero-Search Navigation:** Bidirectional frontmatter linking means your AI never wastes tokens searching for files. Every document points to its related documents. One hop to anything.
+- **⚡ Explicit navigation:** Startup pointers and ADR routing help readers find relevant constraints. Missing or unmatched routes require bounded search.
 
 - **📊 Up to 93% Token Reduction:** Sheds old context like a snake sheds its skin. Complete project history in <5% of the context window, leaving the rest for what matters: the code you're writing *right now*.
 
@@ -260,3 +260,7 @@ Contributions are welcome! Whether it's improving the documentation, adding supp
 **Built with ❤️ by [Clark Mackey](https://github.com/clark-mackey)**
 
 *Inspired by the endless struggle against context window limits and weak sauce AI recommendations.*
+
+<!-- LFG:POINTER:BEGIN -->
+Project context: [STATE](logs/STATE.md), [decisions](logs/adr/README.md).
+<!-- LFG:POINTER:END -->

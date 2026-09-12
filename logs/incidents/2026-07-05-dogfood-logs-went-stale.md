@@ -1,4 +1,6 @@
 ---
+type: "Incident Report"
+title: "Incident Report: Own logs went stale for five months while shipping log-maintenance tooling"
 doc: INCIDENT
 related:
   changelog: ../CHANGELOG.md

@@ -1,11 +1,23 @@
+---
+type: "Architecture Decision"
+title: "ADR-008: Product/Project Directory Separation"
+---
+
 # ADR-008: Product/Project Directory Separation
 
-**Status:** Accepted
+**Status:** Superseded
+**Superseded by:** [ADR-015](015-portable-context-discovery.md)
 **Date:** 2025-11-02
 **Deciders:** Clark Mackey, PM Agent (John)
 **Related:** Epic: Architectural Clarity Refactoring
 
 ---
+
+## Routing
+
+**Read when:** Changing distributable and project directory layout
+**Applies to:** product/*, project/*
+**Constraint:** Separate distributable content from development documentation; follow the replacement for current paths.
 
 ## Context
 

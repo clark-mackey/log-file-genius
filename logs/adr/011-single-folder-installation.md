@@ -1,11 +1,23 @@
+---
+type: "Architecture Decision"
+title: "ADR-011: Single Folder Installation Structure"
+---
+
 # ADR-011: Single Folder Installation Structure
 
-**Status:** Accepted  
+**Status:** Superseded
+**Superseded by:** [ADR-015](015-portable-context-discovery.md)
 **Date:** 2025-11-02  
 **Deciders:** Clark Mackey  
 **Tags:** #installation #ux #architecture
 
 ---
+
+## Routing
+
+**Read when:** Changing consumer installation layout
+**Applies to:** product/scripts/install.*, product/scripts/update.*
+**Constraint:** Follow the replacement for current installation layout; retain this record as history.
 
 ## Context
 

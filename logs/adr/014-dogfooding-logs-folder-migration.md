@@ -1,3 +1,8 @@
+---
+type: "Architecture Decision"
+title: "ADR-014: Dogfooding Compliance - Migrate Development Branch to /logs/ Structure"
+---
+
 # ADR-014: Dogfooding Compliance - Migrate Development Branch to /logs/ Structure
 
 **Status:** Proposed
@@ -6,6 +11,12 @@
 **Related:** ADR-012 (Single /logs/ Folder), ADR-009 (Two-Branch Strategy), ADR-008 (Product/Project Separation)
 
 ---
+
+## Routing
+
+**Read when:** Changing development branch log locations
+**Applies to:** logs/*, project/*
+**Constraint:** This historical proposal explains root logs migration; check current paths before reusing it.
 
 ## Context
 

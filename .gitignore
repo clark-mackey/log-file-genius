@@ -70,3 +70,9 @@ Thumbs.db
 
 # Git worktrees (superpowers)
 .worktrees/
+
+# LFG local recovery artifacts (originals remain available locally)
+*.lfg-backup-*
+/.lfg/metadata-migration.json*
+/.lfg/retired-rules/
+*.lfg-retired-*
