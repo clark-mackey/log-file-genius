@@ -12,20 +12,31 @@ p = argparse.ArgumentParser()
 p.add_argument('--base', type=Path, required=True)
 p.add_argument('--candidate', required=True)
 p.add_argument('--focused', action='store_true', help='Only Codex lesson and fresh discovery')
+p.add_argument('--prerelease', action='store_true', help='Nine trials under PRERELEASE.md criteria')
 a = p.parse_args()
 if (a.base / 'results').exists():
     raise SystemExit('Use a fresh base; pilot evidence must not be overwritten.')
 a.candidate = evaluate.git(evaluate.REPO, 'rev-parse', a.candidate)
 evaluate.export(a.candidate, a.base / 'sources/candidate')
-for fixture in ('fresh', 'custom-paths'):
+for fixture in ('fresh', 'branch') if a.prerelease else ('fresh', 'custom-paths'):
     evaluate.seed(a.base, 'candidate', fixture)
 jobs = deque([('codex','fresh',1,'maintenance-lesson'), ('codex','fresh',1,'behavior')] if a.focused else
              [('codex','fresh',n,'maintenance-lesson') for n in range(1,4)] +
              [('claude','fresh',1,'maintenance-lesson'),
               ('codex','fresh',1,'behavior'), ('claude','fresh',1,'behavior'),
               ('codex','custom-paths',1,'behavior')])
+if a.prerelease:
+    jobs = deque([('codex', fixture, n, kind) for fixture, kind in
+                  [('fresh','behavior'), ('branch','behavior'), ('fresh','maintenance-lesson')]
+                  for n in range(1,4)])
 plan = {'candidate': a.candidate, 'scope': 'development pilot; not acceptance',
         'jobs': list(jobs), 'original_caps_unchanged': True}
+if a.prerelease:
+    import hashlib
+    criteria = Path(__file__).with_name('PRERELEASE.md').read_bytes()
+    plan.update(scope='scoped prerelease validation, not stable acceptance',
+                original_caps_unchanged=False, costs='advisory for both conditions',
+                criteria_sha256=hashlib.sha256(criteria).hexdigest())
 evaluate.write(a.base/'plan.json', json.dumps(plan, indent=2))
 failures = {}
 with ThreadPoolExecutor(max_workers=4) as pool:

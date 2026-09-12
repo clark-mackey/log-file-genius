@@ -15,18 +15,18 @@ Read task sources with line numbers on the first pass if citations need them; do
 reread unchanged sources just to format citations. Follow the handoff's code and
 verification links before scanning unrelated components or historical logs. Expand
 only for a concrete evidence gap, changed scope, or another applicable decision.
-The initial discovery budget is eight source reads, including repeats. At the limit,
-report unresolved scope before continuing in explicit batches; do not claim complete
-coverage or omit a governing decision to fit the budget. A batch does not reset the
-cumulative read count for evaluation.
+Aim for eight initial source reads, including repeats. This is an efficiency target,
+not a stopping rule: continue for governing decisions, checkout reconciliation and
+other required evidence. Report extra reads and their purpose; never omit evidence
+to meet a cost target. Batches do not reset the cumulative read count.
 From a nested directory, locate the repository root once (`git rev-parse --show-toplevel`)
 and resolve the configured pointers there. Follow applicable directory instructions;
 do not search above the root or repeatedly enumerate the tree to rediscover it.
 
 On a missing or stale index, search the configured ADR directory using one or two
 literal terms for the task and affected components. Inspect candidate status and
-replacement links. Search within the remaining discovery budget; if unresolved, report
-the unchecked scope and continue in explicit batches before claiming coverage.
+replacement links. Keep fallback searches bounded and report unchecked scope;
+continue in explicit batches when required for complete evidence.
 Use every matching task route below. Resolve log locations through configuration;
 project requirements keep their existing location and schema.
 

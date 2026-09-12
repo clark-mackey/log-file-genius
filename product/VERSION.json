@@ -1,15 +1,15 @@
 {
-  "version": "0.6.0-dev",
+  "version": "0.6.0-rc.1",
   "release_date": "2026-09-12",
   "components": {
-    "installer": "0.6.0-dev",
-    "validator": "0.6.0-dev",
-    "linter": "0.6.0-dev",
-    "ai-rules": "0.6.0-dev",
-    "templates": "0.6.0-dev",
-    "profiles": "0.6.0-dev",
-    "secrets": "0.6.0-dev",
-    "cli": "0.6.0-dev"
+    "installer": "0.6.0-rc.1",
+    "validator": "0.6.0-rc.1",
+    "linter": "0.6.0-rc.1",
+    "ai-rules": "0.6.0-rc.1",
+    "templates": "0.6.0-rc.1",
+    "profiles": "0.6.0-rc.1",
+    "secrets": "0.6.0-rc.1",
+    "cli": "0.6.0-rc.1"
   },
   "compatibility": {
     "min_python": "3.10",

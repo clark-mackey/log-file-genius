@@ -6,7 +6,7 @@
 # ============================================================================
 # Log File Genius version (used for update notifications)
 # Check for updates: https://github.com/clark-mackey/log-file-genius/releases
-log_file_genius_version: "0.6.0-dev"
+log_file_genius_version: "0.6.0-rc.1"
 
 # ============================================================================
 # PROFILE SELECTION
