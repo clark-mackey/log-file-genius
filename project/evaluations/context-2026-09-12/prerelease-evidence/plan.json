@@ -1,0 +1,63 @@
+{
+  "candidate": "c3315cd9229488f54a9529898bacb4920af9b0ee",
+  "scope": "scoped prerelease validation, not stable acceptance",
+  "jobs": [
+    [
+      "codex",
+      "fresh",
+      1,
+      "behavior"
+    ],
+    [
+      "codex",
+      "fresh",
+      2,
+      "behavior"
+    ],
+    [
+      "codex",
+      "fresh",
+      3,
+      "behavior"
+    ],
+    [
+      "codex",
+      "branch",
+      1,
+      "behavior"
+    ],
+    [
+      "codex",
+      "branch",
+      2,
+      "behavior"
+    ],
+    [
+      "codex",
+      "branch",
+      3,
+      "behavior"
+    ],
+    [
+      "codex",
+      "fresh",
+      1,
+      "maintenance-lesson"
+    ],
+    [
+      "codex",
+      "fresh",
+      2,
+      "maintenance-lesson"
+    ],
+    [
+      "codex",
+      "fresh",
+      3,
+      "maintenance-lesson"
+    ]
+  ],
+  "original_caps_unchanged": false,
+  "costs": "advisory for both conditions",
+  "criteria_sha256": "e1adc0c81f51d0aac433a6a2e92ce8c487831b20a26f0a2e4aeac722358cea22"
+}

@@ -842,3 +842,14 @@ Implemented a multi-layered update notification system:
 **Entries older than current development cycle** are archived for token efficiency:
 - **October 2025:** Foundation work, Epic 7 (Validation System), initial implementation -> `logs/archive/DEVLOG-2025-10.md`
 - [DEVLOG-2025-11-02-to-2025-11-02.md](archive/DEVLOG-2025-11-02-to-2025-11-02.md) — entries 2025-11-02 through 2025-11-02; archived ~1732 tokens, 2 entries
+
+
+## Bounded prerelease validation — 2026-09-12
+
+Accepted cost targets prospectively as advisory, keeping correctness mandatory.
+Candidate c3315cd and public distribution ffc78f7 have identical product trees.
+All six platform CI jobs passed; independent Terra review passed four of nine native
+trials. Four lacked required Git comparisons; one renamed the canonical baseline
+field and broke machine-readable freshness. No release/tag or main promotion; no
+replacement trials or tuning. Original evaluation verdicts remain unchanged.
+[Complete results](../project/evaluations/context-2026-09-12/PRERELEASE.md).

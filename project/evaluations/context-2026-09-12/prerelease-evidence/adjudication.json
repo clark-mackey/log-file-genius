@@ -1,0 +1,56 @@
+{
+  "reviewer": "Independent GPT-5.6 Terra code-owl subagent /root/review_eval",
+  "criteria": "FROZEN-CRITERIA.md plus existing ORACLE.md",
+  "completed": 9,
+  "passed": 4,
+  "failed": 5,
+  "costs": "advisory; not used to fail trials",
+  "publication": "blocked",
+  "trials": [
+    {
+      "trial": "behavior-codex-candidate-fresh-1",
+      "verdict": "pass",
+      "reason": "Reconciled code baseline through diff/history; governing decision and pending fix retained."
+    },
+    {
+      "trial": "behavior-codex-candidate-fresh-2",
+      "verdict": "fail",
+      "reason": "Only inspected uncommitted diff; omitted baseline-to-HEAD diff/history reconciliation."
+    },
+    {
+      "trial": "behavior-codex-candidate-fresh-3",
+      "verdict": "fail",
+      "reason": "No Git diff/history reconciliation of baseline and HEAD."
+    },
+    {
+      "trial": "behavior-codex-candidate-branch-1",
+      "verdict": "pass",
+      "reason": "Compared recorded work branch against different-work and inspected changed code; rejected stale verification."
+    },
+    {
+      "trial": "behavior-codex-candidate-branch-2",
+      "verdict": "fail",
+      "reason": "Inspected baseline source and HEAD patch but omitted comparison against recorded work branch."
+    },
+    {
+      "trial": "behavior-codex-candidate-branch-3",
+      "verdict": "fail",
+      "reason": "Compared original code baseline to HEAD rather than recorded work branch to different-work."
+    },
+    {
+      "trial": "maintenance-lesson-codex-candidate-fresh-1",
+      "verdict": "pass",
+      "reason": "Preserved canonical baseline and pending task/tests/blocker; local-only incident and no application change."
+    },
+    {
+      "trial": "maintenance-lesson-codex-candidate-fresh-2",
+      "verdict": "pass",
+      "reason": "Preserved canonical baseline and pending task/tests/blocker; local-only incident and no application change."
+    },
+    {
+      "trial": "maintenance-lesson-codex-candidate-fresh-3",
+      "verdict": "fail",
+      "reason": "Renamed canonical Baseline commit field to Baseline code commit; freshness.py cannot parse the resulting handoff."
+    }
+  ]
+}

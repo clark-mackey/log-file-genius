@@ -236,14 +236,23 @@ Measure actual injected content and read-tool output when the host exposes them;
 
 ### Fixture oracle and release thresholds
 
+**2026-09-12 prospective amendment:** Read/token limits are efficiency targets,
+not correctness stopping rules. Extra reads needed to establish governing decisions,
+checkout freshness or complete handoffs are allowed and reported. Correctness,
+preservation and evidence requirements remain mandatory. This policy applies equally
+to baseline and candidate comparisons; historical reports keep their original verdicts.
+The bounded prerelease gate and immutable pre-run criteria are recorded in
+[prerelease criteria](../evaluations/context-2026-09-12/PRERELEASE.md). Stable release
+still requires its full correctness, noncritical-category and real-reader evidence.
+
 Phase 0 commits a small versioned fixture manifest alongside the existing tests. Each fixture records: fixture/schema version; repository snapshot and working-tree state; host/platform assumptions; task prompt; expected route partitions, source files, and decision IDs; acceptable alternate evidence; required/forbidden actions; critical/noncritical category; maximum discovery reads and tokens; and a scoring method. Expected answers are authored independently of generated routing output. Freeze numerical read/token caps before candidate runs; any revision must be explained and applied to both baseline and candidate.
 
 Required categories are native loading, basic ADR retrieval/application, project-wide plus cross-component matching, unknown-task fallback, supersession, missing index, overflow, freshness, preservation/recovery, delegation, and archived lessons. A category is gated when its feature is shipped; critical discovery, freshness, and preservation categories cannot be postponed beyond Checkpoint B.
 
 - **Deterministic checks:** 100% of applicable schema/link/generation, command invocation, preservation, interruption, and platform smoke fixtures pass. An unsupported platform is excluded from claims, not counted as passing.
 - **Critical behavior trials:** Run every applicable safety fixture three times from clean sessions for each claimed host/model combination. All trials must preserve governing constraints, surface incomplete/conflicting evidence, and avoid forbidden actions. One critical failure blocks that compatibility claim until fixed and the affected suite is rerun.
-- **Noncritical retrieval and continuity:** At least 90% of trials in each category pass, with three trials per fixture and at least ten trials per category; round the required success count upward. A pass requires the oracle's expected sources/actions and its read/token caps. Report category denominators, every failure, and any human adjudication; aggregate scores cannot hide a failing category.
-- **Efficiency and maintenance:** On the same scored task corpus, median discovery tokens must be below the current-LFG baseline and within each fixture's frozen limits; critical correctness must not regress. Use at least five paired maintenance tasks: median logging actions and documentation-only follow-up commits must not exceed baseline, with zero omitted required handoff facts. Record narration tokens separately rather than treating short prose as proof of lower maintenance cost.
+- **Noncritical retrieval and continuity:** At least 90% of trials in each category pass, with three trials per fixture and at least ten trials per category; round the required success count upward. A pass requires the oracle's expected sources/actions; report read/token targets and overruns separately under the prospective amendment. Report category denominators, every failure, and any human adjudication; aggregate scores cannot hide a failing category.
+- **Efficiency and maintenance:** On the same scored task corpus, target median discovery tokens below the current-LFG baseline and within each fixture's recorded cost targets; critical correctness must not regress. Cost deviations must be reported and justified rather than suppressing required evidence. Use at least five paired maintenance tasks: median logging actions and documentation-only follow-up commits must not exceed baseline, with zero omitted required handoff facts. Record narration tokens separately rather than treating short prose as proof of lower maintenance cost.
 - **Human handoff:** Use at least three blinded task/reader trials scored against expected next action, governing decision, and evidence source. All three must find the required rationale without CLI assistance; record reading time without claiming general population performance.
 
 Run deterministic checks in ordinary CI. Keep live model trials explicit and bounded; report host, model, version, trial count, and failures. Passing fixtures is not a guarantee of all future agent behavior.

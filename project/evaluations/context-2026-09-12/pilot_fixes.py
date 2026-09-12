@@ -65,4 +65,4 @@ with ThreadPoolExecutor(max_workers=4) as pool:
                 evaluate.write(a.base/'results'/name/'attempt-error.json', json.dumps({'trial':name,'status':repr(error)}))
 rows = [collect(a.base, p.parent) for p in sorted((a.base/'results').glob('*/result.json'))]
 evaluate.write(a.base/'summary.json',json.dumps(rows,indent=2))
-print(json.dumps({'completed':len(rows),'planned':len(plan['jobs']),'scope':'development pilot'}))
+print(json.dumps({'completed':len(rows),'planned':len(plan['jobs']),'scope':plan['scope']}))

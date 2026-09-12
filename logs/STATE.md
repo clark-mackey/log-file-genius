@@ -12,23 +12,25 @@ related:
 ## Current Context
 
 **Baseline branch:** codex/context-evaluation
-**Baseline commit:** 81edfd1
-**Next action:** Review the targeted context fixes and plan affected acceptance trials before any main promotion. Refresh human packages to the final candidate before issuing them.
-**Tests:** 254 local Python tests pass on 2026-09-12; generated AGENTS and diff checks pass. Nine bounded native development trials are retained. Final Codex fresh check: eight source reads, 243 estimated startup tokens. Final lesson handoff preserved pending facts and the code baseline.
-**Blockers:** Full critical/noncritical acceptance remains open. Freshness reconciliation was incomplete in the focused discovery trial. Codex commit effort and Claude injected-byte measurements remain unavailable. Three real-reader packages exist; zero readers have participated. No release or main promotion is authorized by these results.
+**Baseline commit:** c3315cd
+**Next action:** Address mandatory freshness reconciliation and canonical baseline-field preservation before any future prerelease attempt. No additional tuning or replacement trials in this run. Refresh human packages before issuing them.
+**Tests:** 254 local product tests and generated/version/hash checks pass. Distribution candidate ffc78f7 has the identical product tree; all six Linux/macOS/Windows × Python3.10/3.14 CI jobs and install/update smokes pass. Frozen native validation: 4/9 correctness passes, five failures; all nine completed.
+**Blockers:** Four trials omitted required Git comparisons; one made the baseline field unreadable by freshness.py. All-trials-pass gate blocks prerelease. Full acceptance, other-host behavior and three real-reader exercises remain open (zero participants). Codex commit effort and Claude injected-byte measurements remain unavailable.
 
-v0.6.0-dev remains a candidate. Earlier six-platform Python/Bash/PowerShell CI evidence
-belongs to the pre-fix revision; it does not certify these changes on Windows/Linux.
+v0.6.0-rc.1 is an unreleased candidate. Read/token targets are prospectively advisory;
+correctness remains mandatory. Startup estimate 245; discovery costs are mixed.
+Main remains 0d622e8; no release tag or GitHub Release exists.
+[Prerelease evidence](../project/evaluations/context-2026-09-12/PRERELEASE.md).
 [Original evaluation](../project/evaluations/context-2026-09-12/REPORT.md).
 [Targeted fixes](../project/evaluations/context-2026-09-12/FIXES.md).
 
 ## Last Session
 
-Replaced the stale PR-review/unmeasured-evaluation handoff with completed evidence.
-Fixed shared handoff/discovery instructions without adding runtime dependencies.
-First pilot exposed additional read-budget and baseline gaps; the focused final
-startup check addressed those specific symptoms. No full acceptance rerun, human
-simulation, push or promotion. Main and the original checkout remain untouched.
+Froze revised criteria before nine fresh native sessions. Published only the isolated
+product/CI distribution branch codex/context-prerelease for platform validation.
+Independent Terra review found five mandatory failures. Recorded every trial without
+retuning or replacing failures. Evaluator traces remain outside the public branch.
+Earlier development pilots and their limitations remain recorded separately.
 
 ## In Progress
 

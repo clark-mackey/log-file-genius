@@ -1,0 +1,121 @@
+[
+  {
+    "trial": "behavior-codex-candidate-branch-1",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 13,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 9942,
+    "discovery_estimated_tokens": 10187,
+    "opaque_read_tools": [
+      26
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "behavior-codex-candidate-branch-2",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 13,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 7167,
+    "discovery_estimated_tokens": 7412,
+    "opaque_read_tools": [
+      2
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "behavior-codex-candidate-branch-3",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 14,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 6590,
+    "discovery_estimated_tokens": 6835,
+    "opaque_read_tools": [
+      8
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "behavior-codex-candidate-fresh-1",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 18,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 10823,
+    "discovery_estimated_tokens": 11068,
+    "opaque_read_tools": [],
+    "contamination_hits": []
+  },
+  {
+    "trial": "behavior-codex-candidate-fresh-2",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 24,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 8929,
+    "discovery_estimated_tokens": 9174,
+    "opaque_read_tools": [
+      11
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "behavior-codex-candidate-fresh-3",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 20,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 5493,
+    "discovery_estimated_tokens": 5738,
+    "opaque_read_tools": [
+      10
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "maintenance-lesson-codex-candidate-fresh-1",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 12,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 12419,
+    "discovery_estimated_tokens": 12664,
+    "opaque_read_tools": [
+      15,
+      22,
+      28
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "maintenance-lesson-codex-candidate-fresh-2",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 16,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 12156,
+    "discovery_estimated_tokens": 12401,
+    "opaque_read_tools": [
+      19,
+      21,
+      39
+    ],
+    "contamination_hits": []
+  },
+  {
+    "trial": "maintenance-lesson-codex-candidate-fresh-3",
+    "returncode": 0,
+    "timed_out": false,
+    "source_read_lower_bound": 15,
+    "native_wrapped_instruction_estimated_tokens": 245,
+    "tool_output_estimated_tokens": 10789,
+    "discovery_estimated_tokens": 11034,
+    "opaque_read_tools": [
+      13
+    ],
+    "contamination_hits": []
+  }
+]

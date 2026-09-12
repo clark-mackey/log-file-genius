@@ -126,3 +126,14 @@ trials retain both unsuccessful drafts and focused positive outcomes. The final
 Codex fresh check used eight reads and 243 native startup estimated tokens; the final
 lesson retained the code baseline and pending facts. These checks do not close the
 full acceptance, freshness, commit-effort, native-byte or real-human gates above.
+
+
+## Bounded prerelease validation — 2026-09-12
+
+Accepted cost targets prospectively as advisory, keeping correctness mandatory.
+Candidate c3315cd and public distribution ffc78f7 have identical product trees.
+All six platform CI jobs passed; independent Terra review passed four of nine native
+trials. Four lacked required Git comparisons; one renamed the canonical baseline
+field and broke machine-readable freshness. No release/tag or main promotion; no
+replacement trials or tuning. Original evaluation verdicts remain unchanged.
+[Complete results](../evaluations/context-2026-09-12/PRERELEASE.md).

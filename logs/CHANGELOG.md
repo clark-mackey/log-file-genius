@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made read/token targets advisory while preserving mandatory correctness gates. Prepared unreleased v0.6.0-rc.1: six platform CI jobs pass, but five of nine frozen native correctness trials block publication. [Evidence](../project/evaluations/context-2026-09-12/PRERELEASE.md).
+
 - Implemented compact startup, canonical ADR routing, checkout-aware handoffs, explicit context packets and optional recoverable OKF migration. Preserved project-owned instructions and historical metadata; removed automatic-amend and every-commit logging defaults. Scope and evidence: [execution record](../project/specs/context-execution.md). Files: `product/scripts/`, `product/templates/`, `product/docs/context-guide.md`.
 
 ### Fixed

@@ -1,5 +1,8 @@
 # Context fixes — development verification
 
+Subsequent user-approved advisory cost targets and the separate prerelease decision
+are recorded in [PRERELEASE.md](PRERELEASE.md). Results below remain historical.
+
 Product changes address the observed instruction gaps without adding a runtime
 feature or dependency. Main remains unchanged; release acceptance is still open.
 

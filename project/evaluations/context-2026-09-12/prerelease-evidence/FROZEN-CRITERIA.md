@@ -56,44 +56,4 @@ stable release acceptance remain unproven; three human exercises remain unperfor
 
 ## Results
 
-**Publication blocked: 4/9 correctness trials passed.** All nine completed without
-process failures or timeouts; process completion does not establish correctness.
-Independent Terra/code-owl review applied the frozen oracle:
-
-| Cohort | Passed | Mandatory failures |
-| --- | --- | --- |
-| Fresh orientation | 1/3 | Trials 2/3 omitted baseline-to-HEAD diff/history reconciliation. |
-| Stale-branch resume | 1/3 | Trials 2/3 omitted comparison against the recorded work branch. |
-| Incident handoff | 2/3 | Trial 3 renamed the canonical baseline field, making it unreadable by freshness.py. |
-
-The all-trials-pass rule prevents publication. No replacement trials or further tuning
-were used. Token/read overruns were advisory and caused none of these verdicts.
-
-| Cohort | Median discovery reads (lower bound) | Median discovery token estimate | Native startup token estimate |
-| --- | ---: | ---: | ---: |
-| Fresh orientation | 20 | 9,174 | 245 |
-| Stale-branch resume | 13 | 7,412 | 245 |
-| Incident handoff | 15 | 12,401 | 245 |
-
-Each current median covers three trials. Historical main-equivalent controls have
-only one observation per cohort: discovery estimates 9,494 / 8,500 / 9,004 respectively,
-and startup estimate 4,148. These are descriptive comparisons, not matched replicated
-proof of improvement: discovery cost is mixed and reads remain above the eight-read
-target. Original historical verdicts remain unchanged.
-
-Source candidate: `c3315cd`. Distribution candidate: `ffc78f7` on
-`codex/context-prerelease`. Their product tree hashes match exactly:
-`8b8046c0afacb7fc3aacd1d5c053a923d67d2720`. Distribution contains no project/evaluator
-files or logs. Main remains `0d622e8cc1c7d762df0806e3c9236e67eddaf37e`.
-
-All six [CI matrix jobs](https://github.com/clark-mackey/log-file-genius/actions/runs/34716795952)
-passed: Linux/macOS/Windows × Python3.10/3.14, including platform install/update
-lifecycle smokes. All 254 local product tests, version/checksum checks and generated
-checks passed. Initial version-bump hash inconsistencies were corrected before
-committing the candidate and starting native validation.
-
-No GitHub release or release tag was created. The public distribution branch is a
-build candidate only. All nine trials, failures included, are retained in the
-[evaluator-only evidence](prerelease-evidence/README.md), with the original frozen
-criteria, exact fixtures, raw traces, costs, CI results and independent adjudication.
-Full stable acceptance, other-host behavior and three human exercises remain open.
+Pending. No publication is authorized unless the conditions above actually pass.
