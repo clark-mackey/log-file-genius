@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added the reviewed workplan for reliable context discovery, ADR routing, portable agent startup, OKF compatibility, and evidence-based handoffs, including all eight code-owl review fixes. Files: `project/specs/WORKPLAN-context-discovery-and-portability.md`. Commit: `pending`
 - Dogfood Spec 5: filed first standalone incident report (stale-logs dogfooding failure) and generated `logs/incidents/README.md` index via `lfg incidents-index`. Files: `logs/incidents/2026-07-05-dogfood-logs-went-stale.md`, `logs/incidents/README.md`.
 
 ## [0.5.0] - 2026-07-05
