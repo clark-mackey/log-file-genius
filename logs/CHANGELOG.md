@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Clarified handoff carry-forward and code-baseline rules; added the explicit eight-read discovery budget and removed repeated startup procedure text. Default/custom native-envelope regression tests pass; 254 product tests and nine bounded development trials are recorded in [fix evidence](../project/evaluations/context-2026-09-12/FIXES.md). Full release gates remain open. Files: `product/scripts/startup.py`, `product/docs/context-guide.md`, `product/rules/log-file-maintenance.md`.
+
 - Fixed #13–15: generated guidance uses repo-local Python commands, oversized unparsed DEVLOGs refuse archival, and read commands suppress bytecode. Archive writes now preserve source bytes, refuse collisions/stale plans, constrain paths and relocate links. Installer/update preserves existing logs, mixed user templates and edited rules. Files: `product/scripts/`, `product/tests/test_context_workplan.py`.
 
 - Fixed Windows CRLF routing drift and optional metadata migration; redirected CLI output uses UTF-8. Log validation accepts entries without commit IDs. Files: `product/scripts/routing.py`, `product/scripts/metadata.py`, `product/scripts/lfg.py`, `product/scripts/lint-logs.py`. Commit: `8fbc64d`

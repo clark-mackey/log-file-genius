@@ -11,22 +11,25 @@ related:
 
 ## Current Context
 
-**Baseline branch:** codex/context-discovery
-**Baseline commit:** 882090c
-**Next action:** Review [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16); complete the execution report's evaluation gates before main promotion.
-**Tests:** 252 Python tests; Linux/macOS/Windows × Python 3.10/3.14 CI passed on 2026-09-12, including Bash/PowerShell lifecycle checks.
-**Blockers:** Native host/model, paired maintenance and blinded human trials remain unmeasured; deterministic checks alone do not satisfy release acceptance.
+**Baseline branch:** codex/context-evaluation
+**Baseline commit:** 81edfd1
+**Next action:** Review the targeted context fixes and plan affected acceptance trials before any main promotion. Refresh human packages to the final candidate before issuing them.
+**Tests:** 254 local Python tests pass on 2026-09-12; generated AGENTS and diff checks pass. Nine bounded native development trials are retained. Final Codex fresh check: eight source reads, 243 estimated startup tokens. Final lesson handoff preserved pending facts and the code baseline.
+**Blockers:** Full critical/noncritical acceptance remains open. Freshness reconciliation was incomplete in the focused discovery trial. Codex commit effort and Claude injected-byte measurements remain unavailable. Three real-reader packages exist; zero readers have participated. No release or main promotion is authorized by these results.
 
-v0.6.0-dev candidate implements compact discovery, canonical ADR routing,
-evidence-based handoffs, selected packets and optional OKF migration.
-[Workplan](../project/specs/WORKPLAN-context-discovery-and-portability.md).
+v0.6.0-dev remains a candidate. Earlier six-platform Python/Bash/PowerShell CI evidence
+belongs to the pre-fix revision; it does not certify these changes on Windows/Linux.
+[Original evaluation](../project/evaluations/context-2026-09-12/REPORT.md).
+[Targeted fixes](../project/evaluations/context-2026-09-12/FIXES.md).
 
 ## Last Session
 
-The earlier PR #12 pending-merge note was stale; main already contains v0.5.0.
-This session implemented the build phases, repaired code-owl findings and fixed
-Windows CRLF/UTF-8 defects found by CI. [Execution evidence](../project/specs/context-execution.md).
+Replaced the stale PR-review/unmeasured-evaluation handoff with completed evidence.
+Fixed shared handoff/discovery instructions without adding runtime dependencies.
+First pilot exposed additional read-budget and baseline gaps; the focused final
+startup check addressed those specific symptoms. No full acceptance rerun, human
+simulation, push or promotion. Main and the original checkout remain untouched.
 
 ## In Progress
 
-Current task owns the context-discovery branch. Keep unrelated worktree state separate.
+This isolated task owns codex/context-evaluation. Preserve unrelated worktree state.

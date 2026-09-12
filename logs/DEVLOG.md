@@ -73,6 +73,22 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2026-09-12: Preserve pending work and bound discovery
+
+The native evaluation found repeated source reads, startup envelopes above the cap,
+and an incident handoff that displaced a pending fix. Shared startup now carries open
+tasks/tests/blockers forward, names the last checked code baseline, and makes the
+existing eight-read limit explicit. Recovery procedures remain on demand. No runtime
+feature or dependency was added.
+
+The first seven-session pilot preserved work but still over-read and advanced Codex
+baselines to documentation commits. The final two-session check used eight reads and
+243 startup estimated tokens; its lesson handoff preserved the code baseline and all
+pending facts. All 254 product tests pass. This is development evidence, not release
+acceptance: full fixture/model repetition, complete freshness reconciliation, Codex
+commit effort, Claude injected bytes and real-human trials remain open.
+[Investigation and evidence](../project/evaluations/context-2026-09-12/FIXES.md).
+
 ### 2026-09-12: Explicit context discovery and preservation
 
 **Decision:** Execute the reviewed workplan with a small startup protocol, ADR-owned

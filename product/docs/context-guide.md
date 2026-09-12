@@ -25,7 +25,7 @@ do not search above the root or repeatedly enumerate the tree to rediscover it.
 
 On a missing or stale index, search the configured ADR directory using one or two
 literal terms for the task and affected components. Inspect candidate status and
-replacement links. Bound the initial search to eight reads; if unresolved, report
+replacement links. Search within the remaining discovery budget; if unresolved, report
 the unchecked scope and continue in explicit batches before claiming coverage.
 Use every matching task route below. Resolve log locations through configuration;
 project requirements keep their existing location and schema.

@@ -1,5 +1,8 @@
 # Context-discovery evaluation — local runs complete
 
+Follow-up: [targeted fixes and nine development trials](FIXES.md). Original acceptance
+results below remain tied to their original candidate and are not overwritten.
+
 **Not release-ready.** Every selected candidate critical behavior trial exceeded the
 frozen eight-read cap. Maintenance also lost a required pending handoff fact. No main
 promotion, release tag or compatibility acceptance follows from this evaluation.

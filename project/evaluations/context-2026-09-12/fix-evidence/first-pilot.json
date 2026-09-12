@@ -1,0 +1,56 @@
+{
+  "source_commit": "12c051e",
+  "planned": 7,
+  "completed": 7,
+  "scope": "development pilot, not acceptance",
+  "original_plan": {
+    "candidate": "HEAD",
+    "scope": "development pilot; not acceptance",
+    "jobs": [
+      [
+        "codex",
+        "fresh",
+        1,
+        "maintenance-lesson"
+      ],
+      [
+        "codex",
+        "fresh",
+        2,
+        "maintenance-lesson"
+      ],
+      [
+        "codex",
+        "fresh",
+        3,
+        "maintenance-lesson"
+      ],
+      [
+        "claude",
+        "fresh",
+        1,
+        "maintenance-lesson"
+      ],
+      [
+        "codex",
+        "fresh",
+        1,
+        "behavior"
+      ],
+      [
+        "claude",
+        "fresh",
+        1,
+        "behavior"
+      ],
+      [
+        "codex",
+        "custom-paths",
+        1,
+        "behavior"
+      ]
+    ],
+    "original_caps_unchanged": true
+  },
+  "note": "Original invocation selected HEAD at12c051e; no branch mutation occurred during export."
+}

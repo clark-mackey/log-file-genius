@@ -1,0 +1,42 @@
+{
+  "plan": {
+    "candidate": "81edfd1353f58f9bf443760d4757a927968a99f0",
+    "scope": "development pilot; not acceptance",
+    "jobs": [
+      [
+        "codex",
+        "fresh",
+        1,
+        "maintenance-lesson"
+      ],
+      [
+        "codex",
+        "fresh",
+        1,
+        "behavior"
+      ]
+    ],
+    "original_caps_unchanged": true
+  },
+  "completed": 2,
+  "trials": [
+    {
+      "trial": "behavior-codex-candidate-fresh-1",
+      "returncode": 0,
+      "timed_out": false,
+      "source_read_lower_bound": 8,
+      "native_wrapped_instruction_estimated_tokens": 243,
+      "tool_output_estimated_tokens": 1848,
+      "contamination_hits": []
+    },
+    {
+      "trial": "maintenance-lesson-codex-candidate-fresh-1",
+      "returncode": 0,
+      "timed_out": false,
+      "source_read_lower_bound": 10,
+      "native_wrapped_instruction_estimated_tokens": 243,
+      "tool_output_estimated_tokens": 12612,
+      "contamination_hits": []
+    }
+  ]
+}

@@ -114,3 +114,15 @@ use a commit-capable Codex maintenance cohort for its missing commit-effort evid
 The runtime remains optional stdlib Python. Pytest and PyYAML were installed only in
 `/tmp/lfg-execution-venv` for development checks. Original-byte backups and the metadata
 recovery journal remain local; `.codegraph/` was not modified or staged.
+
+
+## Targeted follow-up fixes — 2026-09-12
+
+[Fix record](../evaluations/context-2026-09-12/FIXES.md): explicit carry-forward of
+pending tasks/tests/blockers, last checked code baseline, eight-read cumulative
+budget, source/citation reuse and on-demand procedures. Default/custom observed-host
+wrapper regressions now pass; 254 local product tests pass. Nine bounded development
+trials retain both unsuccessful drafts and focused positive outcomes. The final
+Codex fresh check used eight reads and 243 native startup estimated tokens; the final
+lesson retained the code baseline and pending facts. These checks do not close the
+full acceptance, freshness, commit-effort, native-byte or real-human gates above.
