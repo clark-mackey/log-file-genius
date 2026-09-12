@@ -1,0 +1,38 @@
+[
+  {
+    "reader": 1,
+    "packet": "A",
+    "condition": "candidate",
+    "fixture": "fresh"
+  },
+  {
+    "reader": 1,
+    "packet": "B",
+    "condition": "baseline",
+    "fixture": "fresh"
+  },
+  {
+    "reader": 2,
+    "packet": "A",
+    "condition": "baseline",
+    "fixture": "branch"
+  },
+  {
+    "reader": 2,
+    "packet": "B",
+    "condition": "candidate",
+    "fixture": "branch"
+  },
+  {
+    "reader": 3,
+    "packet": "A",
+    "condition": "candidate",
+    "fixture": "archived-lesson"
+  },
+  {
+    "reader": 3,
+    "packet": "B",
+    "condition": "baseline",
+    "fixture": "archived-lesson"
+  }
+]

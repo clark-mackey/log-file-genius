@@ -68,8 +68,8 @@ Read-only questions do not require a state rewrite.
   and must report incomplete coverage. No governing rows are silently discarded.
 - Template hashes preserve the 0.3.0/0.4.0/0.5.0 records and add 0.6.0-dev.
 - Fresh CLI reads create no Python bytecode in the source installation.
-- [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16) is a draft against
-  development. Candidate commit `882090c` passed the [six-job context matrix](https://github.com/clark-mackey/log-file-genius/actions/runs/34703104234):
+- [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16) merged into
+  development at `c2d0dbb4791a41969249c932a3ae398108253106`. Candidate commit `882090c` passed the [six-job context matrix](https://github.com/clark-mackey/log-file-genius/actions/runs/34703104234):
   Linux, macOS and Windows × Python 3.10/3.14, with the full Python suite and
   Bash/PowerShell lifecycle smoke. Installer and log-validation workflows passed too.
 - Windows CI exposed CRLF parsing drift, metadata rejecting ordinary CRLF documents,
@@ -83,6 +83,15 @@ Read-only questions do not require a state rewrite.
 
 The workplan is **not fully accepted for release**. No main promotion or release tag
 is justified by the deterministic results alone.
+
+Live evaluation began on `codex/context-evaluation`, isolated from the original
+checkout and based on the merged development commit. The [evaluation record](../evaluations/context-2026-09-12/REPORT.md)
+tracks native host evidence, all trial attempts, matched controls, maintenance and
+the prepared human handoff packages. Native Codex traces already show why generated
+file sizes are insufficient: default managed guidance is 233 estimated tokens, but
+its observed host instruction envelope is 269. The 250-token startup cap and the
+eight-read discovery cap remain unchanged. Early behavior trials exceed these caps;
+correct final answers do not erase those failures.
 
 1. Native loader evidence: capture effective injected files/bytes and override/duplicate
    behavior for each claimed host. Installed local CLIs are Codex 0.149.1 and Claude
