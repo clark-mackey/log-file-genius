@@ -1,0 +1,17 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.6",
+  "candidate": "c2d0dbb4791a41969249c932a3ae398108253106",
+  "baseline": "7dffd54",
+  "human_trials_completed": 0,
+  "runtime_copy": "Exact git-archived product snapshots copied into consumer .log-file-genius; not a registered submodule.",
+  "installer_choice": "claude-code for both native host trials; shared AGENTS permits Codex discovery.",
+  "unsupported_hosts": [
+    "Hermes",
+    "Grok Build",
+    "custom bots",
+    "custom OKF consumers"
+  ],
+  "protocol_sha256": "e6ba90fea275a950718fd9df26e0882f943181987c9b6f7a0ffadc38b5a1034e"
+}

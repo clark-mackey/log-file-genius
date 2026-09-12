@@ -23,3 +23,26 @@ commits will be marked unavailable, not counted as zero maintenance burden.
 
 No product code changed. Native startup/read-budget failures are evaluation outcomes;
 no speculative instruction rewrite was used to turn failed trials into passes.
+
+## Final review disposition
+
+The final Terra review also checked packaging and comparison logic. Invalid and
+inequivalent rows are excluded as whole matched triples. Prespecified repetition 1
+is retained because controls have one repetition; candidate repeats remain in the
+critical cohort. Read-budget failures intentionally remain in descriptive cost
+comparisons to avoid dropping expensive failures. No passing-task efficiency is claimed.
+
+The evidence bundle is explicitly evaluator-only because it contains oracles; only
+individual human zips are participant materials. Authentication trees are excluded,
+and packaging scans for common credential-shaped values before exporting traces.
+This bounded scan does not guarantee detection of every secret encoding. Native sweep
+now waits for all maintenance plans and records invocation exceptions; all 39 actual
+local diagnostics had already completed successfully, so no rerun was needed.
+
+Eight checks pass: six read/estimate regressions and two ordinary-owner preservation
+checks. The final maintenance audit separately adjudicates logging operations and
+retains final handoffs; extractor write counts alone are not used as exact action counts.
+
+Final report consistency review: no material inaccuracies found. Terra verified the
+209-row ledger, all 26 category denominators, maintenance table values, matched
+comparison method, current evidence hashes and authentication-directory exclusions.

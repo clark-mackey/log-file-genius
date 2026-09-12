@@ -84,26 +84,32 @@ Read-only questions do not require a state rewrite.
 The workplan is **not fully accepted for release**. No main promotion or release tag
 is justified by the deterministic results alone.
 
-Live evaluation began on `codex/context-evaluation`, isolated from the original
-checkout and based on the merged development commit. The [evaluation record](../evaluations/context-2026-09-12/REPORT.md)
-tracks native host evidence, all trial attempts, matched controls, maintenance and
-the prepared human handoff packages. Native Codex traces already show why generated
-file sizes are insufficient: default managed guidance is 233 estimated tokens, but
-its observed host instruction envelope is 269. The 250-token startup cap and the
-eight-read discovery cap remain unchanged. Early behavior trials exceed these caps;
-correct final answers do not erase those failures.
+The local evaluation completed on isolated branch `codex/context-evaluation` against
+merged development. The [final report](../evaluations/context-2026-09-12/REPORT.md)
+retains 209 attempts/diagnostics, matched controls, maintenance artifacts and prepared
+human packages. Main and the original checkout were not changed.
 
-1. Native loader evidence: capture effective injected files/bytes and override/duplicate
-   behavior for each claimed host. Installed local CLIs are Codex 0.149.1 and Claude
-   Code 2.1.269; their version strings do not count as behavior trials.
-2. Model application: three fresh sessions per critical fixture per claimed host/model,
-   all passing; noncritical categories need at least ten trials and 90% success.
-3. Efficiency comparison: measured loaded bytes, reads and repeated tool output for
-   candidate vs baseline vs ordinary docs. File-size reduction alone is not that result.
-4. Maintenance: five paired tasks, no missing required facts and no increase in median
-   logging actions/documentation-only follow-ups. Policy simplification is not a trial.
-5. Human retrieval: three blinded paired readers finding next action, ADR and evidence.
-   No human trials have been fabricated or substituted with model answers.
+1. Native loading: Codex 0.149.1 / gpt-5.5 rollouts expose injected bodies and envelopes.
+   The fresh candidate diagnostic is 233 estimated body tokens, 269 with its envelope,
+   exceeding the frozen 250 startup cap. Claude Code 2.1.269 / claude-opus-5 local
+   `/context` records establish file selection; injected-byte estimates remain unknown.
+2. Behavior: all 26 selected host/fixture categories completed three trials; every
+   selected trial exceeded eight reads. Zero categories pass. Full semantic certification
+   and separate noncritical ten-trial/90% denominators remain open.
+3. Efficiency: ten matched three-condition tasks per host show lower candidate cost
+   than current LFG, but ordinary docs are cheaper. Budget failures remain failures;
+   cheaper output alone does not establish correctness-equivalent efficiency.
+4. Maintenance: five pairs per host completed. Median logging actions did not increase;
+   Claude doc-only follow-ups decreased. Codex commits were sandbox-blocked and remain
+   unmeasured. One candidate lesson handoff lost the pending amount-fix fact, failing
+   the zero-omissions gate. Six actual children made the fix without canonical log writes,
+   but staging and handback limitations prevent full delegation certification.
+5. Human retrieval: three blinded paired reader packages are ready; zero readers have
+   participated. No human answers or timings were simulated. Hermes, Grok Build,
+   custom bots and OKF consumers remain behaviorally untested.
+
+No unchanged full rerun is needed. Fix the failed behaviors, then rerun affected suites;
+use a commit-capable Codex maintenance cohort for its missing commit-effort evidence.
 
 The runtime remains optional stdlib Python. Pytest and PyYAML were installed only in
 `/tmp/lfg-execution-venv` for development checks. Original-byte backups and the metadata

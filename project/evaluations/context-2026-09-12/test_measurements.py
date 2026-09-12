@@ -1,6 +1,9 @@
 """Checks for evaluator false failures, not tests of the LFG product."""
 import unittest
+import tempfile
+from pathlib import Path
 from collect import estimate, read_inventory
+from evaluate import seed
 
 class Measurements(unittest.TestCase):
     def read(self, command):
@@ -30,6 +33,17 @@ class Measurements(unittest.TestCase):
     def test_round_each_output_separately(self):
         self.assertEqual(sum(map(estimate, ['a','b'])), 2)
         self.assertEqual(estimate('12345'), 2)
+
+    def test_ordinary_control_preserves_owner_instructions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = seed(Path(directory), 'ordinary', 'brownfield')
+            for name in ('AGENTS.md', 'CLAUDE.md'):
+                self.assertIn('Preserve the existing receipt identifier', (root/name).read_text())
+
+    def test_ordinary_control_preserves_override(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = seed(Path(directory), 'ordinary', 'override')
+            self.assertIn('Keep receipt processing offline', (root/'AGENTS.override.md').read_text())
 
 if __name__ == '__main__':
     unittest.main()

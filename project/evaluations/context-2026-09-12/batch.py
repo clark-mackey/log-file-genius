@@ -20,6 +20,8 @@ jobs = []
 for host in a.hosts:
     for condition in a.conditions:
         if a.maintenance:
+            if host == 'claude' and condition == 'candidate':
+                jobs.append((a.base, host, condition, 'fresh', 1, 'native-context'))
             for task in evaluate.MAINTENANCE:
                 fixture = 'branch' if task == 'branch-handoff' else 'fresh'
                 jobs.append((a.base, host, condition, fixture, 1, 'maintenance-' + task))

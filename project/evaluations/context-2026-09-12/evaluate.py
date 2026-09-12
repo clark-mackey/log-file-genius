@@ -81,15 +81,15 @@ def seed(base, condition, fixture):
     write(root / 'ui/receipt.py', 'def show_attempt(attempt):\n    return attempt\n')
     write(root / 'src/component/README.md', '# Component\nReceipt amount rendering lives in ../../api/receipt.py.\n')
     write(root / 'check.py', 'from api.receipt import display_amount\nassert display_amount(125) == 125, "minor units must remain integer"\nprint("amount check passed")\n')
+    if fixture == 'brownfield':
+        for name in ('AGENTS.md', 'CLAUDE.md'):
+            write(root / name, '# Project instructions\nPreserve the existing receipt identifier in all proposals.\n')
+    if fixture == 'override':
+        write(root / 'AGENTS.override.md', '# Local instructions\nKeep receipt processing offline.\n')
     if condition != 'ordinary':
         source = base / 'sources' / condition
         shutil.copytree(source, root / '.log-file-genius')
         (root / '.claude').mkdir()
-        if fixture == 'brownfield':
-            for name in ('AGENTS.md', 'CLAUDE.md'):
-                write(root / name, '# Project instructions\nPreserve the existing receipt identifier in all proposals.\n')
-        if fixture == 'override':
-            write(root / 'AGENTS.override.md', '# Local instructions\nKeep receipt processing offline.\n')
         output = run(['bash', str(source / 'product/scripts/install.sh'), '--profile',
                       'solo-developer', '--ai-assistant', 'claude-code', '--force'], cwd=root)
         write(base / 'setup' / condition / f'{fixture}.txt', output)
@@ -203,6 +203,8 @@ def invoke(base, host, condition, fixture, repetition, kind='behavior'):
     prompt = TASKS[fixture] + COMMON
     if kind == 'native':
         prompt = 'Before using tools, state the repository instructions available to you and their source files. Then explain the next task for this project with evidence. Do not modify files.'
+    elif kind == 'native-context':
+        prompt = '/context'
     elif kind.startswith('maintenance-'):
         prompt = MAINTENANCE[kind.removeprefix('maintenance-')]
     elif kind == 'delegation-child':

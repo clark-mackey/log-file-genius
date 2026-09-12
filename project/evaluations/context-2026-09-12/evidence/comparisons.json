@@ -1,0 +1,122 @@
+[
+  {
+    "host": "codex",
+    "condition": "candidate",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": 4058.5,
+    "median_tool_output_estimated_tokens": 3789.5,
+    "median_source_read_lower_bound": 14.5
+  },
+  {
+    "host": "codex",
+    "condition": "baseline",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": 8698.0,
+    "median_tool_output_estimated_tokens": 4550.0,
+    "median_source_read_lower_bound": 14.5
+  },
+  {
+    "host": "codex",
+    "condition": "ordinary",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": 1566.0,
+    "median_tool_output_estimated_tokens": 1544.0,
+    "median_source_read_lower_bound": 11.0
+  },
+  {
+    "host": "claude",
+    "condition": "candidate",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": null,
+    "median_tool_output_estimated_tokens": 4972.0,
+    "median_source_read_lower_bound": 13.5
+  },
+  {
+    "host": "claude",
+    "condition": "baseline",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": null,
+    "median_tool_output_estimated_tokens": 6365.5,
+    "median_source_read_lower_bound": 14.0
+  },
+  {
+    "host": "claude",
+    "condition": "ordinary",
+    "matched_tasks": 10,
+    "fixtures": [
+      "archived-lesson",
+      "branch",
+      "cross-component",
+      "custom-paths",
+      "fresh",
+      "missing-index",
+      "nested",
+      "overflow",
+      "superseded",
+      "unknown-task"
+    ],
+    "median_discovery_estimated_tokens": null,
+    "median_tool_output_estimated_tokens": 993.0,
+    "median_source_read_lower_bound": 10.0
+  }
+]

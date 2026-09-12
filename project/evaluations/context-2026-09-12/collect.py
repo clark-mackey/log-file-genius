@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Extract auditable evidence. Deliberately never infer a semantic pass from keywords."""
 import argparse
+import ast
 import hashlib
 import json
 import math
@@ -91,7 +92,8 @@ def collect(base, out):
         root = root.parent.parent
     events = lines(out / 'events.jsonl')
     tools, messages, models, usage, native = [], [], set(), None, None
-    version, host_context, injections, host_calls = None, [], [], []
+    version, host_context, injections, host_calls, context_usage = None, [], [], [], None
+    context_usage = next((event['context_usage'] for event in events if event.get('context_usage')), None)
     calls_by_id = {}
     if result['host'] == 'codex':
         for path in Path(invocation['host_config']).glob('sessions/**/*.jsonl'):
@@ -115,6 +117,8 @@ def collect(base, out):
                     models.add(payload['model'])
                 if event['type'] == 'world_state':
                     instruction = payload.get('state', {}).get('agents_md')
+                    if payload.get('full') and payload.get('state', {}).get('agents_md') == {}:
+                        native = ''  # Host explicitly recorded an empty instruction chain.
                     if instruction:
                         native = instruction.get('text', '')
                         host_context.append(instruction)
@@ -177,6 +181,13 @@ def collect(base, out):
     shell_writes = [i for i,t in enumerate(tools) if t['name'] in ('Bash', 'shell') and re.search(r'\b(tee|touch|mkdir|cp|mv|rm)\b|(?<![2>])>{1,2}(?!&)', str(t['input']))]
     actual_outputs = host_calls if result['host'] == 'codex' else tools
     source_reads, opaque_reads = read_inventory(actual_outputs, invocation['cwd'])
+    try:
+        module = ast.parse((root / 'api/receipt.py').read_text())
+        function = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == 'display_amount')
+        unchanged_amount = (len(function.body) == 1 and isinstance(function.body[0], ast.Return) and
+                            isinstance(function.body[0].value, ast.Name) and function.body[0].value.id == 'amount_minor')
+    except (OSError, SyntaxError, StopIteration):
+        unchanged_amount = None
     estimates = sum(estimate(t['output']) for t in actual_outputs)
     if native is not None:
         estimates += sum(map(estimate, injections)) if injections else estimate(native)
@@ -199,6 +210,10 @@ def collect(base, out):
             contamination.append(path)
     ambiguous_role = (result['kind'] == 'behavior' and result['fixture'] == 'delegated' and
                       'new subagent implementer' not in (out / 'prompt.txt').read_text())
+    owner_control_missing = (result['condition'] == 'ordinary' and
+                             result['fixture'] in ('brownfield', 'override') and
+                             not (base / 'seeds' / 'ordinary' / result['fixture'] /
+                                  ('AGENTS.md' if result['fixture'] == 'brownfield' else 'AGENTS.override.md')).exists())
     evidence = {**result, 'resolved_models': sorted(models), 'host_version': version,
                 'native_instruction_text': native,
                 'native_injection_status': 'host_world_state_observed' if native is not None else 'unknown',
@@ -207,6 +222,11 @@ def collect(base, out):
                 'native_wrapped_instruction_estimated_tokens': sum(map(estimate, injections)) if injections else None,
                 'candidate_entry_visible': bool(native and '# LFG context' in native),
                 'host_context': host_context, 'provider_usage': usage,
+                'native_context_usage': context_usage,
+                'model_identity_source': 'Codex turn_context selection; backend checkpoint not exposed' if result['host'] == 'codex' else 'Claude assistant message model',
+                'native_body_utf8_bytes': len(native.encode('utf-8')) if native is not None else None,
+                'native_wrapped_utf8_bytes': sum(len(s.encode('utf-8')) for s in injections) if injections else None,
+                'final_code_simple_identity_return': unchanged_amount,
                 'source_hits': source_hits, 'tools': tools, 'host_calls': host_calls, 'messages': messages,
                 'tool_output_estimated_tokens': sum(estimate(t['output']) for t in actual_outputs),
                 'discovery_estimated_tokens': estimates if native is not None else None,
@@ -218,6 +238,7 @@ def collect(base, out):
                 'direct_write_tool_actions_lower_bound': writes, 'shell_write_candidates': shell_writes,
                 'contamination_hits': contamination,
                 'role_ambiguous': ambiguous_role,
+                'ordinary_owner_instruction_missing': owner_control_missing,
                 'trial_validity': 'invalid-cross-trial-or-evaluator-exposure' if contamination else ('invalid-delegation-role-ambiguity' if ambiguous_role else 'trace-audit-no-known-evaluator-path'),
                 'narration_estimated_tokens': sum(estimate(m) for m in messages),
                 'semantic_adjudication': 'pending', 'gate_result': 'invalid' if contamination or ambiguous_role else 'not_passed',

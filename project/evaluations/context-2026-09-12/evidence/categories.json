@@ -1,0 +1,392 @@
+[
+  {
+    "host": "codex",
+    "fixture": "fresh",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-fresh-1",
+      "behavior-codex-candidate-fresh-2",
+      "behavior-codex-candidate-fresh-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "brownfield",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-brownfield-1",
+      "behavior-codex-candidate-brownfield-2",
+      "behavior-codex-candidate-brownfield-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "custom-paths",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-custom-paths-1",
+      "behavior-codex-candidate-custom-paths-2",
+      "behavior-codex-candidate-custom-paths-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "nested",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-nested-4",
+      "behavior-codex-candidate-nested-5",
+      "behavior-codex-candidate-nested-6"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "override",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-override-1",
+      "behavior-codex-candidate-override-2",
+      "behavior-codex-candidate-override-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "unknown-task",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-unknown-task-1",
+      "behavior-codex-candidate-unknown-task-2",
+      "behavior-codex-candidate-unknown-task-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "superseded",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-superseded-1",
+      "behavior-codex-candidate-superseded-2",
+      "behavior-codex-candidate-superseded-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "missing-index",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-missing-index-1",
+      "behavior-codex-candidate-missing-index-2",
+      "behavior-codex-candidate-missing-index-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "archived-lesson",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-archived-lesson-1",
+      "behavior-codex-candidate-archived-lesson-2",
+      "behavior-codex-candidate-archived-lesson-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "branch",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-branch-1",
+      "behavior-codex-candidate-branch-2",
+      "behavior-codex-candidate-branch-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "delegated",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-delegated-4",
+      "behavior-codex-candidate-delegated-5",
+      "behavior-codex-candidate-delegated-6"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "cross-component",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-cross-component-1",
+      "behavior-codex-candidate-cross-component-2",
+      "behavior-codex-candidate-cross-component-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "codex",
+    "fixture": "overflow",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-codex-candidate-overflow-1",
+      "behavior-codex-candidate-overflow-2",
+      "behavior-codex-candidate-overflow-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "fresh",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-fresh-1",
+      "behavior-claude-candidate-fresh-2",
+      "behavior-claude-candidate-fresh-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "brownfield",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-brownfield-1",
+      "behavior-claude-candidate-brownfield-2",
+      "behavior-claude-candidate-brownfield-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "custom-paths",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-custom-paths-1",
+      "behavior-claude-candidate-custom-paths-2",
+      "behavior-claude-candidate-custom-paths-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "nested",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-nested-1",
+      "behavior-claude-candidate-nested-2",
+      "behavior-claude-candidate-nested-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "override",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-override-1",
+      "behavior-claude-candidate-override-2",
+      "behavior-claude-candidate-override-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "unknown-task",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-unknown-task-1",
+      "behavior-claude-candidate-unknown-task-2",
+      "behavior-claude-candidate-unknown-task-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "superseded",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-superseded-1",
+      "behavior-claude-candidate-superseded-2",
+      "behavior-claude-candidate-superseded-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "missing-index",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-missing-index-1",
+      "behavior-claude-candidate-missing-index-2",
+      "behavior-claude-candidate-missing-index-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "archived-lesson",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-archived-lesson-1",
+      "behavior-claude-candidate-archived-lesson-2",
+      "behavior-claude-candidate-archived-lesson-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "branch",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-branch-1",
+      "behavior-claude-candidate-branch-2",
+      "behavior-claude-candidate-branch-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "delegated",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-delegated-4",
+      "behavior-claude-candidate-delegated-5",
+      "behavior-claude-candidate-delegated-6"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "cross-component",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-cross-component-1",
+      "behavior-claude-candidate-cross-component-2",
+      "behavior-claude-candidate-cross-component-3"
+    ],
+    "status": "failed"
+  },
+  {
+    "host": "claude",
+    "fixture": "overflow",
+    "required": 3,
+    "completed": 3,
+    "passes": 0,
+    "fail_read_budget": 3,
+    "invalid": 0,
+    "trials": [
+      "behavior-claude-candidate-overflow-1",
+      "behavior-claude-candidate-overflow-2",
+      "behavior-claude-candidate-overflow-3"
+    ],
+    "status": "failed"
+  }
+]
