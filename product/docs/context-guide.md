@@ -16,8 +16,18 @@ On a missing or stale index, search the configured ADR directory using one or tw
 literal terms for the task and affected components. Inspect candidate status and
 replacement links. Bound the initial search to eight reads; if unresolved, report
 the unchecked scope and continue in explicit batches before claiming coverage.
-Consult the incident README for failure patterns and project-specific requirement
-indexes when relevant. The source records govern; indexes only help locate them.
+Use every matching task route below. Resolve log locations through configuration;
+project requirements keep their existing location and schema.
+
+| Task | Read |
+|---|---|
+| Resume or hand off work | STATE, then its evidence links |
+| Plan or change behavior | ADR root manifest and all matching active decisions |
+| Investigate a failure or retry an approach | Incident README and matching incident reports |
+| Check intended behavior or acceptance | Project README's requirements/specification links; report missing links |
+| Recover past implementation reasoning | Selected DEVLOG entries and their archive links |
+
+The source records govern; indexes only help locate them.
 
 Use `.logfile-config.yml` paths; older `paths.adr` remains supported. Commands below
 run from the consumer repository root. On Windows use `python` instead of `python3`.
