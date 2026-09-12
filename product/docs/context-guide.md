@@ -15,6 +15,10 @@ Read task sources with line numbers on the first pass if citations need them; do
 reread unchanged sources just to format citations. Follow the handoff's code and
 verification links before scanning unrelated components or historical logs. Expand
 only for a concrete evidence gap, changed scope, or another applicable decision.
+The initial discovery budget is eight source reads, including repeats. At the limit,
+report unresolved scope before continuing in explicit batches; do not claim complete
+coverage or omit a governing decision to fit the budget. A batch does not reset the
+cumulative read count for evaluation.
 From a nested directory, locate the repository root once (`git rev-parse --show-toplevel`)
 and resolve the configured pointers there. Follow applicable directory instructions;
 do not search above the root or repeatedly enumerate the tree to rediscover it.
@@ -77,9 +81,12 @@ STATE is a small shared snapshot, normally at most 500 estimated tokens. Record
 baseline branch and code commit before committing the handoff itself, next action,
 tests with outcomes, and blockers. Keep task-local scratch and ownership in the
 session/worktree; avoid replacing another active task's state.
+Do not advance the code baseline merely because a documentation-only handoff was
+committed. Inspect the intervening diff: retain the last checked code commit when
+only logs changed, and describe uncommitted code/test evidence separately.
 Before saving, compare the old and new handoff: carry forward every unresolved task
-and blocker, even when this session worked on something else. Remove one only with
-resolution evidence or explicit cancellation. A new incident adds work; it does not
+and blocker, including pending verification, even when this session worked on something
+else. Remove one only with resolution evidence or explicit cancellation. A new incident adds work; it does not
 replace a pending fix. Keep each verification result attached to the task it checks.
 Compress wording or link supporting detail to fit the budget; do not drop open work.
 

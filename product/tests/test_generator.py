@@ -51,7 +51,11 @@ def test_startup_keeps_procedures_on_demand(tmp_path):
     assert "logs/STATE.md" in out and "logs/adr/README.md" in out
     assert "context-guide.md" in out
     assert len(out) <= 1000
-    assert "baseline branch/commit" in out
+    assert "last checked code commit/branch" in out
+    assert "Reuse sources/citations" in out
+    assert "8 source reads, repeats count" in out
+    assert "pending tasks/tests/blockers" in out
+    assert "resolved with evidence or explicit cancellation" in out
 
 
 @pytest.mark.parametrize('custom', [False, True])
