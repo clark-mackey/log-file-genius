@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed #13–15: generated guidance uses repo-local Python commands, oversized unparsed DEVLOGs refuse archival, and read commands suppress bytecode. Archive writes now preserve source bytes, refuse collisions/stale plans, constrain paths and relocate links. Installer/update preserves existing logs, mixed user templates and edited rules. Files: `product/scripts/`, `product/tests/test_context_workplan.py`.
 
+- Fixed Windows CRLF routing drift and optional metadata migration; redirected CLI output uses UTF-8. Log validation accepts entries without commit IDs. Files: `product/scripts/routing.py`, `product/scripts/metadata.py`, `product/scripts/lfg.py`, `product/scripts/lint-logs.py`. Commit: `8fbc64d`
 
 - Dogfood repair: rebuilt this CHANGELOG with v0.3.0–v0.5.0 version blocks (entries had pooled in `[Unreleased]` since February), fixed mojibake emoji (UTF-8 read as cp1252), repointed stale "current state → DEVLOG" header note at STATE.md, removed leftover template-guidelines section. STATE.md and DEVLOG brought current. Files: `logs/CHANGELOG.md`, `logs/DEVLOG.md`, `logs/STATE.md`.
 

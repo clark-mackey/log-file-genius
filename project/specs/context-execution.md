@@ -53,20 +53,31 @@ Read-only questions do not require a state rewrite.
 
 ## Measured candidate evidence
 
-- Python 3.14 on macOS: **248 tests passed** (15.56 seconds on the recorded full run).
+- Python 3.14 on macOS: **252 tests passed** (15.73 seconds on the final full run).
 - Bash: install smoke, update smoke, validator regression and template-acceptance checks passed.
 - Full lifecycle uses a real local Git remote: install → discover → selected packet →
   unknown-baseline resume → archive → update. Runs for all seven installer choices.
 - Three code-owl review rounds repaired concrete archival, template ownership, restore,
   path containment, setup-error propagation and Markdown-link preservation defects.
 - Generated startup: 212 estimated tokens; managed markers/native pointers add overhead.
+  The default managed AGENTS block plus CLAUDE import pointer totals 248 estimated
+  tokens. This measures produced files, not observed native injection.
   These are characters/4 estimates, not a model tokenizer measurement.
 - The current project STATE is about 300 tokens. The root routing manifest plus the
   release-route partition is about 500 tokens; broader task unions can exceed budget
   and must report incomplete coverage. No governing rows are silently discarded.
 - Template hashes preserve the 0.3.0/0.4.0/0.5.0 records and add 0.6.0-dev.
 - Fresh CLI reads create no Python bytecode in the source installation.
-- GitHub platform CI results will be recorded on the development PR.
+- [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16) is a draft against
+  development. Candidate commit `882090c` passed the [six-job context matrix](https://github.com/clark-mackey/log-file-genius/actions/runs/34703104234):
+  Linux, macOS and Windows × Python 3.10/3.14, with the full Python suite and
+  Bash/PowerShell lifecycle smoke. Installer and log-validation workflows passed too.
+- Windows CI exposed CRLF parsing drift, metadata rejecting ordinary CRLF documents,
+  and redirected console Unicode failures. Source-byte preservation, CRLF migration
+  and UTF-8 CLI output now have regression coverage; code-owl cleared these fixes.
+  The second PowerShell smoke invocation now resolves from the workspace root.
+- The optional PR-comment step lacked GitHub write permission. It is nonblocking;
+  validation still determines the check result, with reports in artifacts/job summary.
 
 ## Gates not yet satisfied
 

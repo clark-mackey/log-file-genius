@@ -12,20 +12,20 @@ related:
 ## Current Context
 
 **Baseline branch:** codex/context-discovery
-**Baseline commit:** 7dffd54
-**Next action:** Finish context-workplan checks and submit the development PR.
-**Tests:** 248 Python tests and four Bash smoke/regression checks passed; platform CI pending.
-**Blockers:** Native host/model trials and blinded human handoffs remain unmeasured; no main release authorized by passing unit tests alone.
+**Baseline commit:** 882090c
+**Next action:** Review [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16); complete the execution report's evaluation gates before main promotion.
+**Tests:** 252 Python tests; Linux/macOS/Windows × Python 3.10/3.14 CI passed on 2026-09-12, including Bash/PowerShell lifecycle checks.
+**Blockers:** Native host/model, paired maintenance and blinded human trials remain unmeasured; deterministic checks alone do not satisfy release acceptance.
 
-Implementing v0.6.0-dev: compact discovery, canonical ADR routing, evidence-based
-handoffs, selected packets and optional OKF migration. Compare uncommitted code
-against the baseline before reuse. [Workplan](../project/specs/WORKPLAN-context-discovery-and-portability.md).
+v0.6.0-dev candidate implements compact discovery, canonical ADR routing,
+evidence-based handoffs, selected packets and optional OKF migration.
+[Workplan](../project/specs/WORKPLAN-context-discovery-and-portability.md).
 
 ## Last Session
 
 The earlier PR #12 pending-merge note was stale; main already contains v0.5.0.
-This session implemented the reviewed workplan and repaired two rounds of code-owl
-preservation findings. [Execution evidence](../project/specs/context-execution.md).
+This session implemented the build phases, repaired code-owl findings and fixed
+Windows CRLF/UTF-8 defects found by CI. [Execution evidence](../project/specs/context-execution.md).
 
 ## In Progress
 

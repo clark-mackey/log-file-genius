@@ -85,6 +85,11 @@ unknown routing, packet budgets, native pointers and full local install/update l
 Code-owl found archival and mixed-template preservation gaps; fixes add frozen source
 bytes, exact-byte recovery, collision refusal and ownership checks.
 
+**Delivery:** [Draft PR #16](https://github.com/clark-mackey/log-file-genius/pull/16)
+targets development. All 252 tests pass across Linux/macOS/Windows and Python
+3.10/3.14, plus Bash/PowerShell lifecycle checks. Windows uncovered CRLF drift and
+redirected Unicode crashes; regression fixes preserve source bytes and emit UTF-8.
+
 **Limits:** Model/native-loader and human retrieval outcomes are not inferred from
 unit tests. Release gates and measured budgets live in the [execution record](../project/specs/context-execution.md).
 
