@@ -776,4 +776,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # Redirected Windows streams otherwise inherit a legacy code page and fail
+    # on Unicode diagnostics or project context. CLI output is UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8')
     sys.exit(main())

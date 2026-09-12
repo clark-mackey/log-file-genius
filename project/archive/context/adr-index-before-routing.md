@@ -104,4 +104,3 @@ ADRs are designed to be:
 - **[ADR How-To Guide](../ADR_how_to.md)** - Comprehensive guide to creating and using ADRs
 - **[ADR Template](../../templates/ADR_template.md)** - Template for new ADRs
 - **[Log File How-To](../log_file_how_to.md)** - How ADRs fit into the overall log file system
-

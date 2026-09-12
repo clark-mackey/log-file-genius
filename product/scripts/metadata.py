@@ -14,16 +14,19 @@ from safe_write import replace, retire
 
 def frontmatter(data):
     text = data.decode('utf-8')
-    if not text.startswith('---\n'):
-        if text.startswith('---') or text.startswith('\ufeff') or '\r' in text:
+    if text.startswith('\ufeff') or '\r' in text.replace('\r\n', ''):
+        raise ValueError('Unsupported encoding; preserve and normalize explicitly')
+    opening = re.match(r'---\r?\n', text)
+    if not opening:
+        if text.startswith('---'):
             raise ValueError('Unsupported frontmatter encoding/delimiter; preserve and normalize explicitly')
         return {}, 0
-    end = text.find('\n---\n', 4)
-    if end < 0:
+    closing = re.search(r'^---\r?\n', text[opening.end():], re.M)
+    if not closing:
         raise ValueError('Unterminated frontmatter')
     values, stack = {}, [(-1, set())]
     previous_indent, previous_mapping = 0, False
-    for line in text[4:end].splitlines():
+    for line in text[opening.end():opening.end() + closing.start()].splitlines():
         if not line.strip() or line.lstrip().startswith('#'):
             continue
         match = re.fullmatch(r'( *)([A-Za-z_][\w-]*):(?: +(.*))?', line)
@@ -58,7 +61,7 @@ def frontmatter(data):
                 parsed = None  # valid scalar, but cannot stand in for a string type
         if indent == 0:
             values[key] = parsed
-    return values, end + 5
+    return values, opening.end() + closing.end()
 
 
 def migrate(data, path):
@@ -72,10 +75,12 @@ def migrate(data, path):
     kind = 'Architecture Decision' if re.search(r'^# ADR-', text, re.M) else {
         'STATE': 'Project State', 'CHANGELOG': 'Change Log', 'DEVLOG': 'Development Log',
         'INCIDENT': 'Incident Report'}.get(values.get('doc'), 'Project Reference')
-    addition = 'type: ' + json.dumps(kind) + '\n'
+    newline = '\r\n' if '\r\n' in text else '\n'
+    addition = 'type: ' + json.dumps(kind) + newline
     if 'title' not in values and title:
-        addition += 'title: ' + json.dumps(title[1], ensure_ascii=False) + '\n'
-    result = ('---\n' + addition + text[4:]) if end else ('---\n' + addition + '---\n\n' + text)
+        addition += 'title: ' + json.dumps(title[1].rstrip('\r'), ensure_ascii=False) + newline
+    opening = re.match(r'---\r?\n', text)
+    result = ('---' + newline + addition + text[opening.end():]) if end else ('---' + newline + addition + '---' + newline * 2 + text)
     frontmatter(result.encode())
     return result.encode()
 

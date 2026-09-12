@@ -98,6 +98,43 @@ def test_custom_paths_and_nested_start(tmp_path):
         context_paths(root)
 
 
+@pytest.mark.parametrize('frontmatter', [True, False])
+def test_crlf_metadata_preserves_body_and_restore(tmp_path, frontmatter):
+    root = seed(tmp_path)
+    path = root / 'logs/windows.md'
+    body = b'# Windows document\r\n\r\nKeep original bytes.\r\n'
+    original = (b'---\r\ndoc: CUSTOM\r\n---\r\n' if frontmatter else b'') + body
+    path.write_bytes(original)
+    code, message = metadata.run(root, write=True)
+    assert code == 0, message
+    migrated = path.read_bytes()
+    assert migrated.endswith(body) and b'type: "Project Reference"\r\n' in migrated
+    assert metadata.run(root, write=True)[0] == 0
+    assert path.read_bytes() == migrated
+    assert metadata.run(root, restore=True)[0] == 0
+    assert path.read_bytes() == original
+
+
+def test_crlf_routes_remain_current_after_generation(tmp_path):
+    root = seed(tmp_path)
+    path = adr(root, 1)
+    original = path.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+    path.write_bytes(original)
+    assert routing.run(root, write=True)[0] == 0
+    assert routing.run(root, check=True)[0] == 0
+    assert path.read_bytes() == original
+
+
+def test_cli_redirected_output_uses_utf8(tmp_path):
+    root = seed(tmp_path)
+    (root / 'logs/STATE.md').write_bytes('## Current Context\nPreserve café ✓\n'.encode())
+    env = dict(os.environ, PYTHONIOENCODING='cp1252')
+    result = subprocess.run([sys.executable, str(PRODUCT / 'scripts/lfg.py'), 'prime'],
+                            cwd=root, env=env, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    assert 'café ✓' in result.stdout.decode('utf-8')
+
+
 @pytest.mark.parametrize('failure', ['validate', 'backup', 'temp', 'temp-write', 'replace', 'concurrent'])
 def test_safe_write_failures_preserve_original(tmp_path, monkeypatch, failure):
     path = tmp_path / 'record.md'; original = b'original\r\n'; path.write_bytes(original)

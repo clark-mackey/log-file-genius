@@ -190,10 +190,10 @@ class ValidatorSelfTest:
         """Test that invalid CHANGELOG content produces warnings"""
         test_name = "known_bad_changelog"
         try:
-            # Entry missing commit hash
-            bad_entry = "- Added feature. Files: `src/app.py`"
-            if 'Commit:' in bad_entry:
-                result.add_failure(test_name, "Bad entry incorrectly has Commit:")
+            # Missing source evidence remains a warning; commit IDs are optional.
+            bad_entry = "- Added feature."
+            if 'Files:' in bad_entry:
+                result.add_failure(test_name, "Bad entry incorrectly has Files:")
                 return
 
             # Short commit hash
@@ -373,18 +373,12 @@ class LogLinter:
     
     def _validate_changelog_entry(self, line: str, line_num: int, result: ValidationResult) -> bool:
         """Validate a single CHANGELOG entry"""
-        # Expected format: - Description. Files: `path`. Commit: `hash`
+        # Expected format: - Description. Files: `path`. Optional Commit: `hash`.
         
         # Check for Files: section
         if 'Files:' not in line:
             result.add_issue('warning', line_num, "Entry missing 'Files:' section",
                            "Add 'Files: `path/to/file`' to entry")
-            return False
-        
-        # Check for Commit: section
-        if 'Commit:' not in line:
-            result.add_issue('warning', line_num, "Entry missing 'Commit:' section",
-                           "Add 'Commit: `hash`' to entry")
             return False
         
         # Extract commit hash

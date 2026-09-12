@@ -36,7 +36,7 @@ def field(text, name):
 
 def parse(path):
     source_bytes = path.read_bytes()
-    text = source_bytes.decode("utf-8-sig")
+    text = source_bytes.decode("utf-8-sig").replace('\r\n', '\n')
     # Example metadata inside fenced code is not part of the record's authority.
     text = re.sub(r'^(`{3,}|~{3,})[^\n]*\n.*?^\1\s*$', '', text, flags=re.M | re.S)
     heading = re.search(r"^#\s+ADR[- ](\d+)\s*:\s*(.+)$", text, re.M)
