@@ -17,6 +17,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from freshness import assess
+from startup import render as render_agent_instructions
+from state_contract import CANONICAL_FIELDS
 
 ROOT = Path(__file__).resolve().parents[2]
 LFG = ROOT / 'product/scripts/lfg.py'
@@ -190,3 +192,23 @@ def test_supplementary_field_beside_the_canonical_one_is_not_flagged(handoff):
     assert result['renamed_fields'] == {}
     assert result['handoff']['Baseline commit'] == handoff.baseline
     assert result['issues'] == []
+
+
+def test_agent_instructions_name_the_canonical_baseline_labels():
+    """The instruction a writer reads must name the label the reader matches.
+
+    The rename this file exists for came from instructions that only ever
+    paraphrased the baseline as a "code commit": a paraphrase is what a writer
+    relabels. The generated AGENTS.md and the maintenance rule behind it must
+    carry the literal labels, and the generated file must still match its
+    generator - a hand-edited copy would drift back to a paraphrase unnoticed.
+    """
+    generated = (ROOT / 'product/AGENTS.md').read_text(encoding='utf-8')
+    rule = (ROOT / 'product/rules/log-file-maintenance.md').read_text(encoding='utf-8')
+    assert generated == render_agent_instructions(), (
+        'product/AGENTS.md is stale; regenerate with `lfg.py generate`')
+    for field in ('Baseline branch', 'Baseline commit'):
+        assert field in CANONICAL_FIELDS, field
+        label = '**' + field + ':**'
+        assert label in generated, 'AGENTS.md does not name ' + label
+        assert label in rule, 'log-file-maintenance.md does not name ' + label
