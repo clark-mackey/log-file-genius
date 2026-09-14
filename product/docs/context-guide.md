@@ -81,6 +81,11 @@ STATE is a small shared snapshot, normally at most 500 estimated tokens. Record
 baseline branch and code commit before committing the handoff itself, next action,
 tests with outcomes, and blockers. Keep task-local scratch and ownership in the
 session/worktree; avoid replacing another active task's state.
+Write those five under their exact canonical labels - `**Baseline branch:**`,
+`**Baseline commit:**`, `**Next action:**`, `**Tests:**`, `**Blockers:**` - once each.
+Readers match the label literally, so a relabeled field is unreadable rather than
+merely reworded; `lfg validate` rejects a STATE that renames one. Put any extra
+wording in the value, not in the label.
 Do not advance the code baseline merely because a documentation-only handoff was
 committed. Inspect the intervening diff: retain the last checked code commit when
 only logs changed, and describe uncommitted code/test evidence separately.

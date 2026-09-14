@@ -2,6 +2,7 @@
 import re
 import subprocess
 from context_paths import context_paths
+from state_contract import CANONICAL_FIELDS, find_renamed_fields, read_field
 
 
 def git(root, *args):
@@ -13,13 +14,16 @@ def assess(root):
     paths = context_paths(root)
     path = paths['state']
     text = path.read_text(encoding='utf-8') if path.exists() else ''
-    fields = {}
-    for key in ('Baseline branch', 'Baseline commit', 'Next action', 'Tests', 'Blockers'):
-        values = re.findall(r'^\*\*' + key + r':\*\*\s*(.+)$', text, re.M)
-        fields[key] = values[0].strip() if len(values) == 1 else None
+    fields = {key: read_field(text, key) for key in CANONICAL_FIELDS}
+    # A relabeled field is unreadable, not absent: say which label was written,
+    # so the reader looks at the recorded value instead of at nothing.
+    renamed = find_renamed_fields(text)
     branch = git(root, 'branch', '--show-current')
     head = git(root, 'rev-parse', 'HEAD')
-    issues = []
+    issues = [f'Handoff field "{label}" was written as ' +
+              ', '.join(f'"{variant}"' for variant in variants) +
+              '; its value is not read. Restore the canonical label.'
+              for label, variants in renamed.items()]
     baseline = fields['Baseline commit']
     if not branch or not head:
         issues.append('Checkout evidence unavailable or detached; reconcile manually.')
@@ -62,6 +66,6 @@ def assess(root):
     if not current or not last:
         issues.append('Missing Current Context or Last Session.')
     return {'status': 'unknown' if issues else 'baseline-matches; reader must reconcile factual claims',
-            'branch': branch, 'head': head, 'handoff': fields,
+            'branch': branch, 'head': head, 'handoff': fields, 'renamed_fields': renamed,
             'changed_paths': code_changes, 'changed_context': [name for name in changed if is_context(name)], 'issues': issues,
             'external_status': 'unknown; check dated external evidence separately'}

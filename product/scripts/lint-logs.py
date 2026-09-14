@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config_parser import parse_config, ConfigError
+from state_contract import find_renamed_fields
 
 
 @dataclass
@@ -450,6 +451,16 @@ class LogLinter:
             result.add_issue('error', None,
                              "STATE missing '## Current Context' section",
                              "Run `lfg migrate-state` or add a '## Current Context' section")
+        # Structural check (ERROR): a canonical handoff field written under another
+        # label is unreadable to `lfg freshness`, which then reports the recorded
+        # evidence exactly as it reports evidence that was never recorded. Fail
+        # here, where the handoff is written, rather than silently at read time.
+        for label, variants in find_renamed_fields(text).items():
+            written = ', '.join(f"'**{v}:**'" for v in variants)
+            result.add_issue('error', None,
+                             f"STATE writes the canonical '**{label}:**' field as {written}",
+                             f"Restore the canonical '**{label}:**' label; "
+                             "freshness reads that exact spelling")
         token_count = self._estimate_tokens(text)
         # WARNING not error: STATE has no archival (you trim it), and a freshly
         # installed template carries removable guidance that exceeds the budget.
