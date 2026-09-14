@@ -82,9 +82,13 @@ baseline branch and code commit before committing the handoff itself, next actio
 tests with outcomes, and blockers. Keep task-local scratch and ownership in the
 session/worktree; avoid replacing another active task's state.
 Write those five under their exact canonical labels - `**Baseline branch:**`,
-`**Baseline commit:**`, `**Next action:**`, `**Tests:**`, `**Blockers:**` - once each.
+`**Baseline commit:**`, `**Next action:**`, `**Tests:**`, `**Blockers:**` - once each,
+each value on its own label's line; a bare label reads as missing, not as the
+line below it.
 Readers match the label literally, so a relabeled field is unreadable rather than
-merely reworded; `lfg validate` rejects a STATE that renames one. Put any extra
+merely reworded; `lfg validate` rejects the near-miss relabelings it recognizes -
+the canonical words with others added around them - and a spelling it cannot
+recognize still passes, so the exact labels stay yours to keep. Put any extra
 wording in the value, not in the label.
 Do not advance the code baseline merely because a documentation-only handoff was
 committed. Inspect the intervening diff: retain the last checked code commit when

@@ -370,8 +370,10 @@ validate_state() {
         errors+=("Missing '## Current Context' section")
     fi
 
-    # Match the Python validator's structural contract. Evidence fields are
-    # assessed by `freshness`; legacy Version/Phase fields are not mandatory.
+    # Narrower than the Python validator, which also fails a STATE that writes
+    # a canonical handoff field under another label (see state_contract.py);
+    # that check has no shell equivalent yet. Evidence fields are assessed by
+    # `freshness`; legacy Version/Phase fields are not mandatory.
 
     # Token budget: STATE should stay lean (the now), default <500. This is a
     # WARNING not an error — STATE has no archival (you trim it), and a freshly

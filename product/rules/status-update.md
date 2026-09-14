@@ -55,7 +55,7 @@ Use this exact format:
 - [Next objective 2]
 - [Next objective 3]
 
-**Risks/Blockers:**
+**Blockers:**
 - [Risk/blocker 1, or "None currently"]
 ```
 
@@ -81,7 +81,7 @@ Use this exact format:
 - Create issue templates for bug reports and feature requests
 - Consider GitHub Pages for documentation hosting
 
-**Risks/Blockers:**
+**Blockers:**
 - None currently
 ```
 
@@ -89,6 +89,8 @@ Use this exact format:
 
 ## Tips
 
+- Use STATE's canonical `**Blockers:**` label; if this content lands in STATE,
+  keep the value on the label's own line, where `lfg freshness` reads it
 - Keep it concise (3-5 bullets per section)
 - Focus on actionable information
 - Highlight what's changed recently

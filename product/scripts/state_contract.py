@@ -16,9 +16,19 @@ _LABEL = re.compile(r'^\*\*([^*:]+):\*\*', re.M)
 
 
 def read_field(text, label):
-    """The value recorded under exactly `label`, or None when absent or repeated."""
-    values = re.findall(r'^\*\*' + re.escape(label) + r':\*\*\s*(.+)$', text, re.M)
-    return values[0].strip() if len(values) == 1 else None
+    """The value recorded under exactly `label`, or None when absent, empty or repeated.
+
+    The value is whatever follows the label on that same line: `.` excludes the
+    newline and only spaces/tabs may separate label from value, so a label left
+    bare reads as unrecorded instead of absorbing the next line as its value.
+    Every occurrence of the label counts toward uniqueness, valued or bare, so a
+    repeated label stays ambiguous rather than resolving to the one that has a
+    value.
+    """
+    values = re.findall(r'^\*\*' + re.escape(label) + r':\*\*[ \t]*(.*)$', text, re.M)
+    if len(values) != 1:
+        return None
+    return values[0].strip() or None
 
 
 def _words(label):
@@ -49,6 +59,9 @@ def find_renamed_fields(text, labels=CANONICAL_FIELDS):
 
     Only labels that are not themselves recorded exactly once are reported, so a
     supplementary field beside a present canonical one stays ordinary content.
+    A canonical label that is absent, bare or repeated is not recorded, so a
+    variant standing beside it is still reported: an ambiguous canonical field
+    plus a near-miss label is exactly the case worth naming.
     """
     recorded = {label for label in labels if read_field(text, label) is not None}
     renamed = {}

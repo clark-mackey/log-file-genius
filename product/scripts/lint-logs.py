@@ -444,9 +444,9 @@ class LogLinter:
             text = f.read()
         # Structural check (ERROR): the v0.3.0 STATE spec requires a
         # `## Current Context` section. Its absence means STATE is malformed or
-        # predates the v0.3.0 layout and needs `lfg migrate-state`. This is the
-        # only STATE condition that should fail validation (exit 2); budget
-        # issues stay warnings (see below).
+        # predates the v0.3.0 layout and needs `lfg migrate-state`. Structural
+        # breakage - this and the renamed-field check below - is what fails
+        # validation (exit 2); budget issues stay warnings (see below).
         if not re.search(r'(?m)^##\s+Current Context\b', text):
             result.add_issue('error', None,
                              "STATE missing '## Current Context' section",

@@ -122,6 +122,39 @@ def test_validate_rejects_a_renamed_baseline_field(handoff):
     assert _validate_state(handoff('**Baseline commit:** {baseline}\n')).returncode == 0
 
 
+def test_bare_canonical_label_beside_a_variant_is_still_a_rename(handoff):
+    """The canonical label present but empty must not vouch for the variant below it.
+
+    This is the rename shape that hides best: the writer keeps the canonical
+    line, leaves it blank, and records the value one line down under their own
+    spelling. A reader that let the empty label count as recorded would call the
+    whole thing ordinary content and say nothing.
+    """
+    root = handoff('**Baseline commit:**\n'
+                   '**Baseline code commit:** {baseline}\n')
+    result = assess(root)
+
+    assert result['handoff']['Baseline commit'] is None
+    assert result['renamed_fields'] == {'Baseline commit': ['Baseline code commit']}
+    assert any('Baseline code commit' in issue for issue in result['issues']), result['issues']
+    assert _validate_state(root).returncode == 2
+
+
+def test_a_bare_label_does_not_absorb_the_following_field(handoff):
+    """An empty field reads as missing, not as whatever the next line says."""
+    root = handoff('**Baseline commit:** {baseline}\n')
+    state = root / 'logs/STATE.md'
+    state.write_text(state.read_text(encoding='utf-8').replace(
+        '**Next action:** Fix the integer parsing defect.', '**Next action:**'),
+        encoding='utf-8')
+
+    result = assess(root)
+    assert result['handoff']['Next action'] is None
+    assert 'Missing handoff evidence: Next action.' in result['issues']
+    # The next line is still read as its own field, not consumed as the value.
+    assert result['handoff']['Tests'] == 'Not run; evidence unknown.'
+
+
 def test_case_and_insertion_variants_are_caught(handoff):
     """Near misses a writer actually produces: recased, prefixed, suffixed."""
     for label in ('Baseline Commit', 'Last baseline commit', 'Baseline commit hash'):

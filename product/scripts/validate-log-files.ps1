@@ -420,8 +420,10 @@ function Test-State {
         $errors += "Missing '## Current Context' section"
     }
 
-    # Match Python's structural contract; freshness assesses evidence fields.
-    # Legacy Version/Phase fields are not mandatory.
+    # Narrower than Python's structural contract, which also fails a canonical
+    # handoff field written under another label (state_contract.py); no
+    # PowerShell equivalent yet. Freshness assesses evidence fields; legacy
+    # Version/Phase fields are not mandatory.
 
     # Token budget: STATE should stay lean (the now), default <500. WARNING not
     # error — STATE has no archival, and a fresh template carries removable guidance.
