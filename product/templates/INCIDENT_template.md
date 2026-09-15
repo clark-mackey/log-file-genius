@@ -1,4 +1,5 @@
 ---
+type: Incident Report
 doc: INCIDENT
 related:
   changelog: ../CHANGELOG.md

@@ -223,6 +223,7 @@ def _sort_incidents(incidents: list[IncidentMeta]) -> list[IncidentMeta]:
 def _frontmatter() -> str:
     return (
         "---\n"
+        "type: Incident Index\n"
         "doc: INCIDENTS-INDEX\n"
         "related:\n"
         "  changelog: ../CHANGELOG.md\n"

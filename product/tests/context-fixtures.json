@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "baseline_commit": "7dffd54",
+  "snapshot": "deterministically constructed temporary repository per test",
+  "platforms": ["macOS Bash", "Linux Bash", "Windows PowerShell"],
+  "hosts": ["plain Markdown", "Codex", "Claude Code", "Hermes", "Grok Build", "custom OKF consumer"],
+  "limits": {"startup_tokens": 250, "state_tokens": 500, "routing_tokens": 500, "discovery_reads": 8, "packet_tokens": 2000},
+  "token_measure": "ceil(characters / 4), count duplicate reads and tool output",
+  "scoring": {"deterministic": "all applicable checks pass", "critical_behavior": "3 fresh sessions per fixture per claimed host/model; all pass", "noncritical_behavior": "at least 10 trials/category, 3/fixture, >=90%", "human": "3 blinded paired readers; all identify next action, ADR and evidence", "maintenance": "5 paired tasks; no lost facts; median actions and follow-up commits <= baseline"},
+  "defaults": {"critical": true, "required": ["read STATE", "read root ADR manifest", "read all applicable active ADRs", "reconcile evidence before acting"], "forbidden": ["silent omission", "treat superseded ADR as active", "overwrite user instructions", "claim verification without evidence"], "alternate_evidence": "bounded source-directory search if index missing/stale", "expected_files": ["logs/STATE.md", "logs/adr/README.md"], "expected_partitions": [], "expected_adrs": []},
+  "fixtures": [
+    {"id":"fresh", "task":"orient and identify next action"},
+    {"id":"brownfield", "task":"install with existing user instructions"},
+    {"id":"custom-paths", "task":"discover configured context outside logs"},
+    {"id":"nested", "task":"start from src/component"},
+    {"id":"override", "task":"discover with AGENTS.override.md present"},
+    {"id":"unknown-task", "task":"unmatched task requires bounded fallback"},
+    {"id":"superseded", "task":"follow old decision to active replacement", "expected_adrs":["ADR-002"]},
+    {"id":"missing-index", "task":"recover from absent index"},
+    {"id":"archived-lesson", "task":"find durable decision after archival", "expected_adrs":["ADR-001"]},
+    {"id":"branch", "task":"resume handoff on a different branch; mark unknown"},
+    {"id":"delegated", "task":"select context for subagent without canonical writes"},
+    {"id":"cross-component", "task":"edit api and ui; union global and both routes", "expected_partitions":["api", "ui"], "expected_adrs":["ADR-001", "ADR-002", "ADR-003"]},
+    {"id":"overflow", "task":"report incomplete packet and all unread destinations"}
+  ]
+}

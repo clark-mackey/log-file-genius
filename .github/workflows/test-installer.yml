@@ -72,7 +72,7 @@ jobs:
           test -f logs/STATE.md || { echo "ERROR: STATE.md not created"; exit 1; }
           test -f logs/adr/TEMPLATE.md || { echo "ERROR: ADR template not created"; exit 1; }
           test -f .logfile-config.yml || { echo "ERROR: Config file not created"; exit 1; }
-          test -f .augment/rules/log-file-maintenance.md || { echo "ERROR: AI rules not installed"; exit 1; }
+          test -f AGENTS.md || { echo "ERROR: AI rules not installed"; exit 1; }
           
           echo "✓ All expected files created"
           
@@ -106,7 +106,7 @@ jobs:
           cd /tmp/test-project-claude
           
           # Check Claude-specific files
-          test -f .claude/rules/log-file-maintenance.md || { echo "ERROR: Claude AI rules not installed"; exit 1; }
+          test -f CLAUDE.md || { echo "ERROR: Claude AI rules not installed"; exit 1; }
           
           echo "✓ Claude Code installation successful"
 
@@ -163,7 +163,7 @@ jobs:
           if (-not (Test-Path logs\STATE.md)) { throw "STATE.md not created" }
           if (-not (Test-Path logs\adr\TEMPLATE.md)) { throw "ADR template not created" }
           if (-not (Test-Path .logfile-config.yml)) { throw "Config file not created" }
-          if (-not (Test-Path .augment\rules\log-file-maintenance.md)) { throw "AI rules not installed" }
+          if (-not (Test-Path AGENTS.md)) { throw "AI rules not installed" }
           
           Write-Host "✓ All expected files created"
         

@@ -21,7 +21,7 @@ bash "$REPO/product/scripts/install.sh" \
 
 # --- File existence ---
 for f in logs/CHANGELOG.md logs/DEVLOG.md logs/STATE.md .logfile-config.yml \
-         .claude/rules/log-file-maintenance.md; do
+         CLAUDE.md logs/adr/README.md; do
     test -f "$f" || { echo "FAIL: missing $f"; exit 1; }
 done
 test -d logs/adr || { echo "FAIL: missing logs/adr"; exit 1; }
@@ -81,10 +81,9 @@ if [ -n "$PYTHON_BIN" ]; then
     [ "$AGENTS_BEFORE_HASH" = "$AGENTS_AFTER_HASH" ] || { echo "FAIL: second merge changed AGENTS.md (not idempotent)"; exit 1; }
 fi
 
-# Spec 2: installed rule must equal the canonical fragment.
-diff -q .claude/rules/log-file-maintenance.md \
-    "$REPO/product/rules/log-file-maintenance.md" \
-    || { echo "FAIL: installed rule != canonical fragment"; exit 1; }
+# Native import and no duplicate full-rule injection.
+grep -q '@AGENTS.md' CLAUDE.md || { echo 'FAIL: missing Claude import'; exit 1; }
+test ! -f .claude/rules/log-file-maintenance.md || { echo 'FAIL: duplicate full rules'; exit 1; }
 
 if grep -q 'starter-packs' "$REPO/product/scripts/update.sh"; then
     echo "FAIL: update.sh still references starter-packs"; exit 1

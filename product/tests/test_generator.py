@@ -42,44 +42,16 @@ def test_parse_fragment_missing_frontmatter_raises(tmp_path):
         parse_fragment(p)
 
 
-def test_render_agents_md_includes_sections_in_order(tmp_path):
-    a = write(tmp_path, "a.md",
-              "fragment: a\norder: 20\ntargets: agents_md\nsummary: Second.",
-              "Body of A.")
-    b = write(tmp_path, "b.md",
-              "fragment: b\norder: 10\ntargets: agents_md\nsummary: First.",
-              "Body of B.")
-    out = render_agents_md([parse_fragment(b), parse_fragment(a)])
-    # b before a (order 10 < 20)
-    assert out.index("## b") < out.index("## a")
-    # both bodies present
-    assert "Body of A." in out
-    assert "Body of B." in out
-    # frontmatter present
-    assert out.startswith("---\n")
-    assert "doc: AGENTS" in out
-    # read-this-first block
-    assert "Read this first" in out
-    # available commands
-    assert "lfg validate" in out
-    assert "lfg prime" in out
-    assert "lfg promote" in out
-    # section index
-    assert "- **a**" in out
-    assert "- **b**" in out
-
-
-def test_render_skips_fragments_not_targeted_for_agents_md(tmp_path):
-    a = write(tmp_path, "a.md",
-              "fragment: a\norder: 10\ntargets: agents_md\nsummary: s",
-              "in agents")
-    b = write(tmp_path, "b.md",
-              "fragment: b\norder: 20\ntargets: claude_rules\nsummary: s",
-              "claude only")
-    out = render_agents_md([parse_fragment(a), parse_fragment(b)])
-    assert "in agents" in out
-    assert "claude only" not in out
-    assert "## b" not in out
+def test_startup_keeps_procedures_on_demand(tmp_path):
+    fragment = write(tmp_path, "a.md",
+                     "fragment: a\norder: 10\ntargets: agents_md\nsummary: Detail.",
+                     "ON_DEMAND_SENTINEL " * 1000)
+    out = render_agents_md([parse_fragment(fragment)])
+    assert "ON_DEMAND_SENTINEL" not in out
+    assert "logs/STATE.md" in out and "logs/adr/README.md" in out
+    assert "context-guide.md" in out and "lfg.py" in out
+    assert len(out) <= 1000
+    assert "baseline branch/commit" in out
 
 
 def test_render_uses_lf_no_bom_trailing_newline(tmp_path):
