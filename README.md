@@ -102,3 +102,7 @@ On Windows, run `.\.log-file-genius\product\scripts\update.ps1`. The updater pre
 - [Contributing and test commands](CONTRIBUTING.md)
 
 [MIT license](LICENSE) · [Issues](https://github.com/clark-mackey/log-file-genius/issues)
+
+<!-- LFG:POINTER:BEGIN -->
+Project context: [STATE](logs/STATE.md), [decisions](logs/adr/README.md).
+<!-- LFG:POINTER:END -->

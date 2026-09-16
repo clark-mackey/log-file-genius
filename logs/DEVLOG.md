@@ -35,7 +35,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 - **Primary Content:** Markdown documentation, template files
 - **Deployment:** GitHub repository (clark-mackey/log-file-genius)
 - **Distribution:** Direct clone, GitHub Template button, GitHub Pages (planned)
-- **AI Assistants:** Augment, Claude Code, Cursor, GitHub Copilot
+- **AI Assistants:** Claude Code, Codex, Pi, Warp, Orca, Hermes; Augment is legacy compatibility
 
 ### Standards & Conventions
 - **File Naming:** UPPERCASE for log files (CHANGELOG.md, DEVLOG.md)
@@ -50,7 +50,7 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ### Constraints & Requirements
 - **Token Efficiency:** CHANGELOG <10k, DEVLOG <15k, combined <25k tokens; STATE <500
 - **Simplicity:** No build process, no third-party dependencies, just clone and use
-- **Compatibility:** Must work with Augment, Claude Code, Cursor, GitHub Copilot
+- **Compatibility:** Prioritize shared AGENTS.md, `.agents`/`.claude` coexistence, Google OKF, and verified behavior across the primary hosts
 - **Safety:** Brownfield installation must preserve existing documentation
 
 ### Entry Points (For Code Navigation)
@@ -72,6 +72,24 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 ---
 
 ## Daily Log - Newest First
+
+### 2026-09-16: Portable agents and public documentation
+
+**Decision:** User requested docs plus integration fixes, prioritizing Claude Code,
+Codex, Pi, Warp, Orca, Hermes and Google OKF. Augment remains supported for existing
+users, with no lead marketing role. `.agents` skills and `.claude` configuration
+stay user-owned; LFG supplies shared context rather than another skills framework.
+
+**Why:** PR #17 promoted the product, but root docs still described old rule copies,
+destructive force reinstall, and unsupported guarantees. Generic setup missed
+Claude's entry file; Hermes/Warp priority files could hide AGENTS.md.
+
+**Result:** [PR #18](https://github.com/clark-mackey/log-file-genius/pull/18) carries
+public fixes only; this development branch keeps product code aligned and updates
+the handoff. Main's PR #17 merged at `8672f14` with explicit user-authorized admin
+override after 12 passing checks. No tag or completed behavioral certification
+was implied. Full deterministic/local and native-trial limits are recorded in
+[execution evidence](../project/specs/context-execution.md).
 
 ### 2026-09-12: Explicit context discovery and preservation
 

@@ -11,22 +11,18 @@ related:
 
 ## Current Context
 
-**Baseline branch:** codex/context-discovery
-**Baseline commit:** 882090c
-**Next action:** Review [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16); complete the execution report's evaluation gates before main promotion.
-**Tests:** 252 Python tests; Linux/macOS/Windows × Python 3.10/3.14 CI passed on 2026-09-12, including Bash/PowerShell lifecycle checks.
-**Blockers:** Native host/model, paired maintenance and blinded human trials remain unmeasured; deterministic checks alone do not satisfy release acceptance.
+**Baseline branch:** codex/sync-portable-agent-docs
+**Baseline commit:** 7c3693f
+**Next action:** Review [public PR #18](https://github.com/clark-mackey/log-file-genius/pull/18) and the matching development sync; complete remaining native-host trials.
+**Tests:** Public product checkout: 274 Python tests passed, one expected no-development-logs skip; Bash install/update, generation, hashes and fresh OKF YAML checks passed on 2026-09-16. Claude Code 2.1.273 passed one read-only retrieval trial.
+**Blockers:** Codex native trial needs a compatible CLI; Pi needs provider login. Warp/Orca/Hermes sessions and broader behavioral/efficiency/human gates remain unverified.
 
-v0.6.0-dev candidate implements compact discovery, canonical ADR routing,
-evidence-based handoffs, selected packets and optional OKF migration.
-[Workplan](../project/specs/WORKPLAN-context-discovery-and-portability.md).
+Main contains v0.6.0-dev through [merged PR #17](https://github.com/clark-mackey/log-file-genius/pull/17) (`8672f14`, 2026-09-16 UTC). PR #16 already merged into development. No stable release tag was created.
 
 ## Last Session
 
-The earlier PR #12 pending-merge note was stale; main already contains v0.5.0.
-This session implemented the build phases, repaired code-owl findings and fixed
-Windows CRLF/UTF-8 defects found by CI. [Execution evidence](../project/specs/context-execution.md).
+Reframed public docs around shared AGENTS.md, .agents/.claude coexistence, and Google OKF. Fixed generic-to-Claude setup, host-priority pointers and Pi/Warp/Orca installer aliases. Kept notes/plans out of the main PR; this branch synchronizes product changes and repairs stale development status. [Execution evidence](../project/specs/context-execution.md).
 
 ## In Progress
 
-Current task owns the context-discovery branch. Keep unrelated worktree state separate.
+Review separate main/development PRs. Preserve other worktrees' ongoing evaluation work; no broad host-reliability claim is established by these checks.

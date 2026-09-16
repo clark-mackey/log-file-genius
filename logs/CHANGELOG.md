@@ -26,9 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Reframed README, install/contributor guides and agent documentation around portable Markdown/Git context, `.agents`/`.claude` coexistence and Google OKF v0.2. Augment remains a legacy option. Files: `README.md`, `INSTALL.md`, `CONTRIBUTING.md`, `llms.txt`, `product/docs/`. Commit: `7c3693f`
+
 - Implemented compact startup, canonical ADR routing, checkout-aware handoffs, explicit context packets and optional recoverable OKF migration. Preserved project-owned instructions and historical metadata; removed automatic-amend and every-commit logging defaults. Scope and evidence: [execution record](../project/specs/context-execution.md). Files: `product/scripts/`, `product/templates/`, `product/docs/context-guide.md`.
 
 ### Fixed
+
+- Generic setup now creates/reuses Claude imports, links existing Hermes/Warp priority files, preserves canonical symlinks and refuses external targets. Added Pi/Warp/Orca aliases and current-convention detection; preserved user skills/settings. Files: `product/scripts/startup.py`, `product/scripts/install.*`, `product/scripts/update.*`, `product/tests/test_context_workplan.py`. Commit: `7c3693f`
 
 - Fixed #13–15: generated guidance uses repo-local Python commands, oversized unparsed DEVLOGs refuse archival, and read commands suppress bytecode. Archive writes now preserve source bytes, refuse collisions/stale plans, constrain paths and relocate links. Installer/update preserves existing logs, mixed user templates and edited rules. Files: `product/scripts/`, `product/tests/test_context_workplan.py`.
 

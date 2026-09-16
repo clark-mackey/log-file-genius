@@ -68,7 +68,7 @@ Read-only questions do not require a state rewrite.
   and must report incomplete coverage. No governing rows are silently discarded.
 - Template hashes preserve the 0.3.0/0.4.0/0.5.0 records and add 0.6.0-dev.
 - Fresh CLI reads create no Python bytecode in the source installation.
-- [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16) is a draft against
+- At the initial execution checkpoint, [PR #16](https://github.com/clark-mackey/log-file-genius/pull/16) was a draft against
   development. Candidate commit `882090c` passed the [six-job context matrix](https://github.com/clark-mackey/log-file-genius/actions/runs/34703104234):
   Linux, macOS and Windows × Python 3.10/3.14, with the full Python suite and
   Bash/PowerShell lifecycle smoke. Installer and log-validation workflows passed too.
@@ -99,3 +99,36 @@ is justified by the deterministic results alone.
 The runtime remains optional stdlib Python. Pytest and PyYAML were installed only in
 `/tmp/lfg-execution-venv` for development checks. Original-byte backups and the metadata
 recovery journal remain local; `.codegraph/` was not modified or staged.
+
+## 2026-09-16 promotion and portability follow-up
+
+PR #16 has merged into development. On explicit user request, the product was
+selectively promoted through [PR #17](https://github.com/clark-mackey/log-file-genius/pull/17),
+merged into main at `8672f14` on 2026-09-16 UTC. Its 12 CI checks passed. The user
+authorized the administrator override for the required-review rule. Main stayed
+product/public-docs only, at v0.6.0-dev, with no release tag. This authorization did
+not complete the behavioral gates above; their unmeasured results remain unknown.
+
+The user then prioritized `.agents`/`.claude`, Google OKF and Claude/Codex/Pi/Warp/
+Orca/Hermes compatibility. [PR #18](https://github.com/clark-mackey/log-file-genius/pull/18)
+fixes setup entry points and updates public docs; development source baseline is
+`7c3693f`. No automatic skills installation or broad host certification was added.
+
+Evidence on the public product checkout:
+
+- 274 Python tests passed; the one dogfood test skipped because main has no logs.
+- Bash install/update smoke, generator/template checks and normalized manifest
+  checksums passed. Tests cover priority files, repeat setup, user skills/settings,
+  canonical symlinks and refusal of external symlink destinations.
+- Fresh generic install: seven nonreserved bundle files parse with PyYAML and
+  contain type metadata; index exists; a repeat metadata migration changes no bytes.
+- Claude Code 2.1.273 fresh read-only trial correctly retrieved baseline branch,
+  next action and ADR-099 constraint from a disposable fixture with source paths.
+- Codex CLI 0.149.1 refused its configured model pending CLI upgrade. Pi 0.85.1
+  could not start because its selected provider lacked authentication. These are
+  infrastructure blocks, not successful native tests. No model/provider was swapped.
+- Warp, Orca and Hermes native sessions were not tested. Primary documentation
+  supports the entry conventions; actual loading/behavior remains to be measured.
+
+The one Claude trial is a smoke check only and does not satisfy the multi-session,
+model, efficiency, maintenance or blinded-human acceptance gates.
