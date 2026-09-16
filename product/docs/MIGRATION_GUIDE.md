@@ -1,6 +1,6 @@
 # Migration Guide: Integrating Log File Genius into Existing Projects
 
-Use the [current installation guide](../../INSTALL.md) for native agent setup and the [context guide](context-guide.md#optional-okf-bundle) for optional Google OKF metadata. The manual content-migration examples below are for records you choose to migrate; do not replace user-owned agent configuration.
+Use the [current installation guide](../../INSTALL.md) for native agent setup and the [context guide](context-guide.md#optional-okf-bundle) for Google OKF metadata, now the default for new installations. The manual content-migration examples below are for records you choose to migrate; do not replace user-owned agent configuration.
 
 **Purpose:** Step-by-step guide for adding the Log File Genius system to projects with existing documentation.
 
@@ -11,6 +11,8 @@ Use the [current installation guide](../../INSTALL.md) for native agent setup an
 
 ## Table of Contents
 
+[Upgrade an existing LFG project, including OKF](#upgrade-an-existing-lfg-project-including-okf)
+
 1. [Quick Assessment](#quick-assessment)
 2. [Migration Scenarios](#migration-scenarios)
 3. [Step-by-Step Migration](#step-by-step-migration)
@@ -19,6 +21,68 @@ Use the [current installation guide](../../INSTALL.md) for native agent setup an
 6. [Validation & Testing](#validation--testing)
 
 **📋 [Download Migration Checklist](MIGRATION_CHECKLIST.md)** - Track your progress step-by-step
+
+---
+
+## Upgrade an existing LFG project, including OKF
+
+For a project such as Schemalyze, upgrade the existing records in place. Installing
+new LFG source does not automatically convert an existing knowledge collection.
+Keep this change limited to LFG source, configuration, instructions, and records;
+application code does not need to change.
+
+1. **Checkpoint the project.** Use a clean migration branch or isolated worktree.
+   Preserve uncommitted records separately and record the current LFG source commit
+   and project baseline so you can review and revert the complete upgrade.
+2. **Inventory existing context.** Read `.logfile-config.yml`, STATE, ADRs, incidents,
+   and archives. Identify the authoritative paths before generating anything. Keep
+   user-owned `.agents/` and `.claude/` skills, settings, hooks, and agent definitions.
+   Inspect `AGENTS.md`, Claude imports, and any native overrides for conflicting rules.
+3. **Update LFG and refresh entry points.** Use the update command in the
+   [installation guide](../../INSTALL.md#updating) with the intended LFG release.
+   Confirm that the checked-out source contains the OKF command. If the project has
+   no LFG configuration, configure the existing record paths before running setup;
+   do not seed a second collection beside them. `setup-context` refreshes the managed
+   instructions and ADR navigation while retaining user content. Resolve any modified
+   legacy-rule warnings explicitly.
+4. **Reconcile content and routes.** Check STATE against the real branch/commit and
+   available test evidence. Preview `migrate-state --dry-run` only for an old STATE
+   layout. Existing ADRs may need routing fields before setup can complete: fill them
+   from the actual decisions and their scope. Do not invent authority or provenance.
+5. **Choose and preview the OKF bundle.** Normally this is `logs/`. Custom paths must
+   share a deliberate knowledge root; inspect every configured context path, because
+   a preview does not certify complete coverage. Avoid selecting the whole application
+   repository merely to include scattered files. Reconcile unsupported YAML and any
+   user-owned `index.md` before applying; the producer refuses to overwrite that index.
+
+   ```sh
+   python3 .log-file-genius/product/scripts/lfg.py metadata --bundle logs --index
+   python3 .log-file-genius/product/scripts/lfg.py metadata --bundle logs --index --write
+   ```
+
+   Replace `logs` in both commands with the chosen root. Conversion preserves document
+   bodies and custom metadata, adds missing `type` metadata, and generates navigation.
+   Validate the resulting YAML with a full YAML parser and inspect the diff. Unsupported
+   or partial results require reconciliation before calling the bundle converted.
+6. **Verify and commit.** Regenerate ADR navigation after changing source metadata,
+   then run the checks below. Unknown freshness is a finding to resolve or record,
+   not evidence that the upgrade passed.
+
+   ```sh
+   python3 .log-file-genius/product/scripts/lfg.py routes --write
+   python3 .log-file-genius/product/scripts/lfg.py routes --check
+   python3 .log-file-genius/product/scripts/lfg.py validate
+   python3 .log-file-genius/product/scripts/lfg.py freshness
+   ```
+
+   Start a fresh session in each agent you actually use and check that it finds STATE
+   and a relevant governing ADR with source paths. Review the final diff for preserved
+   records and instructions, then commit the source revision and migration together.
+
+**Recovery:** `metadata --restore` restores the migration's recorded original bytes;
+for a custom root, pass the same `--bundle` value. It refuses to overwrite subsequent
+edits. Use the Git checkpoint for the full upgrade, including source/configuration and
+instruction changes. See [migration recovery](context-guide.md#optional-okf-bundle).
 
 ---
 

@@ -182,8 +182,18 @@ Print-Success "AI Assistant: $AiAssistant"
 # CHECK FOR EXISTING INSTALLATION
 # ============================================================================
 
+# Resolve a python interpreter the same way validate-log-files.ps1 does.
+$python = $null
+if (Get-Command python -ErrorAction SilentlyContinue) { $python = "python" }
+elseif (Get-Command python3 -ErrorAction SilentlyContinue) { $python = "python3" }
+
 $logsExists = Test-Path "logs"
 $configExists = Test-Path ".logfile-config.yml"
+$freshInstall = -not ($logsExists -or $configExists)
+if ($freshInstall -and -not $python) {
+    Print-Error "Python 3.10+ is required to initialize a new OKF knowledge bundle."
+    exit 2
+}
 
 if ($logsExists -or $configExists) {
     Write-Host ""
@@ -330,10 +340,6 @@ $lfgPy = Join-Path $ScriptDir "lfg.py"
 $agentsDest = Join-Path $ProjectRoot "AGENTS.md"
 $agentsPreexisting = Test-Path $agentsDest
 
-# Resolve a python interpreter the same way validate-log-files.ps1 does.
-$python = $null
-if (Get-Command python -ErrorAction SilentlyContinue) { $python = "python" }
-elseif (Get-Command python3 -ErrorAction SilentlyContinue) { $python = "python3" }
 
 if ($python -and (Test-Path $lfgPy)) {
     & $python $lfgPy merge-agents-md --to $agentsDest
@@ -407,6 +413,15 @@ Print-Success "Created .logfile-config.yml"
 if ($python) {
     & $python $lfgPy setup-context
     if ($LASTEXITCODE -ne 0) { exit 2 }
+    if ($freshInstall) {
+        & $python $lfgPy metadata --index --write
+        if ($LASTEXITCODE -ne 0) {
+            Print-Error "OKF initialization incomplete. Inspect diagnostics, then run: $python `"$lfgPy`" metadata --index --write"
+            exit 2
+        }
+    } else {
+        Print-Info "Existing knowledge preserved. Preview OKF adoption with: $python `"$lfgPy`" metadata --index"
+    }
 } else {
     if (-not (Test-Path "logs/adr/README.md")) {
         Copy-Item (Join-Path $SourceRoot "templates/ADR_README_template.md") "logs/adr/README.md"

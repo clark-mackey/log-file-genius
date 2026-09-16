@@ -8,7 +8,7 @@ Install once in a Git repository and use the same project context from Claude Co
 - Python **3.10+** for managed setup and the CLI; no third-party runtime packages.
 - Bash 4+ on macOS/Linux, or PowerShell 5.1+ on Windows.
 
-You can read and maintain the Markdown without Python. The no-Python installer fallback is limited: it cannot safely merge existing instructions, generate routes, or configure all native entry points. Install Python for the automated path.
+You can read and maintain the Markdown without Python. New installations require Python to initialize the OKF bundle. The no-Python fallback for existing installations cannot safely merge instructions, generate routes, or configure all native entry points.
 
 ## Install
 
@@ -91,14 +91,16 @@ If the source checkout is missing from a worktree, run `git submodule update --i
 
 For a pre-v0.4.0 STATE layout, `lfg.py migrate-state --dry-run` previews the older structural migration. Review the [current STATE template](product/templates/STATE_template.md) afterward: establishing branch/commit and test evidence is a separate task.
 
-## Optional Google OKF metadata
+## Google OKF: default on new installs
 
 ```bash
 python3 .log-file-genius/product/scripts/lfg.py metadata --index
 python3 .log-file-genius/product/scripts/lfg.py metadata --index --write
 ```
 
-Review the preview before applying. The selected bundle is normally `logs/`; custom roots use `--bundle`. Unsupported YAML is preserved and reported. See [scope, conformance, and recovery](product/docs/context-guide.md#optional-okf-bundle) before migrating important records.
+A fresh installation (neither `logs/` nor `.logfile-config.yml` exists) adds OKF metadata and `logs/index.md` automatically. Existing files or configuration select preservation mode, including with `--force`; updating or reinstalling does not convert existing records. If initialization fails, resolve the diagnostics and rerun the metadata command above to complete or resume it.
+
+For existing projects, review the preview before applying. Follow the [existing-project upgrade](product/docs/MIGRATION_GUIDE.md#upgrade-an-existing-lfg-project-including-okf) for a project such as Schemalyze. The selected bundle is normally `logs/`; custom roots use `--bundle`. Unsupported YAML is preserved and reported. See [scope, conformance, and recovery](product/docs/context-guide.md#optional-okf-bundle) before migrating important records.
 
 ## Troubleshooting
 
