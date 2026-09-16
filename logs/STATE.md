@@ -21,7 +21,7 @@ Main contains v0.6.0-dev through [merged PR #17](https://github.com/clark-mackey
 
 ## Last Session
 
-New installs now initialize OKF by default; existing records require explicit migration. Added preservation, failure and no-Python checks plus an existing-project upgrade guide. Amended ADR-015 per user direction. Schemalyze remains untouched. Public commit: `28ee4f5`; notes remain development-only. [Execution evidence](../project/specs/context-execution.md).
+New installs now initialize OKF by default; existing records require explicit migration. Added preservation, failure and no-Python checks plus an existing-project upgrade guide. Amended ADR-015 per user direction. Schemalyze remains untouched. Public commit: `00ee4e4`; notes remain development-only. [Execution evidence](../project/specs/context-execution.md).
 
 ## In Progress
 

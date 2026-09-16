@@ -161,3 +161,9 @@ Bash syntax, normalized version checksums, generated-file/template hashes and
 whitespace checks pass. Native-agent behavioral evidence and limitations from the
 previous section are unchanged. CI and PR state should be checked live before merge;
 neither PR is authorized to merge by this follow-up.
+
+
+Windows CI initially exposed a test-only locale mismatch: the new full-YAML check
+used Path.read_text's cp1252 default against UTF-8 templates. Public follow-up
+`00ee4e4` sets UTF-8 explicitly; installer behavior is unchanged. CI reruns verify
+the correction on Windows Python 3.10 and 3.14.
