@@ -490,7 +490,8 @@ def test_fresh_install_brownfield_override_repeat_and_cli_cleanliness(tmp_path, 
     subprocess.run(['git', '-C', str(source), '-c', 'user.name=LFG fixture', '-c', 'user.email=fixture@example.invalid',
                     'commit', '-qm', 'fixture'], check=True)
     remote = tmp_path/'upstream.git'
-    subprocess.run(['git', 'clone', '--bare', '-q', str(source), str(remote)], check=True)
+    # Use Git transport to avoid platform-specific local hardlink/copy failures.
+    subprocess.run(['git', 'clone', '--bare', '--no-local', '-q', str(source), str(remote)], check=True)
     subprocess.run(['git', '-C', str(source), 'remote', 'add', 'origin', str(remote)], check=True)
     (root / '.claude').mkdir()
     (root / 'AGENTS.md').write_text('# My instructions\nKEEP USER\n')
@@ -506,12 +507,25 @@ def test_fresh_install_brownfield_override_repeat_and_cli_cleanliness(tmp_path, 
     assert '@AGENTS.md' in (root/'CLAUDE.md').read_text()
     assert 'KEEP OVERRIDE' in (root/'AGENTS.override.md').read_text()
     assert (root/'logs/adr/README.md').exists()
+    # Fresh installs are an OKF bundle without a separate metadata command.
+    import yaml
+    for path in (root/'logs').rglob('*.md'):
+        frontmatter = path.read_text().split('---', 2)[1]
+        fields = yaml.safe_load(frontmatter)
+        if path.name == 'index.md':
+            assert fields['okf_version'] == '0.2'
+        else:
+            assert isinstance(fields['type'], str) and fields['type'].strip()
+    index = root/'logs/index.md'
+    assert 'STATE.md' in index.read_text()
+    index_bytes = index.read_bytes()
     assert tokens(startup.render()) <= MANIFEST['limits']['startup_tokens']
     custom = root/'logs/incidents/README.md'; custom.write_text('KEEP INCIDENT INDEX\n')
     state = root/'logs/STATE.md'; state.write_text('KEEP STATE\n')
     result = subprocess.run(command, cwd=root, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert custom.read_text() == 'KEEP INCIDENT INDEX\n' and state.read_text() == 'KEEP STATE\n'
+    assert index.read_bytes() == index_bytes
     env = dict(os.environ); env.pop('PYTHONDONTWRITEBYTECODE', None)
     for args in (['status'], ['prime'], ['routes', '--check']):
         result = subprocess.run([sys.executable, str(product/'scripts/lfg.py'), *args], cwd=root, env=env, capture_output=True)
@@ -543,3 +557,52 @@ def test_fresh_install_brownfield_override_repeat_and_cli_cleanliness(tmp_path, 
     assert (templates/'user.md').read_text() == 'KEEP CUSTOM TEMPLATE'
     assert 'KEEP USER' in (root/'AGENTS.md').read_text()
     assert run('routes', '--check').returncode == 0
+
+
+@pytest.mark.parametrize('existing', ['logs', 'config', 'metadata-failure'])
+def test_install_okf_preservation_and_failure(tmp_path, existing):
+    root = tmp_path / 'project'; root.mkdir()
+    product = root / '.log-file-genius/product'
+    shutil.copytree(PRODUCT, product, ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '.pytest_cache'))
+    if existing == 'logs':
+        (root/'logs').mkdir()
+        (root/'logs/notes.md').write_text('# User notes\nUnmodified body.\n')
+    elif existing == 'config':
+        (root/'.logfile-config.yml').write_text('profile: solo-developer\n')
+    else:
+        # A producer refusal must reach the installer caller, never claim success.
+        template = product/'templates/DEVLOG_template.md'
+        template.write_text('---\ntype: [unsupported, sequence]\n---\n# Development Log\n')
+    if sys.platform == 'win32':
+        command = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                   str(product/'scripts/install.ps1'), '-Force', '-Profile', 'solo-developer', '-AiAssistant', 'generic']
+    else:
+        command = ['bash', str(product/'scripts/install.sh'), '--force', '--profile', 'solo-developer', '--ai-assistant', 'generic']
+    result = subprocess.run(command, cwd=root, capture_output=True, text=True)
+    if existing == 'metadata-failure':
+        assert result.returncode == 2, result.stdout + result.stderr
+        assert 'OKF initialization incomplete' in result.stdout
+        assert 'Installation Complete!' not in result.stdout
+    else:
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert 'Preview OKF adoption' in result.stdout
+        if existing == 'logs':
+            assert (root/'logs/notes.md').read_text() == '# User notes\nUnmodified body.\n'
+        else:
+            assert (root/'.logfile-config.yml').read_text() == 'profile: solo-developer\n'
+    assert not (root/'logs/index.md').exists()
+    assert not (root/'.lfg/metadata-migration.json').exists()
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='Bash PATH isolation')
+def test_fresh_install_requires_python_before_writes(tmp_path):
+    root = tmp_path/'project'; root.mkdir()
+    commands = tmp_path/'bin'; commands.mkdir()
+    (commands/'dirname').symlink_to(shutil.which('dirname'))
+    env = dict(os.environ, PATH=str(commands))
+    result = subprocess.run([shutil.which('bash'), str(PRODUCT/'scripts/install.sh'),
+                             '--force', '--profile', 'solo-developer', '--ai-assistant', 'generic'],
+                            cwd=root, env=env, capture_output=True, text=True)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert 'Python 3.10+ is required' in result.stdout
+    assert not list(root.iterdir())

@@ -46,8 +46,9 @@ fixtures against your own records.
    copies remain visible for review.
 9. **Worktrees:** committed entry files are present and `git submodule update --init`
    makes the CLI available from the actual agent worktree.
-10. **OKF:** preview and migrate the selected bundle; validate with a full YAML parser
-    in development. Unsupported YAML, partial scope, and interrupted migrations
+10. **OKF:** new installs create metadata and a navigation index automatically; existing
+    logs or configuration remain unconverted, even with force. Preview and migrate
+    an existing bundle explicitly. Validate both paths with a full YAML parser in development. Unsupported YAML, partial scope, and interrupted migrations
     must not be reported as complete conformance.
 
 A failed operation may leave earlier per-file changes; setup is not a transaction

@@ -108,7 +108,14 @@ not invent summaries. ADRs and incidents remain reachable after dated log entrie
 Archive preview refuses unsupported headings and oversized unparsed content. Back up
 before converting legacy sections to canonical date entries. Review links after moving.
 
-## Optional OKF bundle
+<a id="optional-okf-bundle"></a>
+
+## OKF knowledge bundle
+
+New installations initialize OKF metadata and a navigation index automatically. The
+installer treats a project as new only when neither `logs/` nor `.logfile-config.yml`
+exists. Existing projects retain their records and opt into the conversion below;
+`--force` skips prompts, not preservation. See the [existing-project upgrade](MIGRATION_GUIDE.md#upgrade-an-existing-lfg-project-including-okf).
 
 `logs/` is the usual bundle boundary; with custom paths the default is STATE's directory.
 Use `metadata --bundle path` when all desired context lives under a different root.

@@ -2,7 +2,7 @@
 
 **Project memory you can carry between coding agents.**
 
-Keep current work, decisions, changes, and lessons in Markdown and Git. Give Claude Code, Codex, Pi, Warp, Orca, and Hermes a small entry point to the same project knowledge, with optional **Google Open Knowledge Format (OKF) v0.2** metadata.
+Keep current work, decisions, changes, and lessons in Markdown and Git. Give Claude Code, Codex, Pi, Warp, Orca, and Hermes a small entry point to the same project knowledge, with **Google Open Knowledge Format (OKF) v0.2** metadata on new installs.
 
 [Install](INSTALL.md) · [Context guide](product/docs/context-guide.md) · [Agent compatibility](product/docs/context-guide.md#native-entry-points-and-limits) · [Contribute](CONTRIBUTING.md)
 
@@ -13,7 +13,7 @@ Keep current work, decisions, changes, and lessons in Markdown and Git. Give Cla
 - **Keep useful history:** CHANGELOG records what changed, DEVLOG explains why, and incident reports preserve lessons from failures.
 - **Share selected context:** Send a colleague or subagent the records they need with explicit file/section selection.
 - **Change agents without moving your knowledge:** `AGENTS.md` carries the shared reading protocol; Claude imports it through `CLAUDE.md`. Existing skills and tool settings stay yours.
-- **Use open formats:** The optional OKF producer adds metadata and an index to a selected knowledge bundle, with preview, backups, and recovery.
+- **Use open formats:** New installs create an OKF knowledge bundle. Existing projects adopt it through a previewable migration with backups and recovery.
 
 No hosted memory service, model API, vector database, or mandatory plugin. Markdown works on its own; the automation uses Python's standard library.
 
@@ -74,10 +74,10 @@ Other tools include `archive --dry-run`, `incidents-index`, `secrets`, and opt-i
 
 ## Google Open Knowledge Format
 
-LFG targets the minimal representation requirements of [Google's OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) for a selected bundle, normally `logs/`. It preserves document bodies and custom metadata and can add a navigation index.
+LFG targets the minimal representation requirements of [Google's OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) for a selected bundle, normally `logs/`. New installs initialize metadata and a navigation index automatically. Existing projects use an explicit migration that preserves document bodies and custom metadata.
 
 ```bash
-# Preview before applying
+# Existing projects: preview before applying
 python3 .log-file-genius/product/scripts/lfg.py metadata --index
 python3 .log-file-genius/product/scripts/lfg.py metadata --index --write
 ```

@@ -189,6 +189,23 @@ print_success "AI Assistant: $AI_ASSISTANT"
 # CHECK FOR EXISTING INSTALLATION
 # ============================================================================
 
+# Resolve a python interpreter the same way validate-log-files.sh does.
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+fi
+
+FRESH_INSTALL=true
+if [ -e "logs" ] || [ -L "logs" ] || [ -e ".logfile-config.yml" ] || [ -L ".logfile-config.yml" ]; then
+    FRESH_INSTALL=false
+fi
+if [ "$FRESH_INSTALL" = "true" ] && [ -z "$PYTHON_BIN" ]; then
+    print_error "Python 3.10+ is required to initialize a new OKF knowledge bundle."
+    exit 2
+fi
+
 if [ -d "logs" ] || [ -f ".logfile-config.yml" ]; then
     echo ""
     print_warning "Existing installation detected!"
@@ -328,13 +345,6 @@ AGENTS_TARGET="$PROJECT_ROOT/AGENTS.md"
 AGENTS_PREEXISTING=false
 [ -f "$AGENTS_TARGET" ] && AGENTS_PREEXISTING=true
 
-# Resolve a python interpreter the same way validate-log-files.sh does.
-PYTHON_BIN=""
-if command -v python3 >/dev/null 2>&1; then
-    PYTHON_BIN="python3"
-elif command -v python >/dev/null 2>&1; then
-    PYTHON_BIN="python"
-fi
 
 if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
     if "$PYTHON_BIN" "$LFG_PY" merge-agents-md --to "$AGENTS_TARGET"; then
@@ -401,6 +411,14 @@ fi
 
 if [ -n "$PYTHON_BIN" ]; then
     "$PYTHON_BIN" "$LFG_PY" setup-context || exit 2
+    if [ "$FRESH_INSTALL" = "true" ]; then
+        if ! "$PYTHON_BIN" "$LFG_PY" metadata --index --write; then
+            print_error "OKF initialization incomplete. Inspect diagnostics, then run: $PYTHON_BIN \"$LFG_PY\" metadata --index --write"
+            exit 2
+        fi
+    else
+        print_info "Existing knowledge preserved. Preview OKF adoption with: $PYTHON_BIN \"$LFG_PY\" metadata --index"
+    fi
 else
     [ -f logs/adr/README.md ] || cp "$SOURCE_ROOT/templates/ADR_README_template.md" logs/adr/README.md
     if [ "$AI_ASSISTANT" = "claude-code" ] && [ ! -f CLAUDE.md ]; then

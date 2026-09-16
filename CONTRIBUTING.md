@@ -28,7 +28,7 @@ On Windows, activate `.venv\Scripts\Activate.ps1`. Run shell checks on macOS/Lin
 | Detailed maintenance guidance | `product/rules/log-file-maintenance.md`, `product/docs/context-guide.md` |
 | Bash/PowerShell setup | `product/scripts/install.*`, `product/scripts/update.*` |
 | ADR discovery and routing | `product/scripts/routing.py` |
-| Optional OKF migration | `product/scripts/metadata.py` |
+| OKF initialization and migration | `product/scripts/metadata.py` |
 | Templates and ownership hashes | `product/templates/`, `product/scripts/known_template_hashes.json` |
 
 `product/AGENTS.md` is generated from the compact protocol in `startup.py`. The generator retains legacy fragment parsing helpers; changing a rule fragment does not change the startup body or automatically install per-tool rule copies.

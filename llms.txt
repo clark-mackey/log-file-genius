@@ -1,6 +1,6 @@
 # Log File Genius
 
-> Portable project context for humans and coding agents, stored in Markdown and Git. Shared AGENTS.md instructions, a Claude import, and optional Google Open Knowledge Format (OKF) v0.2 metadata.
+> Portable project context for humans and coding agents, stored in Markdown and Git. Shared AGENTS.md instructions, a Claude import, and Google Open Knowledge Format (OKF) v0.2 metadata by default on new installs.
 
 ## Installation
 
@@ -19,7 +19,7 @@ Read STATE, follow all applicable ADR routes, and reconcile recorded evidence wi
 
 The installer merges a compact block into AGENTS.md and configures a Claude import. Existing .agents skills and .claude settings remain user-owned. Codex, Claude Code, Pi, Warp, Orca, and Hermes use the shared records through their native entry conventions; host behavior still needs verification in the actual session.
 
-OKF is optional and scoped to a selected knowledge bundle. The producer preserves unsupported YAML and reports incomplete migration. It is not a general-purpose OKF consumer or an attestation service.
+New installs initialize an OKF knowledge bundle automatically. Existing installations require an explicit, previewable migration. OKF conformance is scoped to the selected bundle. The producer preserves unsupported YAML and reports incomplete migration. It is not a general-purpose OKF consumer or an attestation service.
 
 ## Documentation
 
