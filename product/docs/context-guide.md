@@ -120,7 +120,7 @@ python3 .log-file-genius/product/scripts/lfg.py metadata --index --write
 python3 .log-file-genius/product/scripts/lfg.py metadata --restore
 ```
 
-The producer follows [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md):
+The producer targets the minimal representation requirements of [Google Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md):
 add a nonempty `type`, preserve `doc`, `related`, custom keys and bodies. Titles are
 quoted safely. Migration never adds `verified`, fabricated provenance, or lifecycle
 status. ADR Status remains distinct from optional OKF draft/stable/deprecated status.
@@ -141,33 +141,92 @@ complete. Root index publication comes last; partial migration is never reported
 
 ## Native entry points and limits
 
-Install with `--ai-assistant codex`, `hermes`, `grok-build`, `generic` or `aider`
-(`-AiAssistant` in PowerShell), as well as the existing `augment`/`claude-code`
-choices. These choices install pointers; they are not behavioral certification.
-Use `generic` for a human or a custom bot. Aider still requires explicit `--read AGENTS.md`.
+Use `--ai-assistant generic` (`-AiAssistant generic` in PowerShell) when switching
+between tools. Named options include `claude-code`, `codex`, `pi`, `warp`, `orca`,
+and `hermes`; they share one context collection. `grok-build`, `aider`, and legacy
+`augment` remain available. These options configure LFG files, not the agent itself.
 
-| Reader | Entry point | What still needs checking |
+| Reader | Shared entry point | Verify in the actual host |
 |---|---|---|
-| Codex | Root AGENTS.md; pointer in existing root AGENTS.override.md | Nested overrides, configured size limits and actual loaded chain |
-| Claude Code | Root CLAUDE.md imports AGENTS.md | User imports/rules may duplicate guidance |
-| Hermes | AGENTS.md; pointers in existing .hermes AGENTS files | Effective context-file priority and nested scope |
-| Grok Build | Trusted repository rules including AGENTS.md | Repository trust; hosts loading CLAUDE as well may duplicate |
-| Augment | Root AGENTS.md | Existing modified .augment/rules remain; inspect duplicates |
-| Aider | Explicit read/config pointing at AGENTS.md | Opt-in; no automatic configuration changes |
-| Custom bot / OKF consumer | Host explicitly loads index/startup | No universal native filename or automatic injection |
-| Human | README links to STATE and decisions | No CLI required |
+| Claude Code | Root CLAUDE.md imports AGENTS.md, or an existing .claude/CLAUDE.md imports ../AGENTS.md | `/context` lists the memory files; inspect exclusions and other imports |
+| Codex | Root AGENTS.md; pointer in existing root AGENTS.override.md | Effective instruction chain, nested overrides, configured size limit |
+| Pi | AGENTS.md; root override points back to it | Startup header lists the file; context discovery is enabled |
+| Warp | AGENTS.md; pointer in an existing WARP.md because it takes priority | Project Rules/References show the applicable file |
+| Orca | The selected Claude/Codex agent's entry point | Actual worktree has the committed files and initialized source submodule |
+| Hermes | AGENTS.md; pointers in existing .hermes.md, HERMES.md, and root override | Effective priority file and working directory; preserve global SOUL.md |
+| Grok Build | Trusted repository AGENTS.md | Repository trust and duplicate loading |
+| Aider | Explicit `--read AGENTS.md` | Opt-in read/config; LFG does not change Aider settings |
+| Augment (legacy) | Root AGENTS.md | Modified old .augment rules can still duplicate guidance |
+| Human / custom bot / OKF consumer | README/STATE/index links or explicit file loading | The reader has access to the selected files; no universal bot loader |
 
-Install/update preserves user instructions. Only exact known shipped rule bytes move
-out of autoload; modified copies remain with a diagnostic. Backup files use non-Markdown
-extensions. Inspect nested overrides manually. Targets are 150–250 startup, 500 STATE,
-300–500 routing tokens; estimates use characters/4. Count actual host injection, tool
-output and duplicate reads separately. Cross-host/model and blinded-human outcome
-gates must be measured before claiming reliable support.
+### .agents and .claude coexistence
 
-Native loading references: [Codex](https://learn.chatgpt.com/docs/agent-configuration/agents-md),
-[Claude Code](https://code.claude.com/docs/en/memory),
-[Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files),
-[Grok Build](https://github.com/xai-org/grok-build/blob/main/crates/codegen/xai-grok-pager/docs/user-guide/12-project-rules.md),
-[Augment](https://docs.augmentcode.com/cli/rules), and
-[Aider](https://aider.chat/docs/usage/conventions.html). These describe entry conventions;
-they do not replace the workplan's native-loading and task-application tests.
+`AGENTS.md` is an instruction file. `.agents/skills/` is an on-demand skill location
+used by Codex and Pi. Claude uses its own `.claude/skills/`, settings, hooks, and
+agent definitions. LFG preserves those directories and does not install or invoke
+skills automatically. Existing skills can read the same STATE/ADR records and use
+the repo-local CLI; they do not need a separate memory store.
+
+Claude imports are relative to the containing file. A root `CLAUDE.md` uses
+`@AGENTS.md`; `.claude/CLAUDE.md` uses `@../AGENTS.md`. Avoid importing the same
+protocol from several always-loaded files. Existing user imports are preserved. Native symlinks directly to the in-repository
+AGENTS.md remain intact; external or unrelated symlink destinations require manual
+setup.
+
+### Preservation and scope
+
+Install/update retains user instructions. Only exact known shipped legacy rule
+bytes move out of autoload; modified copies remain with a diagnostic. Backup files
+use non-Markdown extensions. Root priority files are handled; inspect nested
+AGENTS.override.md, WARP.md, and Hermes files separately when starting below the
+root. A pointer asks the reader to consult AGENTS.md; it is not a universal import
+mechanism. Trust settings and model behavior can still prevent that read.
+
+Keep shared entry files and the source submodule reference in Git when using
+worktrees. Run `git submodule update --init` in a new worktree before CLI commands.
+Do not copy a personal `.agents` or `.claude` directory over another worktree's
+configuration to make discovery work.
+
+### What is verified
+
+LFG's automated tests check generated files, preservation, repeated setup,
+installer aliases, route selection, and metadata migration. CI exercises Python
+3.10/3.14 on Linux, macOS, and Windows. These checks do not execute every host or
+prove a model follows the instructions.
+
+Fresh-session retrieval smoke test on 2026-09-16: Claude Code 2.1.273 read the
+generic installation's protocol and returned the fixture's baseline, next action,
+and routed ADR constraint with source paths. This was one read-only trial, not a
+cross-model reliability measurement. Codex's local CLI could not run its configured
+model without an upgrade; Pi 0.85.1 lacked provider authentication. Warp, Orca, and
+Hermes native sessions were not exercised. Their file conventions and installer
+fixtures are covered; native behavior remains unverified.
+
+For each host/version you intend to rely on:
+
+1. Install into a disposable Git project containing a STATE and a known routed ADR.
+2. Start a fresh session at the root; inspect the host's loaded context.
+3. Ask for the baseline, next action, and relevant ADR with exact file references.
+4. Repeat from a nested directory and with your existing priority/override files.
+5. Change a decision and start another session; confirm it reads the changed record.
+6. Perform a small task and verify the handoff preserves actual evidence.
+
+Record results as host/version/date, working directory, loaded entry file, expected
+record, and observed result. Unrun checks remain unverified. “Flawless across tools”
+is an acceptance goal, not a result inferred from creating Markdown files.
+
+Startup, STATE, and routing budgets are small reading targets, not claims about
+measured host injection. Count actual loaded bytes, tool output, and duplicate
+reads separately. STATE is evidence for coordination, not a lock against edits.
+
+### Primary references
+
+Entry conventions checked on 2026-09-16:
+
+- [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md) and [skills](https://learn.chatgpt.com/docs/build-skills)
+- [Claude project memory/imports](https://code.claude.com/docs/en/memory)
+- [Pi context files and skills](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/README.md)
+- [Warp project rules and precedence](https://docs.warp.dev/agents/capabilities/rules/)
+- [Orca agent hooks and memory](https://www.onorca.dev/docs/agents/hooks-memory)
+- [Hermes context-file priority](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files)
+- [Google OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md)

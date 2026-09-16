@@ -3,11 +3,11 @@
 # Installs Log File Genius to your project with standard /logs/ structure
 #
 # Usage:
-#   install.sh [--profile <profile>] [--ai-assistant <augment|claude-code>] [--force]
+#   install.sh [--profile <profile>] [--ai-assistant <name>] [--force]
 #
 # Options:
 #   --profile        Profile to use (solo-developer, team, open-source, startup)
-#   --ai-assistant   AI assistant to install rules for (augment, claude-code, codex, hermes, grok-build, generic, aider)
+#   --ai-assistant   AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)
 #   --force          Skip confirmation prompts (validation still runs)
 
 set -e
@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --profile <name>       Profile to use (solo-developer, team, open-source, startup)"
-            echo "  --ai-assistant <name>  AI assistant (augment, claude-code, codex, hermes, grok-build, generic, aider)"
+            echo "  --ai-assistant <name>  AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)"
             echo "  --force                Skip confirmation prompts"
             echo "  --help, -h             Show this help message"
             echo ""
@@ -126,25 +126,28 @@ echo ""
 if [ -z "$AI_ASSISTANT" ]; then
     print_info "Detecting AI assistant..."
     
-    if [ -d ".augment" ]; then
-        AI_ASSISTANT="augment"
-        print_success "Detected Augment"
-    elif [ -d ".claude" ]; then
+    if [ -d ".claude" ] || [ -f "CLAUDE.md" ]; then
         AI_ASSISTANT="claude-code"
         print_success "Detected Claude Code"
+    elif [ -f "AGENTS.md" ] || [ -d ".agents" ]; then
+        AI_ASSISTANT="generic"
+        print_success "Detected generic AGENTS.md convention"
+    elif [ -d ".augment" ]; then
+        AI_ASSISTANT="augment"
+        print_success "Detected Augment"
     else
         echo ""
         echo "Which AI assistant are you using?"
-        echo "  1) Augment"
+        echo "  1) Generic / Codex / Pi / Warp / Orca / Hermes / human"
         echo "  2) Claude Code"
-        echo "  3) Generic / Codex / Hermes / Grok / human"
+        echo "  3) Augment"
         echo ""
         read -p "Enter choice (1-3): " choice
         
         case $choice in
-            1) AI_ASSISTANT="augment" ;;
+            1) AI_ASSISTANT="generic" ;;
             2) AI_ASSISTANT="claude-code" ;;
-            3) AI_ASSISTANT="generic" ;;
+            3) AI_ASSISTANT="augment" ;;
             *)
                 print_error "Invalid choice. Exiting."
                 exit 1
@@ -303,7 +306,7 @@ print_info "Installing AI assistant rules..."
 case "$AI_ASSISTANT" in
     augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
     claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
-    codex|hermes|grok-build|generic|aider) RULES_DEST="" ;;
+    codex|pi|warp|orca|hermes|grok-build|generic|aider) RULES_DEST="" ;;
     *)           rollback_installation "Unknown assistant: $AI_ASSISTANT" ;;
 esac
 

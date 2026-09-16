@@ -119,10 +119,12 @@ echo ""
 
 # Detect AI assistant
 detect_ai_assistant() {
-    if [[ -d "$PROJECT_ROOT/.augment" ]]; then
-        echo "augment"
-    elif [[ -d "$PROJECT_ROOT/.claude" ]]; then
+    if [[ -d "$PROJECT_ROOT/.claude" || -f "$PROJECT_ROOT/CLAUDE.md" ]]; then
         echo "claude-code"
+    elif [[ -f "$PROJECT_ROOT/AGENTS.md" || -d "$PROJECT_ROOT/.agents" ]]; then
+        echo "generic"
+    elif [[ -d "$PROJECT_ROOT/.augment" ]]; then
+        echo "augment"
     elif [[ -d "$PROJECT_ROOT/.cursor" ]]; then
         echo "cursor"
     else
@@ -190,6 +192,7 @@ prompt_update() {
 case "$AI_ASSISTANT" in
     augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
     claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
+    generic)     RULES_DEST="" ;;
     *)           print_warning "Unknown assistant: $AI_ASSISTANT"; AI_ASSISTANT="unknown" ;;
 esac
 
