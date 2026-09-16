@@ -510,7 +510,7 @@ def test_fresh_install_brownfield_override_repeat_and_cli_cleanliness(tmp_path, 
     # Fresh installs are an OKF bundle without a separate metadata command.
     import yaml
     for path in (root/'logs').rglob('*.md'):
-        frontmatter = path.read_text().split('---', 2)[1]
+        frontmatter = path.read_text(encoding='utf-8').split('---', 2)[1]
         fields = yaml.safe_load(frontmatter)
         if path.name == 'index.md':
             assert fields['okf_version'] == '0.2'
