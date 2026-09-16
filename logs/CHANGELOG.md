@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Default fresh installations to OKF metadata and an index; retain explicit migration for existing records/config. Require Python for fresh setup, propagate initialization failures, and document existing-project upgrades including Schemalyze-style custom context. Files: `product/scripts/install.*`, `product/docs/MIGRATION_GUIDE.md`, public guides. Commit: `26db4b5`
+
 - Reframed README, install/contributor guides and agent documentation around portable Markdown/Git context, `.agents`/`.claude` coexistence and Google OKF v0.2. Augment remains a legacy option. Files: `README.md`, `INSTALL.md`, `CONTRIBUTING.md`, `llms.txt`, `product/docs/`. Commit: `7c3693f`
 
 - Implemented compact startup, canonical ADR routing, checkout-aware handoffs, explicit context packets and optional recoverable OKF migration. Preserved project-owned instructions and historical metadata; removed automatic-amend and every-commit logging defaults. Scope and evidence: [execution record](../project/specs/context-execution.md). Files: `product/scripts/`, `product/templates/`, `product/docs/context-guide.md`.

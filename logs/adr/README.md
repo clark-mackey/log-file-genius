@@ -8,7 +8,7 @@ doc: ADR-INDEX
 [Template](../../product/templates/ADR_template.md) · [Notes](../../project/archive/context/adr-index-before-routing.md).
 
 <!-- LFG:ROUTES:BEGIN -->
-Source SHA-256: b4ce7ded469fd2919721bd316cdd11c61de4b54d83d58d52990ca19f3a8cbaeb
+Source SHA-256: 42f895ec7e7b65ee729f8ad427b70560e21b416418fb7c3d0201b8dfee4db888
 
 Read globals and every path/task match. Follow replacements; search sources on a miss. Report unread scope.
 

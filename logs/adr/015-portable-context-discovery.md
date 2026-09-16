@@ -44,8 +44,11 @@ changes and handoffs without automatic amend or mandatory conversational checkli
 STATE records branch/code baseline and factual evidence; dates alone do not verify it.
 Priming retains the subagent contract and adds explicit selections plus a neutral role.
 
-OKF metadata migration is additive and optional, with a defined bundle boundary,
-exact-byte recovery, and no fabricated verification. YAML representation conformance,
+As amended by Clark Mackey on 2026-09-16, new installations initialize an OKF
+knowledge bundle and navigation index by default, using the standard-library Python
+producer. Existing records require an explicit, additive migration with a defined
+bundle boundary, exact-byte recovery, and no fabricated verification. Reading
+Markdown remains independent of Python; automated fresh installation requires it. YAML representation conformance,
 native discovery, model application, and human retrieval require separate evidence.
 Host/model support and release claims wait for their scoped acceptance gates.
 

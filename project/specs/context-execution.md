@@ -132,3 +132,32 @@ Evidence on the public product checkout:
 
 The one Claude trial is a smoke check only and does not satisfy the multi-session,
 model, efficiency, maintenance or blinded-human acceptance gates.
+
+
+## 2026-09-16 OKF default follow-up
+
+The user confirmed new installations must adopt OKF by default and asked about
+converting an existing project such as Schemalyze. Public commit `28ee4f5` updates
+PR #18; development code baseline `26db4b5` updates PR #19. ADR-015 records the
+amendment to optional-only adoption. Schemalyze was not modified.
+
+Fresh means neither logs nor configuration existed before installation. Bash and
+PowerShell invoke the existing metadata producer with an index after context setup.
+Existing records/config remain in preservation mode, including with force. Missing
+Python blocks new setup before writes; producer errors return failure with an
+explicit recovery command. The migration guide covers custom paths, unsupported
+YAML, owned indexes, checkpoints, route checks and native retrieval checks.
+
+Public checkout validation: 278 passed, one expected dogfood skip. Development
+checkout: 279 passed. Added checks
+cover automatic YAML/type/index output, existing log/config preservation, repeat
+install preservation, producer refusal and missing-interpreter early exit. Code Owl
+reported no new blocker. The existing command-availability interpreter detection is
+not a Python-version/usability preflight. Git fixture setup intermittently failed in
+local object copying; switching the fixture clone to Git transport (--no-local)
+resolved that failure and the full suite passed. No product workaround was added.
+
+Bash syntax, normalized version checksums, generated-file/template hashes and
+whitespace checks pass. Native-agent behavioral evidence and limitations from the
+previous section are unchanged. CI and PR state should be checked live before merge;
+neither PR is authorized to merge by this follow-up.

@@ -73,6 +73,20 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2026-09-16: OKF default and existing-project conversion
+
+**Decision:** User confirmed new installations should adopt OKF by default and asked
+how an existing project such as Schemalyze should convert. This amends ADR-015's
+previous optional-only adoption policy. Existing records still require a deliberate,
+previewable migration; force/update must not convert them silently.
+
+**Implementation:** Fresh Bash/PowerShell installs invoke the existing metadata
+producer with an index. Missing Python stops a new install before writes; producer
+failure returns an error with a recovery command. The public migration guide covers
+custom paths, user-owned instructions/skills, route repair, YAML checks, host trials,
+and rollback. Schemalyze itself was not changed.
+
+
 ### 2026-09-16: Portable agents and public documentation
 
 **Decision:** User requested docs plus integration fixes, prioritizing Claude Code,
