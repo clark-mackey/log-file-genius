@@ -1,6 +1,8 @@
 # Token-Efficient Log File System for AI-Assisted Projects
 
-**Purpose:** A five-document system (PRD, CHANGELOG, DEVLOG, STATE, ADRs) that provides complete project context to AI agents while consuming <5% of their context window.
+**Purpose:** Keep project state, changes, decisions, and lessons in linked Markdown records that humans and coding agents can read selectively.
+
+For the current startup protocol, host entry points, and Google OKF support, use the [context guide](context-guide.md). Sizing examples below are illustrative; they do not establish measured savings or complete knowledge for every host/model.
 
 **Target Audience:** Development teams using AI coding assistants (Claude, GitHub Copilot, etc.) who need to maintain project history without exhausting token budgets.
 
@@ -143,37 +145,19 @@ The complete documentation system consists of five interconnected documents:
 
 ### STATE.md - "What's Happening Now"
 
-**Purpose:** The single source of truth for current project state — owns Current Context (version, branch, phase, objectives, risks) AND the Last Session handoff. STATE is a first-class document, not optional.
-**Format:** Structured sections (Current Context, Active Work, Blockers, Recently Completed, Next Priorities, Last Session)
-**Audience:** AI agents, developers — anyone starting or resuming work
-**Token Target:** <500 tokens (ultra-lightweight)
+STATE records the baseline branch and code commit, next action, tests with outcomes,
+and blockers. `Current Context` and `Last Session` must agree with each other and
+with the checkout. Missing evidence stays unknown.
 
-**Characteristics:**
-- ✅ Owns Current Context: version, branch, phase, objectives, key risks
-- ✅ Owns Last Session handoff: what was done, what's next, any context to carry forward
-- ✅ Updated at start and end of every work session
-- ✅ Shows last 2-4 hours of activity
-- ✅ Lists active work, blockers, and priorities
-- ✅ Includes branch status for git workflows
-- ✅ Old "Recently Completed" items archived to CHANGELOG after 24 hours
-- ❌ Not a historical record (that's CHANGELOG/DEVLOG)
-- ❌ Not a narrative log (that's DEVLOG)
+Use the [current STATE template](../templates/STATE_template.md). Keep shared state
+small (normally 500 estimated tokens); task-local scratch stays in the session or
+worktree. Read it before work; update it after meaningful changes or at handoff.
+A read-only check does not require a rewrite. STATE supports coordination but does
+not prevent concurrent edits or replace checking Git and external evidence.
 
-**When to Update STATE.md:**
-- **Start of work session:** Read it first; add yourself to "Active Work"; confirm Current Context is accurate
-- **Every 30-60 minutes:** Update progress during active work
-- **When blocked:** Immediately add to "Blockers" section
-- **End of work session:** Move task to "Recently Completed"; update Last Session with handoff notes
-- **Version/branch/phase changes:** Update Current Context immediately
-- **After 24 hours:** Archive old "Recently Completed" items to CHANGELOG
+**Location:** `logs/STATE.md` by default, configurable in `.logfile-config.yml`.
 
-**Use Cases:**
-- **Session start:** Every agent reads STATE first — no guessing about version, branch, or what was last worked on
-- **Multi-agent coordination:** Prevents duplicate work and merge conflicts
-- **Handoffs:** New agents/developers resume instantly without reading CHANGELOG or DEVLOG
-- **Single developer:** Still the right place for current context — lightweight enough to always maintain
-
-**Location:** `logs/STATE.md`
+---
 
 ### ADRs - "Architectural Decisions"
 
@@ -311,23 +295,14 @@ The five-document system supports a **progressive disclosure strategy** where AI
 
 ### Progressive Loading Strategy
 
-**Start minimal, expand as needed:**
+1. Read STATE and the ADR root index.
+2. Match all global, path, and task routes; read the active governing ADRs.
+3. Reconcile the baseline and handoff with current Git/evidence.
+4. Read selected changes, incidents, requirements, or archived reasoning as needed.
+5. Report unread scope; missing routes require bounded search.
 
-```
-1. Read STATE.md — Current Context + Last Session (Layer 1)
-   ↓
-   Need more context?
-   ↓
-2. Read STATE + Recent CHANGELOG + Recent DEVLOG entries (Layer 2)
-   ↓
-   Still need more?
-   ↓
-3. Read Full DEVLOG + Full CHANGELOG (Layer 3)
-   ↓
-   Planning major changes?
-   ↓
-4. Read PRD + Specific ADRs (Layer 4)
-```
+Use `lfg routes` and explicit `lfg prime --include` selections for repeatable
+navigation. Do not defer governing decisions until after implementation.
 
 ### Token Savings with Context Layers
 
@@ -628,49 +603,8 @@ project-root/
 
 ### STATE.md Entry Format
 
-**Template:**
-```markdown
-# Current State
-
-**Last Updated:** YYYY-MM-DD HH:MM UTC
-**Updated By:** Agent-1 (main branch)
-
-## Active Work
-
-- **Agent-1** (feature/auth): Adding OAuth2 PKCE flow with token rotation
-- **Developer-1** (main): Fixing critical bug in payment processing
-
-## Blockers
-
-- Database migration script needs DBA review before deployment (blocks Agent-1)
-- Waiting for design mockups for dashboard UI (blocks Developer-2)
-
-## Recently Completed (Last 2-4 Hours)
-
-- ✅ OAuth2 PKCE flow implemented and tested (Agent-1, 14:30)
-- ✅ Payment bug fixed, deployed to staging (Developer-1, 15:00)
-
-## Next Priorities
-
-1. Merge feature/auth-flow after OAuth2 tests pass
-2. Review and approve database migration script
-3. Complete API v2 endpoint refactoring
-
-## Branch Status
-
-- **main**: Clean, all tests passing (last updated: 15:30)
-- **feature/auth**: 5 commits ahead, tests passing, ready for review
-- **hotfix/payment-bug**: Merged to main at 15:00
-```
-
-**Rules:**
-- Update at start and end of work sessions
-- Keep under 500 tokens (ultra-lightweight)
-- Show only last 2-4 hours of activity
-- Archive "Recently Completed" items older than 24 hours to CHANGELOG
-- Be specific about who's working on what
-- Include timestamps for completed items
-- List blockers immediately when they occur
+Use the [current STATE template](../templates/STATE_template.md). Record actual
+branch/commit and test evidence; keep unknowns explicit. See [handoffs and evidence](context-guide.md#handoffs-and-evidence).
 
 ### ADR Entry Format
 
@@ -862,36 +796,12 @@ When multiple agents work on the same codebase, they read **STATE.md** — not D
 
 ---
 
-### STATE.md - Update Continuously During Active Work
+### STATE.md - Update at Meaningful Changes and Handoffs
 
-**Update Trigger:** Start/end of work sessions, progress updates, blockers
-
-**Update Frequency:** Every 30-60 minutes during active development
-
-**Update When:**
-- ✅ **Start of work session** - Add yourself to "Active Work" section
-- ✅ **Every 30-60 minutes** - Update progress during active work
-- ✅ **When blocked** - Immediately add to "Blockers" section
-- ✅ **When unblocked** - Remove from "Blockers" section
-- ✅ **End of work session** - Move task to "Recently Completed" with timestamp
-- ✅ **After 24 hours** - Archive "Recently Completed" items to CHANGELOG
-- ✅ **Branch status changes** - Update when pushing commits or merging
-
-**Update Format:** Bullet points with agent/developer name, branch, and specific task
-```markdown
-- **Agent-1** (feature/auth): Adding OAuth2 PKCE flow with token rotation
-```
-
-**Best Practice:**
-- Read STATE.md FIRST before starting any work
-- Update immediately, don't batch updates
-- Be specific about what you're working on
-- Include timestamps for completed items
-- Keep under 500 tokens (archive old items to CHANGELOG)
-
-**Why Continuous Updates:** STATE.md is the single source for current context. It prevents duplicate work and merge conflicts, and it means any agent — solo or in a multi-agent setup — can resume work instantly without reading CHANGELOG or DEVLOG history.
-
----
+Record changes to the baseline, next action, test outcomes, and blockers. Reconcile
+Current Context and Last Session before another reader resumes. Do not refresh a
+timestamp as a substitute for checking evidence, or rewrite state just because a
+read-only question was answered.
 
 ### ADRs - Create When Needed, Rarely Update
 
@@ -1416,92 +1326,8 @@ A narrative chronicle of the project journey - the decisions, discoveries, and i
 
 ### Minimal STATE.md
 
-```markdown
-# Current State
-
-**Last Updated:** YYYY-MM-DD HH:MM UTC
-**Updated By:** [Your name/agent name] (main branch)
-
----
-
-## Related Documents
-
-📋 **[PRD](../project/specs/PRD.md)** - Product requirements and specifications
-📊 **[CHANGELOG](./CHANGELOG.md)** - Technical changes and version history
-📖 **[DEVLOG](./DEVLOG.md)** - Development narrative and decision rationale
-⚖️ **[ADRs](./adr/README.md)** - Architectural decision records
-
-> **For AI Agents:** Read this FIRST before starting any work. This file owns Current Context (version, branch, phase, objectives) and Last Session handoff. Update at the START and END of each work session.
-
----
-
-## Current Context
-
-**Version:** v0.1.0
-**Branch:** main
-**Phase:** Initial development
-
-**Stack:**
-- [Your tech stack here]
-
-**Current Objectives:**
-- [What you're working on now]
-
-**Entry Points:**
-- [Key files/modules here]
-
----
-
-## Active Work
-
-- **[Your name]** (main): [What you're currently working on]
-
----
-
-## Blockers
-
-- [List any blockers here, or write "None currently"]
-
----
-
-## Recently Completed (Last 2-4 Hours)
-
-- ✅ [Completed task] ([Your name], HH:MM)
-
----
-
-## Next Priorities
-
-1. [Next priority task]
-2. [Second priority task]
-3. [Third priority task]
-
----
-
-## Branch Status
-
-- **main**: Clean, all tests passing
-- **[feature-branch]**: [X commits ahead, status]
-
----
-
-## Last Session
-
-**Date:** YYYY-MM-DD
-**Completed:** [What was finished]
-**In Progress:** [What was left in flight]
-**Next:** [Recommended starting point]
-**Notes:** [Any context to carry forward]
-
----
-
-## Notes
-
-- Keep this file under 500 tokens total
-- Update every 30-60 minutes during active work
-- Archive "Recently Completed" items older than 24 hours to CHANGELOG
-- Current Context is owned here, not in CHANGELOG or DEVLOG
-```
+Start from [STATE_template.md](../templates/STATE_template.md), the canonical
+maintained template. Its baseline/evidence fields keep unknowns visible.
 
 ### Minimal ADR README.md
 
@@ -1546,24 +1372,22 @@ See [ADR_template.md](../templates/ADR_template.md) for the standard format (pat
 
 ## AI Assistant Rules — How They're Built
 
-LFG ships AI assistant rules as **canonical fragments** in `product/rules/`. Each
-fragment carries YAML frontmatter with a `targets` list (e.g., `claude-code`,
-`augment`) that tells the installer which per-tool directories to write the rule
-into. The installer walks every fragment and routes it automatically — no
-per-tool copies to maintain.
+`product/scripts/startup.py` renders the compact protocol. `lfg generate` emits
+`product/AGENTS.md`; the installer merges a managed version into consumer AGENTS.md.
+Claude uses an import of that file. Existing host-priority files receive pointers.
+Detailed procedures stay in the source checkout and are read on demand.
 
-The top-level `product/AGENTS.md` is **generated** (not hand-edited) by running
-`python product/scripts/lfg.py generate`. Contributors edit fragments under
-`product/rules/`, then regenerate; CI enforces this with `lfg generate --check`
-on every PR. If you want per-tool output to change, edit the fragment and
-regenerate — that's the only command you need.
+The `.agents/skills/` and `.claude/` ecosystems coexist with the same records; LFG
+does not replace their settings or install duplicate knowledge stores. See
+[agent compatibility](context-guide.md#native-entry-points-and-limits) and
+[contributor instructions](../../CONTRIBUTING.md).
 
 ---
 
 ## Quick Start Checklist
 
-- [ ] Create directory structure (`logs/`, `logs/adr/`, `project/specs/`)
-- [ ] Copy starter templates (CHANGELOG.md, DEVLOG.md, STATE.md, ADR README.md)
+- [ ] Run the [installer](../../INSTALL.md) with `--ai-assistant generic`
+- [ ] Inspect STATE and ADR routing; retain existing requirements in their current location
 - [ ] Set token budget targets (CHANGELOG <10k, DEVLOG <15k, combined <25k, STATE <500)
 - [ ] Add cross-links to all documents (frontmatter with relative paths)
 - [ ] Monitor token budgets with `lfg validate` (ships with LFG — no DIY script needed)
@@ -1588,7 +1412,7 @@ regenerate — that's the only command you need.
 ## Success Metrics
 
 - ✅ CHANGELOG < 10,000 tokens; DEVLOG < 15,000 tokens; combined < 25,000 tokens
-- ✅ AI agents can load full project history in <5% of context window
+- ✅ Check actual context use and retrieval in the selected host/model
 - ✅ All cross-links working
 - ✅ Narrative preserved in DEVLOG
 - ✅ Facts preserved in CHANGELOG
@@ -1597,7 +1421,7 @@ regenerate — that's the only command you need.
 
 ---
 
-**Last Updated:** 2026-06-01 (tracks Log File Genius v0.5.0)  
+**Last Updated:** 2026-09-16 (portable context protocol; v0.6.0-dev)
 **License:** CC0 (Public Domain)
 
 

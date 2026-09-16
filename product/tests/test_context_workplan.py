@@ -272,6 +272,153 @@ def test_failed_routing_does_not_publish_native_pointers(tmp_path):
     assert not (root/'CLAUDE.md').exists()
 
 
+def test_generic_setup_creates_claude_import(tmp_path):
+    root = seed(tmp_path)
+    (root / 'AGENTS.md').write_text('KEEP AGENTS\n')
+
+    startup.install(root)
+
+    text = (root / 'CLAUDE.md').read_text()
+    assert text.count('@AGENTS.md') == 1
+
+
+def test_setup_prefers_nested_claude_file_and_is_idempotent(tmp_path):
+    root = seed(tmp_path)
+    (root / 'AGENTS.md').write_text('KEEP AGENTS\n')
+    nested = root / '.claude/CLAUDE.md'
+    nested.parent.mkdir()
+    nested.write_text('KEEP CLAUDE\n')
+
+    startup.install(root)
+    first = nested.read_bytes()
+    startup.install(root)
+
+    assert not (root / 'CLAUDE.md').exists()
+    assert nested.read_bytes() == first
+    assert 'KEEP CLAUDE' in nested.read_text()
+    assert nested.read_text().count('@../AGENTS.md') == 1
+
+
+def test_existing_claude_import_is_not_duplicated(tmp_path):
+    root = seed(tmp_path)
+    (root / 'AGENTS.md').write_text('KEEP AGENTS\n')
+    claude = root / 'CLAUDE.md'
+    claude.write_text('KEEP CLAUDE\n\n@AGENTS.md\n')
+    original = claude.read_bytes()
+
+    startup.install(root)
+    startup.install(root)
+
+    assert claude.read_bytes() == original
+    assert claude.read_text().count('@AGENTS.md') == 1
+
+
+@pytest.mark.parametrize('example', ['```text\n@AGENTS.md\n```',
+                                     '~~~\n@AGENTS.md\n~~~',
+                                     '<!--\n@AGENTS.md\n-->', '`@AGENTS.md`',
+                                     '    @AGENTS.md', '\t@AGENTS.md'])
+def test_claude_import_example_does_not_replace_real_import(tmp_path, example):
+    root = seed(tmp_path)
+    claude = root / 'CLAUDE.md'
+    claude.write_text(example + '\n')
+    startup.install(root)
+    assert example in claude.read_text()
+    assert '<!-- LFG:POINTER:BEGIN -->\n@AGENTS.md\n' in claude.read_text()
+
+
+def test_context_setup_preserves_agent_skills_and_claude_settings(tmp_path):
+    root = seed(tmp_path)
+    owned = {}
+    for relative in ('.agents/skills/custom/SKILL.md', '.claude/skills/custom/SKILL.md',
+                     '.claude/settings.json', '.claude/agents/reviewer.md'):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b'USER OWNED\r\n')
+        owned[path] = path.read_bytes()
+    startup.install(root)
+    startup.install(root)
+    assert all(path.read_bytes() == content for path, content in owned.items())
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='symlinks require Windows Developer Mode')
+@pytest.mark.parametrize('relative', ['CLAUDE.md', '.claude/CLAUDE.md', 'WARP.md', '.hermes.md'])
+def test_native_symlink_to_canonical_agents_needs_no_pointer(tmp_path, relative):
+    root = seed(tmp_path)
+    agents = root / 'AGENTS.md'; agents.write_text('CANONICAL INSTRUCTIONS\n')
+    native = root / relative; native.parent.mkdir(parents=True, exist_ok=True)
+    native.symlink_to(agents)
+    startup.install(root)
+    startup.install(root)
+    assert native.is_symlink()
+    assert agents.read_text() == 'CANONICAL INSTRUCTIONS\n'
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='symlinks require Windows Developer Mode')
+def test_existing_symlink_import_is_refused_without_writing_target(tmp_path):
+    root = seed(tmp_path / 'repo')
+    outside = tmp_path / 'outside.md'
+    outside.write_text('@AGENTS.md\n')
+    (root / 'CLAUDE.md').symlink_to(outside)
+    with pytest.raises(ValueError, match='escapes repository|Symlink'):
+        startup.install(root)
+    assert outside.read_text() == '@AGENTS.md\n'
+    assert (root / 'CLAUDE.md').is_symlink()
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='symlinks require Windows Developer Mode')
+@pytest.mark.parametrize('directory, filename', [('.claude', 'CLAUDE.md'), ('.hermes', 'AGENTS.md')])
+def test_context_setup_refuses_external_parent_symlink(tmp_path, directory, filename):
+    root = seed(tmp_path / 'repo')
+    outside = tmp_path / 'outside'; outside.mkdir()
+    target = outside / filename; target.write_text('PRIVATE INSTRUCTIONS\n')
+    (root / directory).symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match='escapes repository'):
+        startup.install(root)
+    assert target.read_text() == 'PRIVATE INSTRUCTIONS\n'
+
+
+@pytest.mark.parametrize('directory, expected', [('.agents', 'generic'), ('.claude', 'Claude Code')])
+def test_installer_prefers_current_agent_conventions_over_augment(tmp_path, directory, expected):
+    root = tmp_path / 'consumer'; root.mkdir()
+    (root / directory).mkdir()
+    (root / '.augment').mkdir()
+    product = root / '.log-file-genius/product'
+    shutil.copytree(PRODUCT, product, ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '.pytest_cache'))
+    if sys.platform == 'win32':
+        command = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                   str(product / 'scripts/install.ps1'), '-Force', '-Profile', 'solo-developer']
+    else:
+        command = ['bash', str(product / 'scripts/install.sh'), '--force', '--profile', 'solo-developer']
+    result = subprocess.run(command, cwd=root, input='', capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'Detected ' + expected in result.stdout
+    assert (root / 'CLAUDE.md').exists()
+
+
+def test_existing_hermes_priority_and_warp_files_are_preserved(tmp_path):
+    root = seed(tmp_path)
+    (root / 'AGENTS.md').write_text('KEEP AGENTS\n')
+    (root / '.hermes').mkdir()
+    expected = {
+        root / '.hermes.md': 'AGENTS.md',
+        root / 'HERMES.md': 'AGENTS.md',
+        root / 'AGENTS.override.md': 'AGENTS.md',
+        root / '.hermes/AGENTS.md': '../AGENTS.md',
+        root / '.hermes/AGENTS.override.md': '../AGENTS.md',
+        root / 'WARP.md': 'AGENTS.md',
+    }
+    for path in expected:
+        path.write_text(f'KEEP {path.name}\n')
+
+    startup.install(root)
+    startup.install(root)
+
+    for path, target in expected.items():
+        text = path.read_text()
+        assert f'KEEP {path.name}' in text
+        assert text.count(f'[{target}]({target})') == 1
+
+
 def test_archive_ignores_alternate_fence_inside_code(tmp_path):
     path = tmp_path/'archive/x.md'
     archive._write_archive_file(path, '```text\n~~~\n```\n[Guide](docs/g.md "Guide")\n', 'DEVLOG.md')
@@ -330,7 +477,8 @@ def test_archive_legacy_mixed_oversize_refuses_without_byte_changes(tmp_path):
         assert not (root / 'logs/archive').exists()
 
 
-@pytest.mark.parametrize('assistant', ['claude-code', 'augment', 'codex', 'hermes', 'grok-build', 'generic', 'aider'])
+@pytest.mark.parametrize('assistant', ['claude-code', 'augment', 'codex', 'pi', 'warp', 'orca',
+                                       'hermes', 'grok-build', 'generic', 'aider'])
 def test_fresh_install_brownfield_override_repeat_and_cli_cleanliness(tmp_path, assistant):
     root = tmp_path / 'repo with spaces'; root.mkdir()
     product = root / '.log-file-genius/product'

@@ -1,5 +1,6 @@
 """Compact shared startup protocol and preservation-aware native pointers."""
 import os
+import re
 from pathlib import Path
 from context_paths import context_paths
 from safe_write import replace
@@ -26,7 +27,28 @@ def render(root=None):
             "Procedures: `" + str(Path(runtime).parent.parent.as_posix()) + "/docs/context-guide.md`.\n")
 
 
+def _has_import(text, target):
+    """Recognize an existing standalone import, excluding Markdown examples."""
+    text = re.sub(r'<!--.*?-->', '', text, flags=re.S)
+    fence = None
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        match = re.match(r'(`{3,}|~{3,})', stripped)
+        if match:
+            marker = match.group()
+            if fence is None:
+                fence = marker
+            elif marker[0] == fence[0] and len(marker) >= len(fence):
+                fence = None
+            continue
+        if fence is None and line.rstrip() == target:
+            return True
+    return False
+
+
 def pointer(path, target, label='LFG:POINTER'):
+    if path.is_symlink():
+        raise ValueError(f'Symlink context file requires manual setup: {path}')
     old = path.read_bytes() if path.exists() else None
     text = old.decode('utf-8') if old else ''
     begin, end = f'<!-- {label}:BEGIN -->', f'<!-- {label}:END -->'
@@ -36,8 +58,10 @@ def pointer(path, target, label='LFG:POINTER'):
             raise ValueError(f'Malformed pointer: {path}')
         text = text[:text.index(begin)] + block + text[text.index(end) + len(end):]
     else:
+        if target.startswith('@') and _has_import(text, target):
+            return False
         text = text.rstrip() + ('\n\n' if text else '') + block + '\n'
-    replace(path, text, old)
+    return replace(path, text, old)
 
 
 def install(root):
@@ -54,12 +78,29 @@ def install(root):
     notices = []
     pointer(root / 'README.md', 'Project context: [STATE](' + paths['state'].relative_to(root).as_posix() +
             '), [decisions](' + paths['adr_dir'].relative_to(root).as_posix() + '/README.md).')
-    if (root / '.claude').exists() or (root / 'CLAUDE.md').exists():
-        pointer(root / 'CLAUDE.md', '@AGENTS.md')
-    # A higher-priority override must point back to the canonical protocol.
-    for relative in ('AGENTS.override.md', '.hermes/AGENTS.md', '.hermes/AGENTS.override.md'):
+
+    # Keep Claude available after any install. Prefer an existing nested native
+    # file, but otherwise use the conventional project-root entry point.
+    claude = root / 'CLAUDE.md'
+    nested_claude = root / '.claude/CLAUDE.md'
+    if not (claude.exists() or claude.is_symlink()) and (nested_claude.exists() or nested_claude.is_symlink()):
+        claude = nested_claude
+    if not claude.resolve().is_relative_to(root):
+        raise ValueError(f'Context file escapes repository: {claude}')
+    dest = os.path.relpath(root / 'AGENTS.md', claude.parent).replace(os.sep, '/')
+    # A native symlink to our canonical file already loads the right bytes.
+    if not (claude.is_symlink() and claude.resolve() == root / 'AGENTS.md'):
+        pointer(claude, '@' + dest)
+
+    # Existing higher-priority or legacy files must point back to the canonical protocol.
+    for relative in ('.hermes.md', 'HERMES.md', 'AGENTS.override.md',
+                     '.hermes/AGENTS.md', '.hermes/AGENTS.override.md', 'WARP.md'):
         path = root / relative
-        if path.exists():
+        if path.exists() or path.is_symlink():
+            if not path.resolve().is_relative_to(root):
+                raise ValueError(f'Context file escapes repository: {path}')
+            if path.is_symlink() and path.resolve() == root / 'AGENTS.md':
+                continue
             dest = os.path.relpath(root / 'AGENTS.md', path.parent).replace(os.sep, '/')
             pointer(path, f'Read [{dest}]({dest}) for LFG context before task work.')
     manifest = Path(__file__).with_name('known_rule_hashes.json')

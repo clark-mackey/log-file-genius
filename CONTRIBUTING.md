@@ -1,292 +1,89 @@
 # Contributing to Log File Genius
 
-Thank you for your interest in contributing to Log File Genius! This project aims to help developers maintain token-efficient documentation for AI coding assistants, and your contributions help make that mission better.
+LFG keeps project context in Markdown and Git, shared across humans and coding agents. Contributions should preserve existing records, stay small, and keep the Python runtime standard-library-only.
 
-## 🎯 Ways to Contribute
+## Branches and scope
 
-### 1. Report Bugs 🐛
+`development` holds product code and internal project records. `main` is the distributable: promote product changes and necessary public documentation/CI selectively through a PR. Do not merge the whole development branch or copy internal logs, plans, or research into main.
 
-Found a bug? Help us fix it!
+## Development setup
 
-1. **Check existing issues** to avoid duplicates
-2. **Create a new issue** with:
-   - Clear, descriptive title
-   - Steps to reproduce the problem
-   - Expected vs. actual behavior
-   - Your environment (OS, AI assistant, project type)
-   - Screenshots or error messages if applicable
+Use Python **3.10+**, Git, and Bash or PowerShell. Development tests use pytest and PyYAML; consumer runtime code must not require them.
 
-### 2. Suggest Features 💡
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install pytest pyyaml
+python -B -m pytest product/tests -q
+```
 
-Have an idea for improvement?
+On Windows, activate `.venv\Scripts\Activate.ps1`. Run shell checks on macOS/Linux and PowerShell checks on Windows.
 
-1. **Check existing discussions** to see if it's been proposed
-2. **Open a discussion** in the Ideas category
-3. **Describe:**
-   - The problem you're trying to solve
-   - Your proposed solution
-   - Why it would benefit other users
-   - Any alternatives you've considered
+## Where to make changes
 
-### 3. Improve Documentation 📚
+| Behavior | Source |
+|---|---|
+| Compact shared reading protocol and native pointers | `product/scripts/startup.py` |
+| Generated output and managed-block rendering | `product/scripts/generator.py` |
+| Detailed maintenance guidance | `product/rules/log-file-maintenance.md`, `product/docs/context-guide.md` |
+| Bash/PowerShell setup | `product/scripts/install.*`, `product/scripts/update.*` |
+| ADR discovery and routing | `product/scripts/routing.py` |
+| Optional OKF migration | `product/scripts/metadata.py` |
+| Templates and ownership hashes | `product/templates/`, `product/scripts/known_template_hashes.json` |
 
-Documentation improvements are always welcome!
+`product/AGENTS.md` is generated from the compact protocol in `startup.py`. The generator retains legacy fragment parsing helpers; changing a rule fragment does not change the startup body or automatically install per-tool rule copies.
 
-- Fix typos or unclear explanations
-- Add examples or use cases
-- Improve installation guides
-- Translate documentation (future)
-- Add platform-specific tips
-
-### 4. Add Platform Support 🔌
-
-Help expand support for more AI coding assistants!
-
-**Currently supported:**
-- Augment
-- Claude Code
-
-**Wanted:**
-- Cursor
-- GitHub Copilot
-- Continue
-- Cody
-- Other AI assistants
-
-**To add a new platform:**
-1. Add a `targets` entry for the new platform to each fragment in `product/rules/`
-2. Add any platform-specific render logic to `product/scripts/generator.py`
-3. Test thoroughly with the platform
-4. Update the main README.md with the new platform
-5. Submit a PR with your changes
-
-### 5. Share Success Stories 🎉
-
-Using Log File Genius successfully? Share your story!
-
-1. **Post in Discussions** under "Show and Tell"
-2. **Include:**
-   - Your project type and size
-   - Token reduction achieved
-   - Challenges you faced
-   - Tips for other users
-   - Before/after metrics if available
-
-## Build-time dependency: Python 3.11+
-
-LFG remains **zero-dependency at runtime for users** — the installer, validators,
-and pre-commit hook are stdlib-only.
-
-For **contributors**, Python 3.11+ is required to regenerate `product/AGENTS.md`
-from the canonical fragments in `product/rules/`. After editing any fragment, run:
+After changing startup text:
 
 ```bash
 python product/scripts/lfg.py generate
+python product/scripts/lfg.py generate --check
 ```
 
-CI runs `lfg generate --check` on every PR and will fail if `AGENTS.md` is out
-of date relative to the fragments. To avoid forgetting, install the pre-commit
-hook below.
+`render_full()` emits the distributable body; `render_block()` wraps it in `<!-- LFG:BEGIN v… -->` / `<!-- LFG:END -->` markers for merging into consumer files. Preserve the marker contract and user-owned surrounding content.
 
-#### AGENTS.md is emitted two ways
-
-The generator renders the fragment content through two entry points (both in
-`product/scripts/generator.py`):
-
-- **`render_full()`** writes the in-repo `product/AGENTS.md` — fully LFG-owned, **no
-  markers**. This is what `lfg generate` produces and what CI checks.
-- **`render_block()`** wraps the same canonical body in `<!-- LFG:BEGIN v… -->` /
-  `<!-- LFG:END -->` markers. This is the block that `install`/`update` (via
-  `lfg merge-agents-md`) merge into a *user's* `AGENTS.md`, leaving their surrounding
-  content intact.
-
-Both share a single `render_canonical_body()` primitive, so editing a fragment under
-`product/rules/` and running `lfg generate` keeps both outputs in sync. **The marker
-format is a documented part of the distributable's contract — don't change the marker
-strings or the `v<version>` token in the BEGIN marker without a deliberate version bump.**
-
-#### Regenerate template hashes when templates change
-
-If you add, remove, or modify any file under `product/templates/` — including
-`INCIDENT_template.md` — regenerate the shipped hash manifest:
+After changing templates:
 
 ```bash
 python product/scripts/update_template_hashes.py
+python product/scripts/update_template_hashes.py --check
 ```
 
-This updates `product/scripts/known_template_hashes.json`, which the updater uses to
-recognize (and safely back up) LFG-installed root `templates/` folders. CI gates that the
-manifest is current for the present version — a forgotten regen will fail the build.
+Retain historical ownership hashes. Do not guess that a user-edited file belongs to LFG. Updates must preserve custom records/settings and provide exact-byte recovery where promised.
 
-### Optional: pre-commit auto-regenerate
+## Agent compatibility
+
+Prioritize shared `AGENTS.md`, Claude's import, coexistence with `.agents/skills/` and `.claude/`, and selected-bundle OKF representation. Keep knowledge in one collection. A host adapter should point to that collection rather than duplicate records or replace host settings.
+
+For Claude Code, Codex, Pi, Warp, Orca, and Hermes changes:
+
+1. Check current primary documentation for actual entry filenames, precedence, and trust behavior.
+2. Add a focused regression test for the changed setup or preservation behavior.
+3. Exercise clean install, repeat install, update, user-owned instructions, and priority overrides.
+4. Record which host/version/session was actually tested. Generated files and unit tests alone do not prove the host loaded or followed the protocol.
+
+See [entry points and verification](product/docs/context-guide.md#native-entry-points-and-limits). Keep legacy Augment support functional without making it the primary installation story.
+
+## Checks before a PR
 
 ```bash
-cp product/scripts/pre-commit-regen .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
+python -B -m pytest product/tests -q
+python -B product/scripts/lfg.py generate --check
+python -B product/scripts/update_template_hashes.py --check
+bash product/tests/smoke_install.sh
+bash product/tests/smoke_update.sh
+bash product/tests/test_validate_sh.sh
+bash product/tests/test_validators_accept_templates.sh
 ```
 
-This hook regenerates `product/AGENTS.md` automatically whenever you stage
-changes under `product/rules/` and re-adds the updated `AGENTS.md` to the commit.
+Windows equivalents include `product/tests/smoke_install.ps1` and `smoke_update.ps1`. GitHub Actions runs the installer checks and the Python 3.10/3.14 matrix across Linux, macOS, and Windows.
 
----
+For docs-only changes, check relative links and examples. For OKF changes, distinguish minimal bundle conformance from a full YAML consumer, optional verification metadata, and host behavior. Never fabricate provenance or verification fields.
 
-## 🚀 Getting Started
+## Pull requests
 
-### Prerequisites
+Describe the concrete problem, resulting behavior, validation, and remaining limits. Keep unrelated changes separate. Link issues where useful. Use a clear commit subject, such as `Fix: preserve Claude instructions during context setup`.
 
-- Git installed
-- A GitHub account
-- Familiarity with Markdown
-- (Optional) Experience with AI coding assistants
+Report bugs through [GitHub Issues](https://github.com/clark-mackey/log-file-genius/issues), including the LFG commit/version, host/version, OS, reproduction steps, and expected/actual behavior. Redact secrets and private project records.
 
-### Development Setup
-
-1. **Fork the repository**
-   ```bash
-   # Click "Fork" on GitHub, then clone your fork
-   git clone https://github.com/YOUR-USERNAME/log-file-genius.git
-   cd log-file-genius
-   ```
-
-2. **Create a branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or
-   git checkout -b fix/your-bug-fix
-   ```
-
-3. **Make your changes**
-   - Edit documentation files
-   - Add new templates or examples
-   - Edit rule fragments under `product/rules/` (run `lfg generate` after)
-
-4. **Test your changes**
-   - Verify all links work
-   - Check Markdown formatting
-   - Test with actual AI assistants if applicable
-   - Ensure examples are accurate
-
-5. **Commit your changes**
-   ```bash
-   git add .
-   git commit -m "Add: Brief description of your changes"
-   ```
-
-6. **Push to your fork**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-7. **Create a Pull Request**
-   - Go to the original repository
-   - Click "New Pull Request"
-   - Select your branch
-   - Fill out the PR template
-
-## 📝 Contribution Guidelines
-
-### Code of Conduct
-
-- Be respectful and inclusive
-- Provide constructive feedback
-- Focus on what's best for the community
-- Show empathy toward other contributors
-
-### Commit Message Format
-
-Use clear, descriptive commit messages:
-
-```
-Add: New feature or file
-Update: Changes to existing content
-Fix: Bug fixes
-Remove: Deleted files or features
-Docs: Documentation-only changes
-```
-
-Examples:
-- `Add: Cursor target support in rule fragments`
-- `Fix: Broken links in migration guide`
-- `Update: README with new token reduction metrics`
-- `Docs: Clarify ADR creation process`
-
-### Documentation Standards
-
-- **Use Markdown** for all documentation
-- **Keep it concise** - respect token budgets
-- **Include examples** where helpful
-- **Link, don't duplicate** - reference existing docs
-- **Test all links** before submitting
-- **Use relative paths** for internal links
-
-### File Naming Conventions
-
-- **Templates:** `UPPERCASE_template.md` (e.g., `CHANGELOG_template.md`)
-- **Documentation:** `lowercase-with-hyphens.md` (e.g., `migration-guide.md`)
-- **ADRs:** `NNN-short-title.md` (e.g., `001-github-pages-deployment.md`)
-- **Examples:** Descriptive names matching content
-
-### Token Efficiency
-
-Remember: This project is about token efficiency!
-
-- Keep documentation concise
-- Use bullet points over paragraphs
-- Link to external resources instead of copying
-- Avoid redundant explanations
-- Test token counts for major additions
-
-## 🔍 Review Process
-
-### What to Expect
-
-1. **Initial Review:** A maintainer will review within 3-5 days
-2. **Feedback:** You may receive requests for changes
-3. **Iteration:** Make requested changes and push updates
-4. **Approval:** Once approved, your PR will be merged
-5. **Recognition:** You'll be added to contributors list!
-
-### Review Criteria
-
-- **Accuracy:** Information is correct and tested
-- **Clarity:** Easy to understand for target audience
-- **Completeness:** Includes all necessary information
-- **Consistency:** Matches existing style and structure
-- **Value:** Provides clear benefit to users
-
-## 🎁 Recognition
-
-All contributors will be:
-- Listed in the project's contributors
-- Mentioned in release notes (for significant contributions)
-- Thanked in the community discussions
-
-## 📋 New Platform Contribution Checklist
-
-If you're adding support for a new AI assistant:
-
-- [ ] Added `targets` entry to relevant fragments in `product/rules/`
-- [ ] Updated `product/scripts/generator.py` with any platform-specific rendering
-- [ ] Ran `python product/scripts/lfg.py generate` to regenerate `product/AGENTS.md`
-- [ ] Tested the full install flow with the actual platform
-- [ ] Updated main README.md with platform status
-- [ ] Documented any platform-specific quirks
-- [ ] Included troubleshooting notes in relevant fragments
-- [ ] Added links to official platform documentation
-
-## 🆘 Need Help?
-
-- **Questions?** Open a discussion in Q&A
-- **Stuck?** Ask in the discussion thread for your PR
-- **Not sure?** Reach out to maintainers via issues
-
-## 📜 License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
-
----
-
-**Thank you for making Log File Genius better for everyone!** 🙏
-
-Every contribution, no matter how small, helps developers worldwide maintain better documentation for their AI coding assistants.
-
+Contributions are licensed under the project's [MIT license](LICENSE).

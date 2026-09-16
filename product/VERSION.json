@@ -17,8 +17,8 @@
     "min_bash": "4.0"
   },
   "checksums": {
-    "install.ps1": "c5885c9de8a88672",
-    "install.sh": "3693054ed7a83c82",
+    "install.ps1": "a41afc8ff5bf9094",
+    "install.sh": "0622d6a576282de8",
     "lint-logs.py": "8f693b966dcc670a",
     "validate-log-files.ps1": "8a59f97c9dc96e73",
     "validate-log-files.sh": "5429a0557be5210b"

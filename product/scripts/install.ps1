@@ -3,11 +3,11 @@
 # Installs Log File Genius to your project with standard /logs/ structure
 #
 # Usage:
-#   install.ps1 [-Profile <profile>] [-AiAssistant <augment|claude-code>] [-Force]
+#   install.ps1 [-Profile <profile>] [-AiAssistant <name>] [-Force]
 #
 # Options:
 #   -Profile        Profile to use (solo-developer, team, open-source, startup)
-#   -AiAssistant    AI assistant to install rules for (augment, claude-code, codex, hermes, grok-build, generic, aider)
+#   -AiAssistant    AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)
 #   -Force          Skip confirmation prompts (validation still runs)
 
 param(
@@ -29,7 +29,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Profile <name>       Profile to use (solo-developer, team, open-source, startup)"
-    Write-Host "  -AiAssistant <name>   AI assistant (augment, claude-code, codex, hermes, grok-build, generic, aider)"
+    Write-Host "  -AiAssistant <name>   AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)"
     Write-Host "  -Force                Skip confirmation prompts"
     Write-Host "  -Help                 Show this help message"
     Write-Host ""
@@ -116,27 +116,31 @@ Write-Host ""
 if (-not $AiAssistant) {
     Print-Info "Detecting AI assistant..."
     
-    if (Test-Path ".augment") {
-        $AiAssistant = "augment"
-        Print-Success "Detected Augment"
-    }
-    elseif (Test-Path ".claude") {
+    if ((Test-Path ".claude") -or (Test-Path "CLAUDE.md")) {
         $AiAssistant = "claude-code"
         Print-Success "Detected Claude Code"
+    }
+    elseif ((Test-Path "AGENTS.md") -or (Test-Path ".agents")) {
+        $AiAssistant = "generic"
+        Print-Success "Detected generic AGENTS.md convention"
+    }
+    elseif (Test-Path ".augment") {
+        $AiAssistant = "augment"
+        Print-Success "Detected Augment"
     }
     else {
         Write-Host ""
         Write-Host "Which AI assistant are you using?"
-        Write-Host "  1) Augment"
+        Write-Host "  1) Generic / Codex / Pi / Warp / Orca / Hermes / human"
         Write-Host "  2) Claude Code"
-        Write-Host "  3) Generic / Codex / Hermes / Grok / human"
+        Write-Host "  3) Augment"
         Write-Host ""
         $choice = Read-Host "Enter choice (1-3)"
         
         switch ($choice) {
-            "1" { $AiAssistant = "augment" }
+            "1" { $AiAssistant = "generic" }
             "2" { $AiAssistant = "claude-code" }
-            "3" { $AiAssistant = "generic" }
+            "3" { $AiAssistant = "augment" }
             default {
                 Print-Error "Invalid choice. Exiting."
                 exit 1
@@ -303,7 +307,7 @@ switch ($AiAssistant) {
     "augment"     { $rulesTarget = "augment_rules"; $rulesDest = Join-Path $ProjectRoot ".augment\rules" }
     "claude-code" { $rulesTarget = "claude_rules";  $rulesDest = Join-Path $ProjectRoot ".claude\rules"  }
     default       {
-        if ($AiAssistant -in @("codex", "hermes", "grok-build", "generic", "aider")) { $rulesDest = $null }
+        if ($AiAssistant -in @("codex", "pi", "warp", "orca", "hermes", "grok-build", "generic", "aider")) { $rulesDest = $null }
         else { Rollback-Installation "Unknown assistant: $AiAssistant" }
     }
 }

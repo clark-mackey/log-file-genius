@@ -127,10 +127,12 @@ Write-Host ""
 
 # Detect AI assistant
 function Detect-AiAssistant {
-    if (Test-Path (Join-Path $ProjectRoot ".augment")) {
-        return "augment"
-    } elseif (Test-Path (Join-Path $ProjectRoot ".claude")) {
+    if ((Test-Path (Join-Path $ProjectRoot ".claude")) -or (Test-Path (Join-Path $ProjectRoot "CLAUDE.md"))) {
         return "claude-code"
+    } elseif ((Test-Path (Join-Path $ProjectRoot "AGENTS.md")) -or (Test-Path (Join-Path $ProjectRoot ".agents"))) {
+        return "generic"
+    } elseif (Test-Path (Join-Path $ProjectRoot ".augment")) {
+        return "augment"
     } elseif (Test-Path (Join-Path $ProjectRoot ".cursor")) {
         return "cursor"
     } else {
@@ -208,6 +210,7 @@ function Prompt-Update {
 switch ($AiAssistant) {
     "augment"     { $rulesTarget = "augment_rules"; $rulesDest = Join-Path $ProjectRoot ".augment\rules" }
     "claude-code" { $rulesTarget = "claude_rules";  $rulesDest = Join-Path $ProjectRoot ".claude\rules"  }
+    "generic"     { $rulesDest = $null }
     default       { Print-Warning "Unknown assistant: $AiAssistant"; $AiAssistant = "unknown" }
 }
 
