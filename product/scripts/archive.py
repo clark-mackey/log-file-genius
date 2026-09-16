@@ -39,6 +39,9 @@ class ArchiveAction:
     summary_line: str           # the bullet to append to source's ## Archive
     tokens_before: int
     tokens_after: int
+    source_bytes: bytes | None = None
+    source_kind: str = ''
+    moved_blocks: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -52,8 +55,8 @@ class ArchivePlan:
 
     def to_human(self) -> str:
         """Human-readable dry-run summary."""
-        if not self.actions and not self.refusal_reasons:
-            return "Nothing to archive — all log files within budget."
+        if not self.actions and not self.refusal_reasons and not self.warnings:
+            return "Nothing to archive — selected log files within budget."
         out: List[str] = []
         for r in self.refusal_reasons:
             out.append(f"REFUSED: {r}")
@@ -224,6 +227,7 @@ def _plan_changelog(
             summary_line=summary_line,
             tokens_before=current_tokens,
             tokens_after=running_total,
+            moved_blocks=[v['content'] for v in to_archive],
         )
     ], [], []
 
@@ -294,6 +298,21 @@ def parse_devlog(text: str) -> Dict[str, Any]:
     }
 
 
+def devlog_structure_issues(text: str) -> List[str]:
+    """Identify content archival cannot move without guessing boundaries."""
+    lines = text.splitlines()
+    start = next((i for i, line in enumerate(lines) if _DAILY_LOG_RE.match(line)), None)
+    if start is None:
+        return ["missing '## Daily Log' heading"]
+    issues = []
+    for line in lines[start + 1:]:
+        if _ARCHIVE_HEADER_RE.match(line):
+            break
+        if re.match(r"^#{2,3} ", line) and not _DEVLOG_ENTRY_RE.match(line):
+            issues.append(f"unsupported entry heading {line!r}")
+    return issues
+
+
 # ----- DEVLOG plan builder -----
 
 def _plan_devlog(
@@ -311,9 +330,15 @@ def _plan_devlog(
     if current_tokens <= target:
         return [], [], []
 
+    issues = devlog_structure_issues(text)
+    if issues:
+        return [], ["DEVLOG: " + "; ".join(issues) +
+                    ". Preserve a backup, then migrate entries to '### YYYY-MM-DD: Title'; preview again."], []
+
     entries = parsed["entries"]  # newest-first in file order
     if not entries:
-        return [], [], []
+        return [], [f"DEVLOG has {current_tokens} tokens but no archiveable entries; "
+                    "preserve a backup and migrate to dated Daily Log entries."], []
 
     # Fit-the-budget walk: accumulate newest-first; archive remainder.
     protected_overhead = (
@@ -347,7 +372,7 @@ def _plan_devlog(
 
     to_archive = entries[keep_cutoff:]  # oldest part
     # Sort to_archive oldest-first for the archive file (entries are newest-first).
-    to_archive_oldest_first = list(reversed(to_archive))
+    to_archive_oldest_first = sorted(to_archive, key=lambda e: e["date"])
     archive_content = "".join(e["content"] for e in to_archive_oldest_first)
 
     earliest_date = to_archive_oldest_first[0]["date"]
@@ -370,6 +395,7 @@ def _plan_devlog(
             summary_line=summary_line,
             tokens_before=current_tokens,
             tokens_after=after_tokens,
+            moved_blocks=[e['content'] for e in to_archive_oldest_first],
         )
     ], [], warnings
 
@@ -398,18 +424,24 @@ def build_plan(
         except (TypeError, ValueError):
             keep_fraction = DEFAULT_KEEP_FRACTION
 
-    changelog_path = project_root / paths.get("changelog", "logs/CHANGELOG.md")
-    devlog_path = project_root / paths.get("devlog", "logs/DEVLOG.md")
+    from context_paths import context_paths
+    try:
+        resolved_paths = context_paths(project_root)
+    except ValueError as exc:
+        return ArchivePlan(refusal_reasons=[str(exc)])
+    changelog_path = resolved_paths['changelog']
+    devlog_path = resolved_paths['devlog']
     changelog_budget = int(targets.get("changelog", 10_000))
     devlog_budget = int(targets.get("devlog", 15_000))
     combined_budget = int(targets.get("combined", 25_000))
 
     plan = ArchivePlan()
+    snapshots = {p: p.read_bytes() for p in (changelog_path, devlog_path) if p.exists()}
 
     if include_changelog and changelog_path.exists():
         try:
             actions, refusals, warns = _plan_changelog(
-                text=changelog_path.read_text(encoding="utf-8"),
+                text=snapshots[changelog_path].decode("utf-8"),
                 source_path=changelog_path,
                 budget=changelog_budget,
                 keep_fraction=keep_fraction,
@@ -423,7 +455,7 @@ def build_plan(
     if include_devlog and devlog_path.exists():
         try:
             actions, refusals, warns = _plan_devlog(
-                text=devlog_path.read_text(encoding="utf-8"),
+                text=snapshots[devlog_path].decode("utf-8"),
                 source_path=devlog_path,
                 budget=devlog_budget,
                 keep_fraction=keep_fraction,
@@ -459,12 +491,15 @@ def build_plan(
         plan.actions = [a for a in plan.actions if a.source_path != devlog_path]
         try:
             actions, refusals, warns = _plan_devlog(
-                text=devlog_path.read_text(encoding="utf-8"),
+                text=snapshots[devlog_path].decode("utf-8"),
                 source_path=devlog_path,
                 budget=devlog_budget,
                 keep_fraction=current_kf,
             )
             plan.actions.extend(actions)
+            for refusal in refusals:
+                if refusal not in plan.refusal_reasons:
+                    plan.refusal_reasons.append(refusal)
             for w in warns:
                 if w not in plan.warnings:
                     plan.warnings.append(w)
@@ -479,6 +514,16 @@ def build_plan(
             f"Trim CHANGELOG [Unreleased] or DEVLOG newest entries manually."
         )
 
+    for enabled, path, budget in ((include_changelog, changelog_path, changelog_budget),
+                                  (include_devlog, devlog_path, devlog_budget)):
+        if enabled and path.exists() and not any(a.source_path == path for a in plan.actions):
+            actual = _estimate_tokens(path.read_text(encoding="utf-8"))
+            if actual > budget:
+                plan.refusal_reasons.append(f"{path.name}: {actual} tokens exceed budget {budget}; "
+                                            "no safe movement available. Preserve a backup before manual migration.")
+    for action in plan.actions:
+        action.source_bytes = snapshots[action.source_path]
+        action.source_kind = 'changelog' if action.source_path == changelog_path else 'devlog'
     return plan
 
 
@@ -514,37 +559,62 @@ def _append_summary_line_to_archive_section(text: str, summary_line: str) -> str
 def _write_archive_file(archive_path: Path, content: str, source_name: str) -> None:
     archive_path.parent.mkdir(parents=True, exist_ok=True)
     header = (
-        f"# Archive from {source_name}\n\n"
-        f"_Generated by `lfg archive`. Original file: `{source_name}`._\n\n"
+        f"---\ntype: Log Archive\n---\n\n# Archive from {source_name}\n\n"
+        f"_Original file: `{source_name}`._\n\n"
     )
-    archive_path.write_text(header + content, encoding="utf-8")
+    from safe_write import replace
+    # A move one directory deeper must preserve relative Markdown destinations.
+    def destination(target):
+        raw = target[1:-1] if target.startswith('<') else target
+        if raw.startswith(('/', '#')) or re.match(r'[A-Za-z][\w+.-]*:', raw):
+            return target
+        return '<../' + raw + '>' if target.startswith('<') else '../' + raw
+    def relocate(match):
+        return '](' + destination(match[1]) + (match[2] or '') + ')'
+    pattern = r'''\]\((<[^>]+>|[^\s)]+)(\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\)'''
+    lines, fence = [], None
+    for line in content.splitlines(keepends=True):
+        marker = re.match(r'^\s*(`{3,}|~{3,})', line)
+        if marker:
+            if fence is None:
+                fence = marker[1]
+            elif marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not line[marker.end():].strip():
+                fence = None
+        elif not fence:
+            line = re.sub(pattern, relocate, line)
+            line = re.sub(r'^(\s{0,3}\[[^]]+\]:\s*)(<[^>]+>|\S+)(.*)$',
+                          lambda m: m[1] + destination(m[2]) + m[3], line)
+        lines.append(line)
+    relocated = ''.join(lines)
+    data = (header + relocated).encode('utf-8')
+    if archive_path.exists() and archive_path.read_bytes() != data:
+        raise ArchiveError(f'Archive collision; existing bytes preserved: {archive_path}')
+    replace(archive_path, data, data if archive_path.exists() else None)
 
 
 def _rewrite_changelog_source(source_path: Path, action: ArchiveAction) -> None:
     """Remove the moved version blocks from the CHANGELOG source + add summary line."""
-    text = source_path.read_text(encoding="utf-8")
+    text = source_path.read_bytes().decode("utf-8")
     new_text = text
     parsed = parse_changelog(text)
-    moved_set = {v["content"] for v in parsed["versions"]
-                 if v["content"] in action.moved_content}
-    for block in moved_set:
-        new_text = new_text.replace(block, "")
-    # Tidy multiple blank lines.
-    new_text = re.sub(r"\n{3,}", "\n\n", new_text)
+    blocks = action.moved_blocks or [v['content'] for v in parsed['versions'] if v['content'] in action.moved_content]
+    for block in blocks:
+        new_text = new_text.replace(block, "", 1)
     new_text = _append_summary_line_to_archive_section(new_text, action.summary_line)
-    source_path.write_text(new_text, encoding="utf-8")
+    from safe_write import replace
+    replace(source_path, new_text, action.source_bytes if action.source_bytes is not None else text.encode('utf-8'))
 
 
 def _rewrite_devlog_source(source_path: Path, action: ArchiveAction) -> None:
-    text = source_path.read_text(encoding="utf-8")
+    text = source_path.read_bytes().decode("utf-8")
     new_text = text
     parsed = parse_devlog(text)
-    for e in parsed["entries"]:
-        if e["content"] in action.moved_content:
-            new_text = new_text.replace(e["content"], "")
-    new_text = re.sub(r"\n{3,}", "\n\n", new_text)
+    blocks = action.moved_blocks or [e['content'] for e in parsed['entries'] if e['content'] in action.moved_content]
+    for block in blocks:
+        new_text = new_text.replace(block, "", 1)
     new_text = _append_summary_line_to_archive_section(new_text, action.summary_line)
-    source_path.write_text(new_text, encoding="utf-8")
+    from safe_write import replace
+    replace(source_path, new_text, action.source_bytes if action.source_bytes is not None else text.encode('utf-8'))
 
 
 def apply(plan: ArchivePlan) -> None:
@@ -553,9 +623,13 @@ def apply(plan: ArchivePlan) -> None:
         raise ArchiveError("Plan has refusals; refusing to apply: "
                            + "; ".join(plan.refusal_reasons))
     for action in plan.actions:
-        _write_archive_file(action.archive_path, action.moved_content,
-                            action.source_path.name)
-        if action.source_path.name.upper().startswith("CHANGELOG"):
-            _rewrite_changelog_source(action.source_path, action)
-        else:
-            _rewrite_devlog_source(action.source_path, action)
+        try:
+            if action.source_bytes is not None and action.source_path.read_bytes() != action.source_bytes:
+                raise ArchiveError(f'Source changed since preview: {action.source_path}')
+            _write_archive_file(action.archive_path, action.moved_content, action.source_path.name)
+            if action.source_kind == 'changelog' or (not action.source_kind and action.source_path.name.upper().startswith("CHANGELOG")):
+                _rewrite_changelog_source(action.source_path, action)
+            else:
+                _rewrite_devlog_source(action.source_path, action)
+        except (OSError, ValueError) as exc:
+            raise ArchiveError(f'Incomplete archive; original/backup and archive retained for recovery: {exc}') from exc

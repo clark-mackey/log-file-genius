@@ -1,26 +1,26 @@
 {
-  "version": "0.5.0",
-  "release_date": "2026-06-01",
+  "version": "0.6.0-dev",
+  "release_date": "2026-09-12",
   "components": {
-    "installer": "0.5.0",
-    "validator": "0.5.0",
-    "linter": "0.5.0",
-    "ai-rules": "0.5.0",
-    "templates": "0.5.0",
-    "profiles": "0.5.0",
-    "secrets": "0.5.0",
-    "cli": "0.5.0"
+    "installer": "0.6.0-dev",
+    "validator": "0.6.0-dev",
+    "linter": "0.6.0-dev",
+    "ai-rules": "0.6.0-dev",
+    "templates": "0.6.0-dev",
+    "profiles": "0.6.0-dev",
+    "secrets": "0.6.0-dev",
+    "cli": "0.6.0-dev"
   },
   "compatibility": {
-    "min_python": "3.8",
+    "min_python": "3.10",
     "min_powershell": "5.1",
     "min_bash": "4.0"
   },
   "checksums": {
-    "install.ps1": "851b696dcc2f4e7e",
-    "install.sh": "947ea56a4f5b3d83",
-    "lint-logs.py": "6ec1b128ee08b1b9",
-    "validate-log-files.ps1": "47cbe9b9fe70e163",
-    "validate-log-files.sh": "0e84daca84bb530d"
+    "install.ps1": "c5885c9de8a88672",
+    "install.sh": "3693054ed7a83c82",
+    "lint-logs.py": "8f693b966dcc670a",
+    "validate-log-files.ps1": "8a59f97c9dc96e73",
+    "validate-log-files.sh": "5429a0557be5210b"
   }
 }

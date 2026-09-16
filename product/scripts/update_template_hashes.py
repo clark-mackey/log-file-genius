@@ -185,7 +185,7 @@ def known_hashes(manifest: dict[str, dict[str, str]]) -> set[str]:
     return digests
 
 
-def match_dir(target_dir: Path, manifest_file: Path = _MANIFEST_FILE) -> int:
+def match_dir(target_dir: Path, manifest_file: Path = _MANIFEST_FILE, require_all=False) -> int:
     """Report which files under ``target_dir`` match any LFG-shipped hash.
 
     Hashes every file under ``target_dir`` (recursively) and compares each
@@ -223,7 +223,7 @@ def match_dir(target_dir: Path, manifest_file: Path = _MANIFEST_FILE) -> int:
             matched += 1
 
     print(f"matched {matched} of {len(files)} file(s)")
-    return 0 if matched > 0 else 1
+    return 0 if matched > 0 and (not require_all or matched == len(files)) else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -238,10 +238,12 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DIR",
         help="report which files in DIR match any LFG-shipped template hash",
     )
+    parser.add_argument('--all', action='store_true', dest='require_all',
+                        help='With --match-dir, require every file to be a known shipped template')
     args = parser.parse_args(argv)
 
     if args.match_dir:
-        return match_dir(Path(args.match_dir))
+        return match_dir(Path(args.match_dir), require_all=args.require_all)
 
     if args.check:
         return check_manifest()

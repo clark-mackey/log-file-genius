@@ -7,7 +7,7 @@
 #
 # Options:
 #   --profile        Profile to use (solo-developer, team, open-source, startup)
-#   --ai-assistant   AI assistant to install rules for (augment, claude-code)
+#   --ai-assistant   AI assistant to install rules for (augment, claude-code, codex, hermes, grok-build, generic, aider)
 #   --force          Skip confirmation prompts (validation still runs)
 
 set -e
@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --profile <name>       Profile to use (solo-developer, team, open-source, startup)"
-            echo "  --ai-assistant <name>  AI assistant (augment, claude-code)"
+            echo "  --ai-assistant <name>  AI assistant (augment, claude-code, codex, hermes, grok-build, generic, aider)"
             echo "  --force                Skip confirmation prompts"
             echo "  --help, -h             Show this help message"
             echo ""
@@ -137,12 +137,14 @@ if [ -z "$AI_ASSISTANT" ]; then
         echo "Which AI assistant are you using?"
         echo "  1) Augment"
         echo "  2) Claude Code"
+        echo "  3) Generic / Codex / Hermes / Grok / human"
         echo ""
-        read -p "Enter choice (1-2): " choice
+        read -p "Enter choice (1-3): " choice
         
         case $choice in
             1) AI_ASSISTANT="augment" ;;
             2) AI_ASSISTANT="claude-code" ;;
+            3) AI_ASSISTANT="generic" ;;
             *)
                 print_error "Invalid choice. Exiting."
                 exit 1
@@ -192,7 +194,7 @@ if [ -d "logs" ] || [ -f ".logfile-config.yml" ]; then
     echo ""
     
     if [ "$FORCE" != "true" ]; then
-        read -p "Continue and overwrite? (y/N): " continue
+        read -p "Preserve existing logs/config and refresh guidance? (y/N): " continue
         if [ "$continue" != "y" ] && [ "$continue" != "Y" ]; then
             print_info "Installation cancelled."
             exit 0
@@ -207,9 +209,9 @@ fi
 echo ""
 print_info "Creating /logs/ folder structure..."
 
+[ -d logs ] || CREATED_ITEMS+=("logs")
 mkdir -p logs/adr
 mkdir -p logs/incidents
-CREATED_ITEMS+=("logs")
 
 print_success "Created logs/"
 print_success "Created logs/adr/"
@@ -241,7 +243,9 @@ for mapping in "${TEMPLATE_MAPPINGS[@]}"; do
     dest="${mapping##*:}"
     source="$SOURCE_ROOT/$source_rel"
 
-    if [ -f "$source" ]; then
+    if [ -f "$dest" ]; then
+        print_info "Preserved $dest"
+    elif [ -f "$source" ]; then
         if cp "$source" "$dest" 2>/dev/null; then
             CREATED_ITEMS+=("$dest")
             print_success "Copied $dest"
@@ -265,8 +269,10 @@ fi
 # This placeholder carries the LFG:INCIDENTS-INDEX generated-marker, so the
 # first real `lfg incidents-index` run overwrites it in place (no .bak). The
 # content mirrors incidents.build_index's empty-dir output byte-for-byte.
+if [ ! -f logs/incidents/README.md ]; then
 cat > logs/incidents/README.md << 'EOF'
 ---
+type: Incident Index
 doc: INCIDENTS-INDEX
 related:
   changelog: ../CHANGELOG.md
@@ -285,6 +291,7 @@ _No incidents recorded yet._
 EOF
 CREATED_ITEMS+=("logs/incidents/README.md")
 print_success "Seeded logs/incidents/README.md (empty-state index)"
+fi
 
 # ============================================================================
 # INSTALL AI RULES
@@ -296,43 +303,16 @@ print_info "Installing AI assistant rules..."
 case "$AI_ASSISTANT" in
     augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
     claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
+    codex|hermes|grok-build|generic|aider) RULES_DEST="" ;;
     *)           rollback_installation "Unknown assistant: $AI_ASSISTANT" ;;
 esac
 
-mkdir -p "$RULES_DEST"
-CREATED_ITEMS+=("$RULES_DEST")
-
-# Walk fragments; copy each whose `targets` includes our RULES_TARGET.
-for frag in "$SOURCE_ROOT/rules/"*.md; do
-    [ -f "$frag" ] || continue
-    # Pull the `targets:` line from the YAML frontmatter (between the first two '---' lines).
-    targets=$(awk '
-        /^---$/{count++; if(count==2)exit; next}
-        count==1 && /^targets:/{ sub(/^targets:[[:space:]]*/,""); print; exit }
-    ' "$frag")
-    case ",$(echo "$targets" | tr -d '[] ')," in
-        *",$RULES_TARGET,"*)
-            cp "$frag" "$RULES_DEST/$(basename "$frag")"
-            CREATED_ITEMS+=("$RULES_DEST/$(basename "$frag")")
-            print_success "Installed $(basename "$frag")"
-            ;;
-    esac
-done
-
-# Render Claude project_instructions template (if installing for claude-code).
-if [ "$AI_ASSISTANT" = "claude-code" ]; then
-    TMPL="$SOURCE_ROOT/install-templates/claude/project_instructions.md.tmpl"
-    DEST="$PROJECT_ROOT/.claude/project_instructions.md"
-    # Substitute {{paths.X}} tokens. Defaults match Spec 1's canonical.
-    sed \
-        -e 's|{{paths.changelog}}|logs/CHANGELOG.md|g' \
-        -e 's|{{paths.devlog}}|logs/DEVLOG.md|g' \
-        -e 's|{{paths.state}}|logs/STATE.md|g' \
-        -e 's|{{paths.adr_dir}}|logs/adr/|g' \
-        "$TMPL" > "$DEST"
-    CREATED_ITEMS+=("$DEST")
-    print_success "Rendered .claude/project_instructions.md"
+if [ -n "$RULES_DEST" ]; then
+    [ -d "$RULES_DEST" ] || CREATED_ITEMS+=("$RULES_DEST")
+    mkdir -p "$RULES_DEST"
 fi
+
+# Detailed procedures remain on demand; setup-context manages native pointers.
 
 # Merge the canonical managed block into the project-root AGENTS.md.
 # This is brownfield-safe: it never clobbers user-owned content. The merge CLI
@@ -387,6 +367,7 @@ fi
 
 print_info "Creating .logfile-config.yml..."
 
+if [ ! -f .logfile-config.yml ]; then
 cat > .logfile-config.yml << EOF
 # Log File Genius Configuration
 # All log files are in /logs/ folder (standard structure)
@@ -413,6 +394,17 @@ EOF
 
 CREATED_ITEMS+=(".logfile-config.yml")
 print_success "Created .logfile-config.yml"
+fi
+
+if [ -n "$PYTHON_BIN" ]; then
+    "$PYTHON_BIN" "$LFG_PY" setup-context || exit 2
+else
+    [ -f logs/adr/README.md ] || cp "$SOURCE_ROOT/templates/ADR_README_template.md" logs/adr/README.md
+    if [ "$AI_ASSISTANT" = "claude-code" ] && [ ! -f CLAUDE.md ]; then
+        echo "@AGENTS.md" > CLAUDE.md
+    fi
+    print_warning "Python unavailable: inspect native instructions; use Markdown navigation."
+fi
 
 # ============================================================================
 # VALIDATION
@@ -428,13 +420,8 @@ ERRORS=()
 [ ! -f "logs/STATE.md" ] && ERRORS+=("logs/STATE.md missing")
 [ ! -f ".logfile-config.yml" ] && ERRORS+=(".logfile-config.yml missing")
 
-if [ "$AI_ASSISTANT" = "augment" ] && [ ! -f ".augment/rules/log-file-maintenance.md" ]; then
-    ERRORS+=(".augment/rules/log-file-maintenance.md missing")
-fi
+[ -f AGENTS.md ] || ERRORS+=("AGENTS.md missing")
 
-if [ "$AI_ASSISTANT" = "claude-code" ] && [ ! -f ".claude/rules/log-file-maintenance.md" ]; then
-    ERRORS+=(".claude/rules/log-file-maintenance.md missing")
-fi
 
 if [ ${#ERRORS[@]} -gt 0 ]; then
     print_error "Installation validation failed:"
