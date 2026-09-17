@@ -1,300 +1,124 @@
 # Installation Guide
 
-**Quick installation guide for Log File Genius - a token-efficient documentation system for AI-assisted development.**
-
----
+Install once in a Git repository and use the same project context from Claude Code, Codex, Pi, Warp, Orca, or Hermes. See [agent entry points](product/docs/context-guide.md#native-entry-points-and-limits) for host-specific discovery and verification.
 
 ## Prerequisites
 
-- Git installed
-- A project with git initialized (`git init`)
-- An AI coding assistant (Augment Code, Claude Code, Cursor, etc.)
+- Git and an existing project repository.
+- Python **3.10+** for managed setup and the CLI; no third-party runtime packages.
+- Bash 4+ on macOS/Linux, or PowerShell 5.1+ on Windows.
 
----
+You can read and maintain the Markdown without Python. New installations require Python to initialize the OKF bundle. The no-Python fallback for existing installations cannot safely merge instructions, generate routes, or configure all native entry points.
 
-## One-Command Installation
+## Install
 
-### Bash/Mac/Linux
+From the project root:
 
 ```bash
-git submodule add -b main \
-  https://github.com/clark-mackey/log-file-genius.git \
-  .log-file-genius && \
-  ./.log-file-genius/product/scripts/install.sh
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius
+bash .log-file-genius/product/scripts/install.sh --ai-assistant generic --profile solo-developer
 ```
 
-### PowerShell/Windows
+Windows PowerShell:
 
 ```powershell
-git submodule add -b main `
-  https://github.com/clark-mackey/log-file-genius.git `
-  .log-file-genius; `
-  .\.log-file-genius\product\scripts\install.ps1
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius
+.\.log-file-genius\product\scripts\install.ps1 -AiAssistant generic -Profile solo-developer
 ```
 
----
+Use `generic` for mixed-agent work. Named choices are `claude-code`, `codex`, `pi`, `warp`, `orca`, `hermes`, `grok-build`, and `aider`; `augment` remains available for existing users. Aider requires an explicit read of `AGENTS.md`. These choices do not install the agent applications.
 
-## What the Installer Does
+Profiles: `solo-developer`, `team`, `open-source`, and `startup`. See [profile selection](product/docs/profile-selection-guide.md).
 
-The installer will:
+Commit the submodule reference, `.gitmodules`, shared entry files, and project records according to your repository's policy. Never include private credentials in logs.
 
-1. **Detect your AI assistant** - Automatically detects Augment Code, Claude Code, or prompts for manual selection
-2. **Prompt for profile** - Choose from: solo-developer, team, open-source, or startup
-3. **Create folder structure** - Creates `logs/`, `logs/adr/`, and `logs/incidents/`
-4. **Install templates** - Copies CHANGELOG, DEVLOG, STATE, and ADR templates to `logs/`
-5. **Install AGENTS.md** - Merges the canonical agent-agnostic rules into a marker-delimited block in your project-root `AGENTS.md` (creating it if absent; preserving any existing content)
-6. **Install per-tool rules** - Generates platform-specific rule files in `.augment/rules/` or `.claude/rules/`
-7. **Create config file** - Generates `.logfile-config.yml` with your profile settings
-8. **Validate installation** - Checks that all required files exist
+## What gets installed
 
----
+| Location | Contents |
+|---|---|
+| `logs/` | Missing STATE, CHANGELOG, DEVLOG, ADR, and incident records/indexes |
+| `AGENTS.md` | A managed LFG block; existing instructions outside it are preserved |
+| `CLAUDE.md` | An import of AGENTS.md; an existing `.claude/CLAUDE.md` can be used instead |
+| `README.md` | A managed pointer to STATE and the ADR index |
+| `.logfile-config.yml` | Configuration when none exists |
+| `.log-file-genius/product/` | Source, CLI, documentation, and reference templates |
 
-## What Gets Installed
+Existing root overrides and Hermes/Warp priority files receive a short pointer to the shared protocol. Inspect nested overrides separately. LFG does not create a second copy of your knowledge in `.agents/` or `.claude/`, install skills automatically, or replace those directories' settings, skills, hooks, or agents.
 
-### Visible Files
-- `logs/CHANGELOG.md` - Technical change log (what changed, when, where)
-- `logs/DEVLOG.md` - Development narrative (why changes were made, decisions, context)
-- `logs/STATE.md` - Current project state (active agent, current task)
-- `logs/adr/TEMPLATE.md` - Architecture Decision Record template
-- `logs/incidents/TEMPLATE.md` + `logs/incidents/README.md` - Incident report template and index (escalation from inline DEVLOG `🚨 INCIDENT` entries)
-- `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
-- `.logfile-config.yml` - Profile configuration and settings
+Known, unmodified legacy LFG rules are moved to `.lfg/retired-rules/` with their bytes preserved. Modified rule files remain in place and produce a diagnostic so you can resolve duplicate guidance.
 
-### Per-Tool Rule Files
-All generated from the same canonical fragments in `product/rules/`:
-- `.augment/rules/log-file-maintenance.md` (for Augment Code)
-- `.claude/rules/log-file-maintenance.md` (for Claude Code)
-- Additional AI-specific rules and instructions
+Templates stay inside the source checkout; installation does not create a root `templates/` directory.
 
-### Hidden Source Repository
-- `.log-file-genius/` - Git submodule containing templates, scripts, and documentation (for updates)
+## Existing projects and force reinstall
 
-> **Templates live in the submodule** at `.log-file-genius/product/templates/`. The
-> installer does **not** create a `templates/` directory at your project root.
-
-> **AGENTS.md is merged, not overwritten.** If your project already has an `AGENTS.md`
-> (e.g., a Codex/Aider file), the installer inserts a marker-delimited LFG block
-> (`<!-- LFG:BEGIN … -->` … `<!-- LFG:END -->`) and preserves everything outside the
-> markers. The same merge runs on every update — your content is safe across upgrades.
-
----
-
-## Installation Options
-
-### Force Reinstall
-
-If you need to reinstall or update:
+Back up or commit current work before adopting a new documentation layout. Existing logs and configuration are retained. An existing `AGENTS.md` is merged using LFG markers, not replaced. Corrupt markers or a newer managed version are reported for manual resolution.
 
 ```bash
-# Bash/Mac/Linux
-./.log-file-genius/product/scripts/install.sh --force
-
-# PowerShell/Windows
-.\.log-file-genius\product\scripts\install.ps1 -Force
+bash .log-file-genius/product/scripts/install.sh --ai-assistant generic --profile solo-developer --force
 ```
 
-The `--force` flag will:
-- Overwrite existing log files (backup first!)
-- Reinstall AI rules
-- Regenerate config file
+PowerShell uses `-Force`. This skips the confirmation prompt; it **does not overwrite existing logs or regenerate existing config**. Explicit assistant/profile choices also avoid selection prompts. Review all installer warnings before calling setup complete.
 
-### Profile Selection
+Custom paths in an existing `.logfile-config.yml` are honored by context commands; the shell installers still seed the standard `logs/` layout. Keep your existing path configuration and verify that STATE, ADR routing, and native pointers lead to the intended records. Do not assume installation relocates a custom knowledge collection.
 
-During installation, you'll be prompted to choose a profile:
+## Verify the installation
 
-- **solo-developer** (default) - Flexible, minimal overhead, DEVLOG optional
-- **team** - Stricter validation, required DEVLOG for significant changes
-- **open-source** - Strict formatting, public-facing documentation standards
-- **startup** - Minimal overhead, fast iteration, DEVLOG optional
-
-See `.log-file-genius/product/docs/profile-selection-guide.md` for detailed comparison.
-
----
-
-## Verification
-
-After installation, verify everything is working:
+From the consumer project root (use `python` on Windows):
 
 ```bash
-# Bash/Mac/Linux
-./.log-file-genius/product/scripts/validate-log-files.sh
-
-# PowerShell/Windows
-.\.log-file-genius\product\scripts\validate-log-files.ps1
+python3 .log-file-genius/product/scripts/lfg.py validate
+python3 .log-file-genius/product/scripts/lfg.py routes --check
+python3 .log-file-genius/product/scripts/lfg.py freshness
 ```
 
-Expected output:
-```
-[OK] CHANGELOG validation passed
-[OK] DEVLOG validation passed
-[OK] Token counts within limits
-```
+An unknown STATE baseline is expected on a fresh install. Record the actual branch, code commit, next action, tests, and blockers after inspecting the project; do not replace unknown evidence with invented results.
 
----
+Start a fresh session in your chosen agent. Verify its loaded instructions include LFG's AGENTS.md protocol (through Claude's import where appropriate). Ask it to identify the baseline and a governing ADR with source paths. Repeat from a nested project directory if that is how you work. See the [host checklist](product/docs/context-guide.md#native-entry-points-and-limits).
 
-## Next Steps: Document the Installation
-
-After installation completes, **copy and paste this prompt to your AI assistant:**
-
-```
-I just installed Log File Genius. Please:
-1. Update CHANGELOG.md with what was installed
-2. Update DEVLOG.md with why we installed it
-3. Create an ADR documenting the architectural decision
-   to adopt Log File Genius for project documentation
-```
-
-**This will:**
-- Show you how the system works
-- Create your first log entries
-- Document the architectural decision
-- Validate that AI rules are working correctly
-
----
-
-## Troubleshooting
-
-### "No rules files found" in AI assistant
-
-**Cause:** The installer didn't run, or AI rules weren't copied.
-
-**Fix:**
-```bash
-# Re-run installer
-./.log-file-genius/product/scripts/install.sh --force
-```
-
-### "Template not found" errors
-
-**Cause:** Git submodule not initialized or incomplete.
-
-**Fix:**
-```bash
-# Initialize and update submodule
-git submodule update --init --recursive
-```
-
-### "Permission denied" on Windows
-
-**Cause:** PowerShell execution policy blocking scripts.
-
-**Fix:**
-```powershell
-# Allow script execution (run as Administrator)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Then re-run installer
-.\.log-file-genius\product\scripts\install.ps1
-```
-
-### Validation fails after installation
-
-**Cause:** Log files not created or in wrong location.
-
-**Fix:**
-```bash
-# Check what was created
-ls -la logs/
-
-# Re-run installer with force flag
-./.log-file-genius/product/scripts/install.sh --force
-```
-
----
-
-## Updating Log File Genius
-
-To update to the latest version, use the bundled `update.sh` / `update.ps1`. The
-update is **brownfield-safe**: it **merges** the LFG block into your `AGENTS.md`
-(content outside the markers is preserved — never overwritten), refreshes per-tool
-rules, validators, and the `lfg` CLI, and never creates a root `templates/` directory.
+## Updating
 
 ```bash
-# Bash/Mac/Linux
-cd .log-file-genius && git pull && cd ..
-./.log-file-genius/product/scripts/update.sh
+bash .log-file-genius/product/scripts/update.sh
 ```
 
 ```powershell
-# PowerShell/Windows
-cd .log-file-genius; git pull; cd ..
 .\.log-file-genius\product\scripts\update.ps1
 ```
 
-**Upgrading from an older version?** After the update, you may see a one-line advisory:
+The updater refreshes the source and managed context. Existing logs/config remain yours. It backs up known older generated instructions before conversion and keeps user-authored content outside managed blocks.
 
-```
-STATE.md needs migration to v0.4.0 spec. Preview with: lfg migrate-state --dry-run
-```
+If the source checkout is missing from a worktree, run `git submodule update --init` there. This matters when launching agents in Orca or another worktree-based tool.
 
-This is not an error — it means your STATE.md predates the current spec. Run
-`lfg migrate-state --dry-run` to preview a deterministic migration that keeps the
-canonical sections and archives any extra content into a one-time DEVLOG snapshot, then
-`lfg migrate-state` to apply it. It is one-shot (safe to ignore if STATE already
-conforms). If a prior version left an LFG-installed root `templates/` folder, the updater
-moves it into `.log-file-genius/.backups/`.
+For a pre-v0.4.0 STATE layout, `lfg.py migrate-state --dry-run` previews the older structural migration. Review the [current STATE template](product/templates/STATE_template.md) afterward: establishing branch/commit and test evidence is a separate task.
 
----
-
-## Day-2: the `lfg` CLI
-
-Beyond install/update, a stdlib-only Python CLI handles the ongoing operations:
+## Google OKF: default on new installs
 
 ```bash
-python .log-file-genius/product/scripts/lfg.py validate
-python .log-file-genius/product/scripts/lfg.py archive --dry-run
-python .log-file-genius/product/scripts/lfg.py archive   # gracefully archives old entries
+python3 .log-file-genius/product/scripts/lfg.py metadata --index
+python3 .log-file-genius/product/scripts/lfg.py metadata --index --write
 ```
 
-Key commands:
+A fresh installation (neither `logs/` nor `.logfile-config.yml` exists) adds OKF metadata and `logs/index.md` automatically. Existing files or configuration select preservation mode, including with `--force`; updating or reinstalling does not convert existing records. If initialization fails, resolve the diagnostics and rerun the metadata command above to complete or resume it.
 
-- `lfg validate` — lint logs (token budgets, formatting, required sections)
-- `lfg archive --dry-run` — preview a work-aware archival plan
-- `lfg archive` — apply it (protects `[Unreleased]` and the most recent DEVLOG entries)
-- `lfg prime` — emit a compact digest for subagent initial context
-- `lfg promote <staged-id>` — merge a subagent's staged entries into CHANGELOG/DEVLOG
-- `lfg incidents-index` — regenerate the incident-report index (`logs/incidents/README.md`)
-- `lfg migrate-state --dry-run` — preview a one-time STATE.md migration to the current spec; apply with `lfg migrate-state`
-- `lfg merge-agents-md --to <path>` — merge the LFG block into a target `AGENTS.md`, preserving your content (normally run by install/update)
-- `lfg generate` — regenerate `AGENTS.md` from fragments (contributors only)
+For existing projects, review the preview before applying. Follow the [existing-project upgrade](product/docs/MIGRATION_GUIDE.md#upgrade-an-existing-lfg-project-including-okf) for a project such as Schemalyze. The selected bundle is normally `logs/`; custom roots use `--bundle`. Unsupported YAML is preserved and reported. See [scope, conformance, and recovery](product/docs/context-guide.md#optional-okf-bundle) before migrating important records.
 
-Run `--help` on any subcommand for flags.
+## Troubleshooting
 
----
+- **Agent misses LFG:** inspect its actual loaded context, working directory, trust settings, and higher-priority overrides. The presence of a folder is not proof of loading.
+- **Claude misses AGENTS.md:** verify `CLAUDE.md` imports it, or `.claude/CLAUDE.md` imports `../AGENTS.md`. Restart the session and inspect `/context`.
+- **Conflicting instructions:** reconcile preserved modified legacy rules with the compact protocol. Keep project-specific requirements.
+- **CLI cannot run:** check Python 3.10+, the repository root, and `git submodule update --init`.
+- **Validation fails:** read the reported file/error and fix that record. Reinstalling with `--force` will not overwrite it.
+- **Version banner disagrees:** the legacy installer config stamp/version parser can produce misleading status; inspect `.log-file-genius/product/VERSION.json` and the checkout. See [update notifications](product/docs/update-notifications.md).
 
 ## Uninstalling
 
-To remove Log File Genius:
+Your logs and instructions may contain valuable project-owned content. Do not delete `logs/`, `.agents/`, or `.claude/` wholesale.
 
-```bash
-# Remove installed files
-rm -rf logs/ .augment/rules/ .claude/rules/ .logfile-config.yml
+1. Keep or archive your knowledge records.
+2. Remove only the LFG managed block from AGENTS.md and LFG pointer blocks from README/host files. Preserve other instructions and imports.
+3. Review `.lfg/` backups and retired rules before removing LFG recovery data.
+4. Remove the source submodule using your repository's normal Git procedure after checking it has no local changes.
+5. Remove `.logfile-config.yml` only if you no longer use LFG tooling.
 
-# Remove submodule
-git submodule deinit -f .log-file-genius
-git rm -f .log-file-genius
-rm -rf .git/modules/.log-file-genius
-```
-
----
-
-## Additional Resources
-
-- **Full Documentation:** `.log-file-genius/product/docs/log_file_how_to.md`
-- **Profile Guide:** `.log-file-genius/product/docs/profile-selection-guide.md`
-- **Validation Guide:** `.log-file-genius/product/docs/validation-guide.md`
-- **Migration Guide:** `.log-file-genius/product/docs/MIGRATION_GUIDE.md`
-- **GitHub Repository:** https://github.com/clark-mackey/log-file-genius
-
----
-
-## Support
-
-- **Report bugs:** https://github.com/clark-mackey/log-file-genius/issues
-- **Request features:** https://github.com/clark-mackey/log-file-genius/issues
-- **Discussions:** https://github.com/clark-mackey/log-file-genius/discussions
-
----
-
-**Installation complete? Don't forget to document it with your AI assistant using the prompt above!**
-
+[Context guide](product/docs/context-guide.md) · [Migration guide](product/docs/MIGRATION_GUIDE.md) · [Report an issue](https://github.com/clark-mackey/log-file-genius/issues)

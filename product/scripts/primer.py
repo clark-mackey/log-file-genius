@@ -20,6 +20,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config_parser import parse_config
 
 SUBAGENT_MARKER = "LFG_SUBAGENT_PRIME"
+SUBAGENT_INSTRUCTIONS = (
+    "You are a subagent. Stage findings in .lfg/staged/<id>/; do not write canonical records. "
+    "Report ADR IDs, tests/outcomes and unresolved scope. For record maintenance, preserve "
+    "formats, OKF metadata, evidence, uncertainty, constraints, rationale and history. "
+    "Do not invent facts or omit substantive detail to reduce cost. Request missing context "
+    "or budget from the lead; do not delegate recursively. The lead checks completeness "
+    "and accuracy, resolves questions, validates and promotes accepted changes, or completes "
+    "the update directly."
+)
 
 
 def _resolve_log_path(project_root: Path, key: str, default_rel: str) -> Path:
@@ -99,7 +108,9 @@ def build_prime(project_root: Path, n: int = 5, as_json: bool = False,
             content = content[match.start(): match.end() + end.start() if end else len(content)]
         excerpts.append({'source': selection, 'content': content})
     evidence = assess(project_root)
-    payload = {'marker': SUBAGENT_MARKER if role == 'subagent' else 'LFG_READER_CONTEXT',
+    instructions = (SUBAGENT_INSTRUCTIONS if role == 'subagent' else
+                    'Context for a human or lead reader; no subagent identity assigned.')
+    payload = {'instructions': instructions, 'marker': SUBAGENT_MARKER if role == 'subagent' else 'LFG_READER_CONTEXT',
                'role': role, 'objective': objective, 'state': state,
                'changelog_entries': entries, 'paths': paths_block,
                'evidence': evidence, 'selected_context': excerpts, 'missing': missing,
@@ -113,9 +124,7 @@ def build_prime(project_root: Path, n: int = 5, as_json: bool = False,
         return output
 
     out: List[str] = [payload['marker'], "", 'Objective: ' + objective, '']
-    out += (["You are a subagent. Stage findings in .lfg/staged/<id>/; do not write canonical logs. "
-             "Report ADR IDs and unresolved scope. Lead reviews and promotes."] if role == 'subagent' else
-            ["Context for a human or lead reader; no subagent identity assigned."])
+    out.append(instructions)
     out += ["# STATE.md", "", state.rstrip(), ""]
     out += [f"# Last {len(entries)} CHANGELOG entries", ""]
     if entries:
