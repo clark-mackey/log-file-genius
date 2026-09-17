@@ -21,7 +21,8 @@ def render(root=None):
             "Report unread scope; never assume coverage.\n\n"
             "Compare STATE baseline branch/commit with Git and reconcile Current Context/Last Session contradictions. "
             "Missing evidence is unknown. Log meaningful changes/handoffs; read-only questions need no rewrite. "
-            "Subagents stage; lead promotes. Follow project instructions.\n\n"
+            "Record maintenance: follow delegation policy in procedures. Prefer capable lower-cost subagents; "
+            "otherwise work directly. Subagents stage; lead verifies/promotes. Follow project instructions.\n\n"
             f"Repo-root CLI: `python3 \"{runtime}\" --help` (Windows: `python`). "
             "No Python: read Markdown. Missing submodule: `git submodule update --init`. "
             "Procedures: `" + str(Path(runtime).parent.parent.as_posix()) + "/docs/context-guide.md`.\n")
