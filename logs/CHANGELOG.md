@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Prefer capable lower-cost delegation for project-record maintenance, with direct fallback and lead verification. Shared startup points to the full policy; Markdown and JSON packets carry the same staging and preservation safeguards. Files: `product/scripts/startup.py`, `product/scripts/primer.py`, `product/rules/log-file-maintenance.md`, `product/docs/context-guide.md`. Commit: `15711d4`
+
 - Default fresh installations to OKF metadata and an index; retain explicit migration for existing records/config. Require Python for fresh setup, propagate initialization failures, and document existing-project upgrades including Schemalyze-style custom context. Files: `product/scripts/install.*`, `product/docs/MIGRATION_GUIDE.md`, public guides. Commit: `26db4b5`
 
 - Reframed README, install/contributor guides and agent documentation around portable Markdown/Git context, `.agents`/`.claude` coexistence and Google OKF v0.2. Augment remains a legacy option. Files: `README.md`, `INSTALL.md`, `CONTRIBUTING.md`, `llms.txt`, `product/docs/`. Commit: `7c3693f`

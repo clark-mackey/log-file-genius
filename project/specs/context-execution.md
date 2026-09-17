@@ -167,3 +167,26 @@ Windows CI initially exposed a test-only locale mismatch: the new full-YAML chec
 used Path.read_text's cp1252 default against UTF-8 templates. Public follow-up
 `00ee4e4` sets UTF-8 explicitly; installer behavior is unchanged. CI reruns verify
 the correction on Windows Python 3.10 and 3.14.
+
+
+## 2026-09-17 delegated record maintenance
+
+User approved a portable instruction preferring a capable lower-cost subagent for
+maintaining project records, with unchanged quality requirements. Public commit
+`f7c77ae` updates PR #18; development code baseline `15711d4` updates PR #19.
+ADR-015 records the decision. Scope excludes upgrading LFG software.
+
+Startup directs the reader to the full maintenance policy and remains 245/250
+estimated tokens. Harness configuration owns model/provider selection; unsupported,
+unsuitable or uneconomical delegation falls back to direct execution. The lead
+supplies source evidence and rationale, checks completeness/accuracy and promotes
+accepted staged drafts. Workers retain formats, OKF metadata, uncertainty, history
+and constraints, return missing context, and never delegate recursively.
+
+Markdown and JSON prime packets now carry identical role instructions. Tests verify
+neutral readers, worker staging/preservation safeguards and exact retention of long
+selected evidence; either serialization refuses insufficient budgets without truncation.
+Public suite: 280 passed, one expected no-development-logs skip; development: 281 passed. Code Owl found no
+new issues. Generator/template hash, normalized version checksum and whitespace
+checks passed. These establish instruction delivery and packet behavior, not measured
+cost savings or equal record quality across models; those require paired native trials.

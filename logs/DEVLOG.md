@@ -73,6 +73,19 @@ A narrative chronicle of the project journey - the decisions, discoveries, and p
 
 ## Daily Log - Newest First
 
+### 2026-09-17: Portable delegation for record maintenance
+
+**Decision:** User requested cheaper-model subagent drafting for project records,
+with no loss of substantive detail, applying across harnesses. Model selection stays
+with the harness and permitted providers; unavailable or unsuitable delegation falls
+back to direct execution. The lead retains judgment, reviews drafts and promotes.
+
+**Result:** Shared startup links to the full maintenance policy. Workers preserve
+OKF metadata, rationale, evidence, uncertainty, constraints and history; return missing
+context; avoid recursion; and stage rather than write canonical records. Markdown
+and JSON packets now carry the same role instructions. Record token targets remain
+unchanged; linked records preserve detail where needed. See [execution evidence](../project/specs/context-execution.md).
+
 ### 2026-09-16: OKF default and existing-project conversion
 
 **Decision:** User confirmed new installations should adopt OKF by default and asked

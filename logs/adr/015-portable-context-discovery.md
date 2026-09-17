@@ -44,6 +44,13 @@ changes and handoffs without automatic amend or mandatory conversational checkli
 STATE records branch/code baseline and factual evidence; dates alone do not verify it.
 Priming retains the subagent contract and adds explicit selections plus a neutral role.
 
+As amended by Clark Mackey on 2026-09-17, record maintenance prefers a capable
+harness-configured lower-cost worker when supported and worthwhile. Preserve the
+same substantive content and evidence requirements; the lead supplies context,
+reviews staged drafts and promotes accepted changes. Direct execution is the fallback.
+Do not hardcode providers/models or recursively delegate maintenance. Markdown and
+JSON context packets carry the same role contract; budget overflow refuses truncation.
+
 As amended by Clark Mackey on 2026-09-16, new installations initialize an OKF
 knowledge bundle and navigation index by default, using the standard-library Python
 producer. Existing records require an explicit, additive migration with a defined
