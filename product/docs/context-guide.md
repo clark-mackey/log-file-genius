@@ -83,6 +83,23 @@ commits may share a coherent entry. Do not require repetitive user-facing checkl
 documentation-only follow-up commits, or automatic amendment of history. Explicit
 stricter project instructions still apply. See [maintenance](../rules/log-file-maintenance.md).
 
+## Delegating record maintenance
+
+For updates to STATE, CHANGELOG, DEVLOG, ADRs and incidents, follow the
+[delegated record maintenance policy](../rules/log-file-maintenance.md#delegated-record-maintenance).
+Prefer a capable worker on the harness's configured lower-cost model when available
+and worthwhile. Keep model names, prices and provider commands in the harness's own
+configuration. LFG's shared instructions express the policy; they do not configure
+or guarantee delegation in every host. Unsupported or unsuitable delegation falls
+back to the lead completing the same work directly.
+
+The lead supplies evidence and rationale, the worker stages drafts, and the lead
+checks completeness and accuracy before promotion. Preserve substantive detail and
+OKF metadata regardless of model cost. Include relevant instructions and source
+records in the packet below; STATE plus recent CHANGELOG entries alone do not capture
+a session's decisions, full diff or test results. The worker returns missing context
+and questions rather than guessing. No recursive delegation or reduced quality bar.
+
 ## Selected context packets
 
 ```sh
@@ -92,7 +109,8 @@ python3 .log-file-genius/product/scripts/lfg.py prime --include logs/adr/003-aut
 
 The default retains `LFG_SUBAGENT_PRIME`. Subagents stage findings in `.lfg/staged/<id>/`
 and return consulted ADR IDs plus unresolved scope; the lead reviews and promotes
-canonical log changes. `--role reader` is neutral human/lead context. Repeated selections
+canonical log changes. Markdown and JSON packets carry the same role instructions, including staging and
+record-quality safeguards. `--role reader` is neutral human/lead context. Repeated selections
 are deduplicated. Paths may include an exact heading after `#`. Missing files/sections
 are explicit; output covers selected material only. Overflow refuses the packet,
 listing unread selections; narrow the task, choose sections, or explicitly raise the
