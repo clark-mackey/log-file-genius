@@ -1,5 +1,7 @@
 # Migration Guide: Integrating Log File Genius into Existing Projects
 
+Use the [current installation guide](../../INSTALL.md) for native agent setup and the [context guide](context-guide.md#optional-okf-bundle) for Google OKF metadata, now the default for new installations. The manual content-migration examples below are for records you choose to migrate; do not replace user-owned agent configuration.
+
 **Purpose:** Step-by-step guide for adding the Log File Genius system to projects with existing documentation.
 
 **Target Audience:** Developers with existing projects who want to adopt the token-efficient log file system without starting from scratch.
@@ -9,6 +11,8 @@
 
 ## Table of Contents
 
+[Upgrade an existing LFG project, including OKF](#upgrade-an-existing-lfg-project-including-okf)
+
 1. [Quick Assessment](#quick-assessment)
 2. [Migration Scenarios](#migration-scenarios)
 3. [Step-by-Step Migration](#step-by-step-migration)
@@ -17,6 +21,68 @@
 6. [Validation & Testing](#validation--testing)
 
 **📋 [Download Migration Checklist](MIGRATION_CHECKLIST.md)** - Track your progress step-by-step
+
+---
+
+## Upgrade an existing LFG project, including OKF
+
+For a project such as Schemalyze, upgrade the existing records in place. Installing
+new LFG source does not automatically convert an existing knowledge collection.
+Keep this change limited to LFG source, configuration, instructions, and records;
+application code does not need to change.
+
+1. **Checkpoint the project.** Use a clean migration branch or isolated worktree.
+   Preserve uncommitted records separately and record the current LFG source commit
+   and project baseline so you can review and revert the complete upgrade.
+2. **Inventory existing context.** Read `.logfile-config.yml`, STATE, ADRs, incidents,
+   and archives. Identify the authoritative paths before generating anything. Keep
+   user-owned `.agents/` and `.claude/` skills, settings, hooks, and agent definitions.
+   Inspect `AGENTS.md`, Claude imports, and any native overrides for conflicting rules.
+3. **Update LFG and refresh entry points.** Use the update command in the
+   [installation guide](../../INSTALL.md#updating) with the intended LFG release.
+   Confirm that the checked-out source contains the OKF command. If the project has
+   no LFG configuration, configure the existing record paths before running setup;
+   do not seed a second collection beside them. `setup-context` refreshes the managed
+   instructions and ADR navigation while retaining user content. Resolve any modified
+   legacy-rule warnings explicitly.
+4. **Reconcile content and routes.** Check STATE against the real branch/commit and
+   available test evidence. Preview `migrate-state --dry-run` only for an old STATE
+   layout. Existing ADRs may need routing fields before setup can complete: fill them
+   from the actual decisions and their scope. Do not invent authority or provenance.
+5. **Choose and preview the OKF bundle.** Normally this is `logs/`. Custom paths must
+   share a deliberate knowledge root; inspect every configured context path, because
+   a preview does not certify complete coverage. Avoid selecting the whole application
+   repository merely to include scattered files. Reconcile unsupported YAML and any
+   user-owned `index.md` before applying; the producer refuses to overwrite that index.
+
+   ```sh
+   python3 .log-file-genius/product/scripts/lfg.py metadata --bundle logs --index
+   python3 .log-file-genius/product/scripts/lfg.py metadata --bundle logs --index --write
+   ```
+
+   Replace `logs` in both commands with the chosen root. Conversion preserves document
+   bodies and custom metadata, adds missing `type` metadata, and generates navigation.
+   Validate the resulting YAML with a full YAML parser and inspect the diff. Unsupported
+   or partial results require reconciliation before calling the bundle converted.
+6. **Verify and commit.** Regenerate ADR navigation after changing source metadata,
+   then run the checks below. Unknown freshness is a finding to resolve or record,
+   not evidence that the upgrade passed.
+
+   ```sh
+   python3 .log-file-genius/product/scripts/lfg.py routes --write
+   python3 .log-file-genius/product/scripts/lfg.py routes --check
+   python3 .log-file-genius/product/scripts/lfg.py validate
+   python3 .log-file-genius/product/scripts/lfg.py freshness
+   ```
+
+   Start a fresh session in each agent you actually use and check that it finds STATE
+   and a relevant governing ADR with source paths. Review the final diff for preserved
+   records and instructions, then commit the source revision and migration together.
+
+**Recovery:** `metadata --restore` restores the migration's recorded original bytes;
+for a custom root, pass the same `--bundle` value. It refuses to overwrite subsequent
+edits. Use the Git checkpoint for the full upgrade, including source/configuration and
+instruction changes. See [migration recovery](context-guide.md#optional-okf-bundle).
 
 ---
 
@@ -144,10 +210,10 @@ wc -c docs/**/*.md | awk '{print $1/4 " tokens"}'
 
 ```bash
 # Copy all templates to your project
-cp product/templates/CHANGELOG_template.md logs/CHANGELOG.md
-cp product/templates/DEVLOG_template.md logs/DEVLOG.md
-cp product/templates/STATE_template.md logs/STATE.md
-cp product/templates/ADR_template.md logs/adr/ADR-template.md
+cp .log-file-genius/product/templates/CHANGELOG_template.md logs/CHANGELOG.md
+cp .log-file-genius/product/templates/DEVLOG_template.md logs/DEVLOG.md
+cp .log-file-genius/product/templates/STATE_template.md logs/STATE.md
+cp .log-file-genius/product/templates/ADR_template.md logs/adr/ADR-template.md
 ```
 
 #### Step 2: Backfill Recent History
@@ -189,9 +255,9 @@ Add 2-3 recent significant decisions:
 
 #### Step 3: Start Maintaining
 
-- Update CHANGELOG after every commit
+- Update CHANGELOG for meaningful behavior changes
 - Update DEVLOG after significant decisions
-- Update STATE every 30-60 minutes (optional)
+- Update STATE at meaningful changes and handoffs
 
 **Done!** ✅
 
@@ -340,7 +406,7 @@ the API layer...
 Create ADR files for major decisions referenced in CHANGELOG/DEVLOG:
 
 ```bash
-cp templates/ADR_template.md logs/adr/003-jwt-authentication.md
+cp .log-file-genius/product/templates/ADR_template.md logs/adr/003-jwt-authentication.md
 ```
 
 Fill in with full context, alternatives considered, consequences.
@@ -387,8 +453,8 @@ Create a checklist:
 
 Copy templates for missing documents:
 ```bash
-[ ! -f logs/DEVLOG.md ] && cp product/templates/DEVLOG_template.md logs/DEVLOG.md
-[ ! -f logs/STATE.md ] && cp product/templates/STATE_template.md logs/STATE.md
+[ ! -f logs/DEVLOG.md ] && cp .log-file-genius/product/templates/DEVLOG_template.md logs/DEVLOG.md
+[ ! -f logs/STATE.md ] && cp .log-file-genius/product/templates/STATE_template.md logs/STATE.md
 ```
 
 #### Step 3: Standardize Existing Documents
@@ -435,7 +501,7 @@ Don't want to migrate everything at once? Here's a gradual path:
 
 ### Phase 1: Start with CHANGELOG (Week 1)
 - Create or standardize CHANGELOG.md
-- Update after every commit
+- Update for meaningful changes
 - Get comfortable with single-line format
 
 ### Phase 2: Add DEVLOG (Week 2)
@@ -548,7 +614,7 @@ Run after migration:
 After migration:
 
 1. **Read the full methodology:** [`docs/log_file_how_to.md`](log_file_how_to.md)
-2. **Set up AI assistant rules:** Copy `.augment/` or `.claude/` directory
+2. **Set up shared context:** Run the [installer](../../INSTALL.md) with the generic option; preserve existing `.agents/` and `.claude/` settings.
 3. **Establish maintenance routine:** Update CHANGELOG after commits, DEVLOG after decisions
 4. **Monitor token budgets:** Run token check weekly
 5. **Archive regularly:** Move old entries when files exceed 10k tokens
@@ -563,5 +629,5 @@ After migration:
 
 ---
 
-**Last Updated:** 2025-10-31
+**Last Updated:** 2026-09-16
 

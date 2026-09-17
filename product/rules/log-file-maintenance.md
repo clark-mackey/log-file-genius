@@ -44,6 +44,33 @@ source evidence and explicit supersession. Preview archive plans; refusal means 
 and migrate unsupported sections with a backup. Never silently truncate constraints.
 Use configured token targets: STATE 500, CHANGELOG 10000, DEVLOG 15000 by default.
 
+## DELEGATED RECORD MAINTENANCE
+
+When project records need updating, prefer a subagent using the harness's configured
+lower-cost model, provided it can handle the task. Respect permitted providers and
+project policies. Do not guess model prices, invent model names or switch providers
+without authorization. If delegation or model selection is unavailable, no suitable
+lower-cost worker is configured, or delegation costs more than direct execution,
+perform the work directly. This policy concerns project records, not LFG software upgrades.
+
+Give the worker the relevant changes, decisions and rationale, test results,
+unresolved issues, source paths, applicable instructions and existing records.
+Provide sufficient context and output budget to preserve substantive detail. Existing
+record formats and token targets still apply; preserve detail in linked records when
+needed rather than silently dropping facts to fit a budget.
+
+The worker stages drafts under the subagent contract below. Preserve required formats,
+OKF metadata, evidence, uncertainty, constraints and history. Do not invent missing
+facts or omit important information to reduce cost. Return unresolved questions to
+the lead; do not delegate recursively. The lead retains responsibility for decisions
+and their rationale, especially ADRs and incident analysis.
+
+The lead checks the draft against supplied evidence and existing records, resolves
+omissions or contradictions, runs applicable validation and promotes accepted changes.
+If the worker cannot meet these requirements, the lead completes the update. A cheaper
+model never lowers the acceptance criteria. Do not log delegation itself as a project
+milestone or create updates for otherwise read-only work.
+
 ## SUBAGENT CONTRACT
 
 `LFG_SUBAGENT_PRIME` identifies a subagent. Subagents write staging entries under

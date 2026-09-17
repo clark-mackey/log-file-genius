@@ -65,3 +65,32 @@ def test_prime_handles_missing_files(tmp_path):
     out = build_prime(project_root=tmp_path, n=5, as_json=False)
     assert SUBAGENT_MARKER in out
     assert "STATE.md not found" in out or "missing" in out.lower()
+
+
+def test_prime_role_contract_matches_markdown_and_json(tmp_path):
+    for role in ('subagent', 'reader'):
+        markdown = build_prime(tmp_path, role=role)
+        payload = json.loads(build_prime(tmp_path, role=role, as_json=True))
+        assert payload['instructions'] in markdown
+        if role == 'subagent':
+            assert 'do not write canonical records' in payload['instructions']
+            assert 'OKF metadata' in payload['instructions']
+            assert 'do not delegate recursively' in payload['instructions']
+        else:
+            assert 'Stage findings' not in payload['instructions']
+            assert 'no subagent identity assigned' in payload['instructions']
+
+
+def test_prime_keeps_detailed_evidence_or_refuses_small_budget(tmp_path):
+    import pytest
+    evidence = tmp_path / 'decision.md'
+    original = '# Decision\n' + ('Rejected option, reason, constraint and test evidence.\n' * 100)
+    evidence.write_text(original, encoding='utf-8')
+    for as_json in (False, True):
+        with pytest.raises(ValueError, match='INCOMPLETE'):
+            build_prime(tmp_path, selected=['decision.md'], as_json=as_json, budget=100)
+        result = build_prime(tmp_path, selected=['decision.md'], as_json=as_json, budget=4000)
+        if as_json:
+            assert json.loads(result)['selected_context'][0]['content'] == original
+        else:
+            assert original in result

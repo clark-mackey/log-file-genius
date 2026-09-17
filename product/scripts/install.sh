@@ -3,11 +3,11 @@
 # Installs Log File Genius to your project with standard /logs/ structure
 #
 # Usage:
-#   install.sh [--profile <profile>] [--ai-assistant <augment|claude-code>] [--force]
+#   install.sh [--profile <profile>] [--ai-assistant <name>] [--force]
 #
 # Options:
 #   --profile        Profile to use (solo-developer, team, open-source, startup)
-#   --ai-assistant   AI assistant to install rules for (augment, claude-code, codex, hermes, grok-build, generic, aider)
+#   --ai-assistant   AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)
 #   --force          Skip confirmation prompts (validation still runs)
 
 set -e
@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --profile <name>       Profile to use (solo-developer, team, open-source, startup)"
-            echo "  --ai-assistant <name>  AI assistant (augment, claude-code, codex, hermes, grok-build, generic, aider)"
+            echo "  --ai-assistant <name>  AI assistant (generic, claude-code, codex, pi, warp, orca, hermes, augment, grok-build, aider)"
             echo "  --force                Skip confirmation prompts"
             echo "  --help, -h             Show this help message"
             echo ""
@@ -126,25 +126,28 @@ echo ""
 if [ -z "$AI_ASSISTANT" ]; then
     print_info "Detecting AI assistant..."
     
-    if [ -d ".augment" ]; then
-        AI_ASSISTANT="augment"
-        print_success "Detected Augment"
-    elif [ -d ".claude" ]; then
+    if [ -d ".claude" ] || [ -f "CLAUDE.md" ]; then
         AI_ASSISTANT="claude-code"
         print_success "Detected Claude Code"
+    elif [ -f "AGENTS.md" ] || [ -d ".agents" ]; then
+        AI_ASSISTANT="generic"
+        print_success "Detected generic AGENTS.md convention"
+    elif [ -d ".augment" ]; then
+        AI_ASSISTANT="augment"
+        print_success "Detected Augment"
     else
         echo ""
         echo "Which AI assistant are you using?"
-        echo "  1) Augment"
+        echo "  1) Generic / Codex / Pi / Warp / Orca / Hermes / human"
         echo "  2) Claude Code"
-        echo "  3) Generic / Codex / Hermes / Grok / human"
+        echo "  3) Augment"
         echo ""
         read -p "Enter choice (1-3): " choice
         
         case $choice in
-            1) AI_ASSISTANT="augment" ;;
+            1) AI_ASSISTANT="generic" ;;
             2) AI_ASSISTANT="claude-code" ;;
-            3) AI_ASSISTANT="generic" ;;
+            3) AI_ASSISTANT="augment" ;;
             *)
                 print_error "Invalid choice. Exiting."
                 exit 1
@@ -185,6 +188,23 @@ print_success "AI Assistant: $AI_ASSISTANT"
 # ============================================================================
 # CHECK FOR EXISTING INSTALLATION
 # ============================================================================
+
+# Resolve a python interpreter the same way validate-log-files.sh does.
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+fi
+
+FRESH_INSTALL=true
+if [ -e "logs" ] || [ -L "logs" ] || [ -e ".logfile-config.yml" ] || [ -L ".logfile-config.yml" ]; then
+    FRESH_INSTALL=false
+fi
+if [ "$FRESH_INSTALL" = "true" ] && [ -z "$PYTHON_BIN" ]; then
+    print_error "Python 3.10+ is required to initialize a new OKF knowledge bundle."
+    exit 2
+fi
 
 if [ -d "logs" ] || [ -f ".logfile-config.yml" ]; then
     echo ""
@@ -303,7 +323,7 @@ print_info "Installing AI assistant rules..."
 case "$AI_ASSISTANT" in
     augment)     RULES_TARGET="augment_rules"; RULES_DEST="$PROJECT_ROOT/.augment/rules" ;;
     claude-code) RULES_TARGET="claude_rules";  RULES_DEST="$PROJECT_ROOT/.claude/rules"  ;;
-    codex|hermes|grok-build|generic|aider) RULES_DEST="" ;;
+    codex|pi|warp|orca|hermes|grok-build|generic|aider) RULES_DEST="" ;;
     *)           rollback_installation "Unknown assistant: $AI_ASSISTANT" ;;
 esac
 
@@ -325,13 +345,6 @@ AGENTS_TARGET="$PROJECT_ROOT/AGENTS.md"
 AGENTS_PREEXISTING=false
 [ -f "$AGENTS_TARGET" ] && AGENTS_PREEXISTING=true
 
-# Resolve a python interpreter the same way validate-log-files.sh does.
-PYTHON_BIN=""
-if command -v python3 >/dev/null 2>&1; then
-    PYTHON_BIN="python3"
-elif command -v python >/dev/null 2>&1; then
-    PYTHON_BIN="python"
-fi
 
 if [ -n "$PYTHON_BIN" ] && [ -f "$LFG_PY" ]; then
     if "$PYTHON_BIN" "$LFG_PY" merge-agents-md --to "$AGENTS_TARGET"; then
@@ -398,6 +411,14 @@ fi
 
 if [ -n "$PYTHON_BIN" ]; then
     "$PYTHON_BIN" "$LFG_PY" setup-context || exit 2
+    if [ "$FRESH_INSTALL" = "true" ]; then
+        if ! "$PYTHON_BIN" "$LFG_PY" metadata --index --write; then
+            print_error "OKF initialization incomplete. Inspect diagnostics, then run: $PYTHON_BIN \"$LFG_PY\" metadata --index --write"
+            exit 2
+        fi
+    else
+        print_info "Existing knowledge preserved. Preview OKF adoption with: $PYTHON_BIN \"$LFG_PY\" metadata --index"
+    fi
 else
     [ -f logs/adr/README.md ] || cp "$SOURCE_ROOT/templates/ADR_README_template.md" logs/adr/README.md
     if [ "$AI_ASSISTANT" = "claude-code" ] && [ ! -f CLAUDE.md ]; then

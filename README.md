@@ -1,265 +1,107 @@
 # Log File Genius
 
-**Make your AI agents remember. Not guess, not loop, not forget — remember.**
+**Project memory you can carry between coding agents.**
 
-> Low-dependency project context for humans and agents: current state, change history, decisions and lessons in Markdown and Git.
+Keep current work, decisions, changes, and lessons in Markdown and Git. Give Claude Code, Codex, Pi, Warp, Orca, and Hermes a small entry point to the same project knowledge, with **Google Open Knowledge Format (OKF) v0.2** metadata on new installs.
 
-[![GitHub stars](https://img.shields.io/github/stars/clark-mackey/log-file-genius?style=social)](https://github.com/clark-mackey/log-file-genius/stargazers)
-[![Use this template](https://img.shields.io/badge/use%20this-template-blue)](https://github.com/clark-mackey/log-file-genius/generate)
-[![License: MIT](https://img.shields.io/github/license/clark-mackey/log-file-genius)](LICENSE)
+[Install](INSTALL.md) · [Context guide](product/docs/context-guide.md) · [Agent compatibility](product/docs/context-guide.md#native-entry-points-and-limits) · [Contribute](CONTRIBUTING.md)
 
-[Quick Start](#-quick-start) • [Installation Guide](INSTALL.md) • [Migration Guide](product/docs/MIGRATION_GUIDE.md) • [The Methodology](product/docs/log_file_how_to.md) • [Examples](product/examples) • [Why It's Genius](#-why-its-genius)
+## What it does
 
----
+- **Resume work:** `STATE.md` records the baseline branch/commit, next action, tests, and blockers. Check it against the current checkout before relying on it.
+- **Find decisions:** ADR routing connects a task or file path to the decisions that govern it.
+- **Keep useful history:** CHANGELOG records what changed, DEVLOG explains why, and incident reports preserve lessons from failures.
+- **Share selected context:** Send a colleague or subagent the records they need with explicit file/section selection.
+- **Change agents without moving your knowledge:** `AGENTS.md` carries the shared reading protocol; Claude imports it through `CLAUDE.md`. Existing skills and tool settings stay yours.
+- **Use open formats:** New installs create an OKF knowledge bundle. Existing projects adopt it through a previewable migration with backups and recovery.
 
-## 😫 The Problem: Your AI Agent Is Working Blind
+No hosted memory service, model API, vector database, or mandatory plugin. Markdown works on its own; the automation uses Python's standard library.
 
-Your agent doesn't know what happened yesterday. It doesn't know why you chose Postgres over Mongo. It doesn't know its teammate just refactored the auth module. So it guesses, goes in circles, and makes decisions you already made — badly.
+## Quick start
 
-**Without Log File Genius:**
-- 🔄 **Agents repeat past mistakes** because there's no structured record of what failed and why
-- 🧠 **Context lost between sessions** — every new chat starts from scratch
-- 🤖 **Subagents start from zero** — they have no idea what the lead agent decided
-- 📊 **90,000+ tokens** of bloated docs eating your context window, and the AI *still* doesn't know what's going on
+Run from an existing Git repository. Use Python **3.10+** for the CLI and automated setup; Bash 4+ or PowerShell 5.1+ for the installer.
 
-It's like hiring a brilliant contractor who shows up every morning with amnesia. Every. Single. Day.
+**macOS / Linux**
 
-Or maybe you're vibe coding your first projects and wondering why the AI keeps going in circles.
-
-**Vibe Coding Without Log File Genius:**
-- 🔄 **Endless loops** — the AI retries the same broken approach because it has no memory of what already failed
-- 🤖 **Half your context window** wasted on hand-holding and ineffective back-and-forth
-- ❌ **Result:** The AI hallucinates, makes bad decisions, and you spend more time fixing its work than writing code
-
-## 💡 The Solution: A Shared Brain for Every Agent
-
-Log File Genius combines Markdown logs, decision records and reading instructions. Start with current state, follow relevant decision routes, and check the evidence against your checkout.
-
-Humans and agents maintain the same records as part of meaningful changes and handoffs.
-
-**After Log File Genius:**
-- ⚡ **Readers find recorded decisions** through state links and task/path routing
-- 🔄 **Session continuity** — handoff protocol preserves recorded state and next actions
-- 🤖 **Subagents spin up fully briefed** — complete project context from their first message, no re-explaining
-- 📊 **Up to 93% token reduction** — complete project history in ~7,000-10,000 tokens instead of 90,000+
-
-| Document | The Vibe | Purpose | Token Budget |
-|---|---|---|---|
-| **PRD** | The Dream ✨ | What we're building and why | ~5k tokens |
-| **CHANGELOG** | The Facts 📊 | What changed (files, versions, facts) | <10k tokens |
-| **DEVLOG** | The Story ✍️ | *Why* it changed (the narrative, the reasoning) | <15k tokens |
-| **ADRs** | The Rules 🏛️ | How we made significant decisions | On-demand |
-| **STATE** | The Now 📍 | What agent is on what task, right now? | <500 tokens |
-
-[Dive into the full methodology →](product/docs/log_file_how_to.md)
-
----
-
-## 😫 The Problem: Your Future Developers Are Flying Blind
-
-Your future developers are going to waste hours understanding your codebase — and one of them is *you*, six months from now. The commit history says *what* changed but never *why*. The one person who remembers why you ditched Mongo for Postgres has left the company. So every new hire reverse-engineers decisions that were already made, and re-learns lessons the team already paid for.
-
-**Without Log File Genius:**
-- 🕵️ **Onboarding takes weeks** — new devs spend their first sprint just figuring out how things fit together
-- ❓ **"Why is this here?"** — no record of the reasoning behind key decisions, so nobody dares touch the scary code
-- 🔁 **Lessons re-learned the hard way** — the same bug gets reintroduced because the postmortem lived in someone's head
-- 🗂️ **Tribal knowledge walks out the door** — when a teammate leaves, their context leaves with them
-
-It's like inheriting a house with no manual, no blueprints, and no idea which wires are live.
-
-## 💡 The Solution: Leave a Perfect Breadcrumb Trail
-
-The same five files that orient your AI orient your humans. CHANGELOG records what shipped, DEVLOG captures *why* you decided it, ADRs lock in the big calls, and STATE says where things stand right now — written as the work happens, not bolted on later.
-
-**With Log File Genius:**
-- ⚡ **Onboard in an afternoon** — new devs read five files and understand the project's history, decisions, and current state
-- 🧭 **Every decision has a paper trail** — the "why" is captured next to the "what," so future-you isn't guessing
-- 🛡️ **Mistakes don't repeat** — incidents and their fixes are recorded, so the team learns once and moves on
-- 🤝 **Knowledge outlives the team** — context lives in the repo, not in any one person's memory
-
-The breadcrumb trail you wish every codebase came with — and now yours does.
-
----
-
-## 🧠 Why It's Genius
-
-This isn't just documentation. It's an operating system for AI agent performance.
-
-- **🚀 Agents That Actually Perform:** Your agent reads 5 files and knows everything — what we're building, what changed, why, what's happening now, and what rules to follow. No ramp-up. No guessing. Just execution.
-
-- **🔄 Session continuity:** Handoffs preserve recorded decisions, current work and next actions. Readers still reconcile the record with the current checkout.
-
-- **🤖 Selected context for subagents:** Share STATE and explicitly selected decisions or incidents. Handoff evidence helps readers coordinate; it does not lock files or prevent concurrent edits.
-
-- **🧠 Self-Regulating:** Agents manage their own token budgets, estimate entry sizes, and archive proactively. No babysitting. No external tools. The AI maintains the files as part of its workflow — you don't write documentation, the agent does.
-
-- **🚨 Learns From Failures:** The `🚨 INCIDENT` format in DEVLOG means agents document what broke, why, and how to prevent it. Next time a similar problem comes up, the agent already knows the answer.
-
-- **⚡ Explicit navigation:** Startup pointers and ADR routing help readers find relevant constraints. Missing or unmatched routes require bounded search.
-
-- **📊 Up to 93% Token Reduction:** Sheds old context like a snake sheds its skin. Complete project history in <5% of the context window, leaving the rest for what matters: the code you're writing *right now*.
-
-- **🔒 Safety Tools Available:** Optional secret detection and log validation, plus a pre-commit hook you can enable, catch problems before they hit the repo. These are opt-in — run them manually or install the hook with `lfg install-hooks`. Your agent won't accidentally leak API keys into a DEVLOG entry.
-
-- **🔧 Tool Agnostic:** A single canonical `AGENTS.md` ships to your project root for any agent that reads it natively (Claude, Codex, Aider, etc.), with per-tool rule files generated alongside for Augment, Claude Code, and others. Your toaster will probably be running it soon.
-
----
-
-## 📁 Repository Structure
-
-This repository uses a two-branch strategy: `main` contains only the `product/` directory for distribution, while `development` contains both `product/` and `project/` directories for development work.
-
----
-
-## 🚀 Quick Start
-
-### One-Command Installation (30 Seconds)
-
-**For detailed installation instructions, troubleshooting, and next steps, see [INSTALL.md](INSTALL.md).**
-
-Install Log File Genius in your existing project with a single command:
-
-**Bash/Mac/Linux:**
 ```bash
-git submodule add -b main \
-  https://github.com/clark-mackey/log-file-genius.git \
-  .log-file-genius && \
-  ./.log-file-genius/product/scripts/install.sh
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius
+bash .log-file-genius/product/scripts/install.sh --ai-assistant generic --profile solo-developer
 ```
 
-**PowerShell/Windows:**
+**Windows PowerShell**
+
 ```powershell
-git submodule add -b main `
-  https://github.com/clark-mackey/log-file-genius.git `
-  .log-file-genius; `
-  .\.log-file-genius\product\scripts\install.ps1
+git submodule add -b main https://github.com/clark-mackey/log-file-genius.git .log-file-genius
+.\.log-file-genius\product\scripts\install.ps1 -AiAssistant generic -Profile solo-developer
 ```
 
-The installer will:
-- ✅ Detect your AI assistant (Augment, Claude Code, etc.)
-- ✅ Prompt for your profile (solo-developer, team, open-source, startup)
-- ✅ Create standard `/logs/` folder structure
-- ✅ Install log file templates and AI assistant rules
-- ✅ Configure everything for immediate use
+Use `generic` when you switch between agents. Named choices include `claude-code`, `codex`, `pi`, `warp`, `orca`, and `hermes`. They share the same records and setup; see the [installation guide](INSTALL.md) for existing projects and custom paths.
 
-**What gets installed:**
-- `logs/` - All your log files (CHANGELOG, DEVLOG, STATE, ADRs, incidents)
-- `AGENTS.md` - Canonical agent-agnostic rules at the project root (read by Claude, Codex, Aider, etc.)
-- `.augment/` or `.claude/` - Per-tool rule files generated from the same source
-- `.logfile-config.yml` - Profile configuration
+## One knowledge collection, multiple entry points
 
-**What stays hidden:**
-- `.log-file-genius/` - Source repository (templates, scripts, docs - for updates)
-
-### ✅ Post-Installation Verification
-
-After installation, your project root should contain **ONLY** these files/folders:
-
-**Visible:**
-- `logs/` folder (contains CHANGELOG.md, DEVLOG.md, STATE.md, adr/)
-- `AGENTS.md` file (canonical agent-agnostic rules at the project root)
-- `.logfile-config.yml` file (your profile configuration)
-
-**Hidden (may not show in file explorer by default):**
-- `.log-file-genius/` folder (git submodule - the source repository)
-- `.augment/` or `.claude/` folder (per-tool rule files)
-- `.git/` folder (your project's git repository)
-
-**❌ If you see a visible `log-file-genius/` folder (without the dot), something went wrong.** This means a full clone was created instead of a submodule. Delete it and re-run the installation command.
-
-**Total visible items added to your project root: 3** (logs/ + AGENTS.md + .logfile-config.yml)
-
----
-
-### Alternative: GitHub Template (For New Projects)
-
-Starting a brand new project? Use the GitHub template:
-
-1.  **Click the Button:**
-
-    [![Use this template](https://img.shields.io/badge/use%20this-template-blue?style=for-the-badge)](https://github.com/clark-mackey/log-file-genius/generate)
-
-2.  **Create Your New Repository:**
-    Give it a name. You now have the complete structure.
-
-3.  **Read the Guide:**
-    Follow the [**`log_file_how_to.md`**](product/docs/log_file_how_to.md) guide to start using the system.
-
----
-
-### Updating Log File Genius
-
-Already installed? Update to the latest version with the bundled update script:
-
-**Bash/Mac/Linux:**
-```bash
-cd .log-file-genius && git pull && cd ..
-./.log-file-genius/product/scripts/update.sh
-```
-
-**PowerShell/Windows:**
-```powershell
-cd .log-file-genius; git pull; cd ..
-.\.log-file-genius\product\scripts\update.ps1
-```
-
-The updater is brownfield-safe: it **merges** the LFG rules into your `AGENTS.md` instead of overwriting it (anything outside the `<!-- LFG:BEGIN … -->` / `<!-- LFG:END -->` markers stays yours), refreshes per-tool rules, validators, and the `lfg` CLI in place, and never creates a `templates/` folder at your project root.
-
-Upgrading from an older version? If the updater prints a STATE.md advisory, run `python .log-file-genius/product/scripts/lfg.py migrate-state --dry-run` to preview the one-time migration. See [Updating Log File Genius](product/docs/log_file_how_to.md#updating-log-file-genius) for the full story.
-
----
-
-### The `lfg` CLI
-
-After installation, a small Python CLI lives at `.log-file-genius/product/scripts/lfg.py`. It is stdlib-only and the entry point for everything beyond install/update:
-
-| Command | Purpose |
+| Path | Purpose |
 |---|---|
-| `lfg validate` | Lint logs (token budgets, format, required sections) |
-| `lfg archive --dry-run` | Preview a graceful, work-aware archival plan |
-| `lfg archive` | Apply the plan (protects `[Unreleased]` and the most recent DEVLOG entries) |
-| `lfg generate` | Regenerate `AGENTS.md` from `product/rules/` fragments (contributors) |
-| `lfg merge-agents-md --to <path>` | Merge the LFG managed block into a target `AGENTS.md`, preserving your content (run by install/update) |
-| `lfg migrate-state --dry-run` | Preview bringing a pre-v0.4.0 STATE.md into the current spec |
-| `lfg migrate-state` | Apply the one-time STATE migration (archives extra content to a DEVLOG snapshot) |
-| `lfg prime` | Print a compact digest for a subagent's initial context |
-| `lfg promote <staged-id>` | Merge a subagent's staged log entries into CHANGELOG/DEVLOG |
-| `lfg incidents-index` | Regenerate the incident-report index (`logs/incidents/README.md`) |
-| `lfg install-hooks` | Install the opt-in pre-commit hook (secret + log validation) |
+| `logs/STATE.md` | Current work and handoff evidence |
+| `logs/CHANGELOG.md`, `logs/DEVLOG.md` | Change history and reasoning |
+| `logs/adr/`, `logs/incidents/` | Decisions, routes, and lessons |
+| `AGENTS.md` | Compact shared instructions, merged into your existing file |
+| `CLAUDE.md` or existing `.claude/CLAUDE.md` | Imports the shared instructions for Claude |
+| `.agents/skills/`, `.claude/skills/` | Your on-demand skills; preserved, not replaced by LFG |
+| `.log-file-genius/` | Hidden source checkout, procedures, templates, and CLI |
 
-Run `python .log-file-genius/product/scripts/lfg.py --help` for the full list.
+`AGENTS.md` and `.agents/` have different jobs: the file supplies project instructions; the directory can hold reusable skills. LFG installs the context protocol, not a new skills framework. Your skills can read the same logs and call the same CLI.
 
----
+## Agent compatibility
 
-### Migration from Existing Docs
+Claude Code uses a small import of `AGENTS.md`. Codex and Pi use `AGENTS.md`; Warp uses it unless an existing `WARP.md` takes priority. Orca uses the conventions of its selected agent. Hermes can prefer its own context file, so LFG adds a pointer to existing priority files.
 
-Already have documentation? The installer creates a clean `/logs/` structure. You can:
-- **Start fresh:** Let the installer create new templates, then manually migrate your existing content
-- **Brownfield:** Keep your existing docs where they are and use Log File Genius alongside them
-- **Full migration:** Copy your existing CHANGELOG/DEVLOG content into the new `/logs/` files
+Install/update tests verify the files LFG produces. Actual discovery also depends on the host version, working directory, trust settings, and overrides. The [compatibility table and verification steps](product/docs/context-guide.md#native-entry-points-and-limits) describe those boundaries. Augment remains a legacy installation option.
 
-For detailed migration strategies, see [**Migration Guide**](product/docs/MIGRATION_GUIDE.md).
+## Daily use
 
----
+Start with STATE and the ADR index. Follow matching decisions, verify recorded evidence, then do the work. Update records for meaningful changes and handoffs; a read-only question does not need a documentation commit.
 
-## 💬 Join the Community
+From your project root (use `python` on Windows):
 
-This project is for you. Your feedback, ideas, and contributions make it better.
+```bash
+python3 .log-file-genius/product/scripts/lfg.py freshness
+python3 .log-file-genius/product/scripts/lfg.py routes --check
+python3 .log-file-genius/product/scripts/lfg.py prime --role reader --include logs/STATE.md
+python3 .log-file-genius/product/scripts/lfg.py validate
+```
 
-- 🐛 **[Report a bug](https://github.com/clark-mackey/log-file-genius/issues/new?template=bug_report.md)**
-- 💡 **[Request a feature](https://github.com/clark-mackey/log-file-genius/issues/new?template=feature_request.md)**
-- 💬 **[Join the discussions](https://github.com/clark-mackey/log-file-genius/discussions)** to ask questions or share your success stories.
-- ⭐ **Star this repo** if it saved you from context window hell!
+Other tools include `archive --dry-run`, `incidents-index`, `secrets`, and opt-in `install-hooks`. Run `lfg.py --help` for the full list. Secret detection is a check, not a guarantee that a file contains no secrets.
 
-## Contributing
+## Google Open Knowledge Format
 
-Contributions are welcome! Whether it's improving the documentation, adding support for a new AI assistant, or suggesting a new feature, please feel free to open an issue or pull request. Check out the [**`CONTRIBUTING.md`**](CONTRIBUTING.md) file for more details.
+LFG targets the minimal representation requirements of [Google's OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) for a selected bundle, normally `logs/`. New installs initialize metadata and a navigation index automatically. Existing projects use an explicit migration that preserves document bodies and custom metadata.
 
----
+```bash
+# Existing projects: preview before applying
+python3 .log-file-genius/product/scripts/lfg.py metadata --index
+python3 .log-file-genius/product/scripts/lfg.py metadata --index --write
+```
 
-**Built with ❤️ by [Clark Mackey](https://github.com/clark-mackey)**
+The producer handles a bounded YAML subset. Unsupported existing YAML is preserved and reported; a partial conversion is not a conformance claim. Metadata does not prove that an agent loaded or followed a document. See [OKF migration and recovery](product/docs/context-guide.md#optional-okf-bundle).
 
-*Inspired by the endless struggle against context window limits and weak sauce AI recommendations.*
+## Updating
+
+```bash
+bash .log-file-genius/product/scripts/update.sh
+```
+
+On Windows, run `.\.log-file-genius\product\scripts\update.ps1`. The updater preserves user content outside LFG's managed blocks and retains existing logs/config. Review its messages about overrides, modified legacy rules, and optional migrations.
+
+## Learn more
+
+- [Installation and troubleshooting](INSTALL.md)
+- [Finding context, routing decisions, and handing off work](product/docs/context-guide.md)
+- [Documentation methodology](product/docs/log_file_how_to.md)
+- [Migrating existing records](product/docs/MIGRATION_GUIDE.md)
+- [Examples](product/examples/README.md)
+- [Contributing and test commands](CONTRIBUTING.md)
+
+[MIT license](LICENSE) · [Issues](https://github.com/clark-mackey/log-file-genius/issues)
 
 <!-- LFG:POINTER:BEGIN -->
 Project context: [STATE](logs/STATE.md), [decisions](logs/adr/README.md).
