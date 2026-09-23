@@ -7,10 +7,14 @@ from pathlib import Path
 import re
 from urllib.parse import quote, unquote
 from context_paths import context_paths, tokens
-from safe_write import replace
+from safe_write import replace, retire
 
 BEGIN = "<!-- LFG:ROUTES:BEGIN -->"
 END = "<!-- LFG:ROUTES:END -->"
+PARTITION_PREFIX = ('---\ntype: Routing Index\n---\n\n' + BEGIN + '\n'
+                    '| Decision / status | Read when | Applies to | Constraint |\n'
+                    '|---|---|---|---|\n')
+PARTITION_SUFFIX = END + '\n'
 
 
 @dataclass
@@ -183,6 +187,30 @@ def views(root, records, budget=500):
     return outputs
 
 
+def managed_partitions(root):
+    """Snapshot only files matching the exact generated partition envelope."""
+    directory = context_paths(root)['adr_dir'] / 'routes'
+    if not directory.is_dir():
+        return {}
+    managed = {}
+    for path in sorted(directory.glob('adr-*.md')):
+        if path.is_symlink() or not path.is_file() or not re.fullmatch(r'adr-\d+\.md', path.name):
+            continue
+        try:
+            data = path.read_bytes()
+            text = data.decode('utf-8').replace('\r\n', '\n')
+        except (OSError, UnicodeError):
+            continue
+        row = text[len(PARTITION_PREFIX):-len(PARTITION_SUFFIX)]
+        expected_id = path.stem.upper()
+        if (text.startswith(PARTITION_PREFIX) and text.endswith(PARTITION_SUFFIX) and
+                text.count(BEGIN) == 1 and text.count(END) == 1 and
+                row.startswith(f'| [{expected_id}: ') and row.endswith(' |\n') and
+                row.count('\n') == 1):
+            managed[path] = data
+    return managed
+
+
 def run(root, write=False, check=False, paths=(), ids=(), budget=500):
     if budget < 1:
         raise ValueError('budget must be positive')
@@ -193,14 +221,28 @@ def run(root, write=False, check=False, paths=(), ids=(), budget=500):
         return 2, 'UNRESOLVED; search source ADRs.\n' + '\n'.join(errors)
     outputs = views(root, records, budget)
     if check or write:
+        index = context_paths(root)['adr_dir'] / 'README.md'
+        partition_outputs = set(outputs) - {index}
+        existing = managed_partitions(root)
+        conflicts = [path for path in sorted(partition_outputs)
+                     if (path.exists() or path.is_symlink()) and path not in existing]
+        if conflicts:
+            return 2, ('Unrecognized route partition; refusing to overwrite: ' +
+                       ', '.join(str(path) for path in conflicts))
         stale = [p for p, text in outputs.items() if not p.exists() or p.read_text(encoding='utf-8') != text]
+        obsolete = {path: data for path, data in existing.items() if path not in partition_outputs}
         if write:
             if any(r.path.read_bytes() != r.source_bytes for r in records):
                 return 2, 'Source ADR changed during generation; regenerate routes.'
             # Partitions first, root last. Failed runs never publish a complete new manifest.
-            for path in stale:
+            for path in (p for p in stale if p != index):
                 replace(path, outputs[path], path.read_bytes() if path.exists() else None)
-        return (1 if check and stale else 0), ('Stale: ' + ', '.join(str(p) for p in stale) if check and stale else 'ADR routes current.')
+            for path, expected in obsolete.items():
+                retire(path, expected)
+            if index in stale:
+                replace(index, outputs[index], index.read_bytes() if index.exists() else None)
+        changed = stale + list(obsolete)
+        return (1 if check and changed else 0), ('Stale: ' + ', '.join(str(p) for p in changed) if check and changed else 'ADR routes current.')
     chosen = select(records, paths, ids)
     text = table(chosen, root)
     if not paths and not ids or not chosen:
