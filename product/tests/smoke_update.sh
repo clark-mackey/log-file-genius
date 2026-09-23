@@ -22,6 +22,8 @@
 #   5. Notepad-style v0.3.0 AGENTS.md (CRLF + UTF-8 BOM, no markers) -> update
 #      wraps it; output normalized to LF + no-BOM, markers detected.
 #   6. Repeated merge on an up-to-date managed file is a byte-identical no-op.
+#   7. Missing registered submodule reports the command that restores it.
+#   8. Missing unregistered installation retains generic install guidance.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -150,5 +152,34 @@ echo "$OUT6" | grep -qi 'up to date' || fail "scenario 6: re-merge did not repor
 AFTER6="$(cksum < "$TMP1/AGENTS.md")"
 [ "$BEFORE6" = "$AFTER6" ] || fail "scenario 6: re-merge changed the file (not idempotent)"
 echo "  ok scenario 6: repeated merge is a byte-identical no-op"
+
+# ---------------------------------------------------------------------------
+# Scenario 7: a registered but missing LFG submodule gets actionable recovery.
+# ---------------------------------------------------------------------------
+TMP7="$(mktemp -d)"
+cat > "$TMP7/.gitmodules" <<'EOF'
+[submodule ".log-file-genius"]
+    path = .log-file-genius
+    url = https://github.com/clark-mackey/log-file-genius.git
+EOF
+if OUT7="$(cd "$TMP7" && bash "$REPO/product/scripts/update.sh" 2>&1)"; then
+    fail "scenario 7: update unexpectedly succeeded without the submodule"
+fi
+echo "$OUT7" | grep -Fq 'git submodule update --init --recursive -- .log-file-genius' ||
+    fail "scenario 7: missing submodule recovery command not shown: $OUT7"
+echo "  ok scenario 7: missing registered submodule reports recovery command"
+
+# ---------------------------------------------------------------------------
+# Scenario 8: an unregistered installation keeps generic install guidance.
+# ---------------------------------------------------------------------------
+TMP8="$(mktemp -d)"
+if OUT8="$(cd "$TMP8" && bash "$REPO/product/scripts/update.sh" 2>&1)"; then
+    fail "scenario 8: update unexpectedly succeeded without an installation"
+fi
+echo "$OUT8" | grep -Fq 'github.com/clark-mackey/log-file-genius#installation' ||
+    fail "scenario 8: generic installation guidance not shown: $OUT8"
+echo "$OUT8" | grep -Fq 'git submodule update --init --recursive' &&
+    fail "scenario 8: submodule recovery shown without registration"
+echo "  ok scenario 8: unregistered installation reports generic guidance"
 
 echo "PASS (bash)"
