@@ -739,7 +739,8 @@ def main():
     subparsers.add_parser('freshness', help='Compare handoff with checkout evidence; read only')
     subparsers.add_parser('setup-context', help='Seed routes and native context pointers safely')
     p_meta = subparsers.add_parser('metadata', help='Preview additive OKF migration; unsupported YAML preserved')
-    p_meta.add_argument('--bundle', help='Explicit repository-relative bundle root; default STATE directory')
+    p_meta.add_argument('--bundle', help='Explicit repository-relative bundle root; default STATE directory; '
+                        'on restore, must match the recovery journal')
     meta_mode = p_meta.add_mutually_exclusive_group()
     meta_mode.add_argument('--write', action='store_true', help='Apply or resume the journaled migration')
     meta_mode.add_argument('--restore', action='store_true', help='Restore original bytes from the last journal')

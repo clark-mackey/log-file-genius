@@ -79,9 +79,10 @@ application code does not need to change.
    and a relevant governing ADR with source paths. Review the final diff for preserved
    records and instructions, then commit the source revision and migration together.
 
-**Recovery:** `metadata --restore` restores the migration's recorded original bytes;
-for a custom root, pass the same `--bundle` value. It refuses to overwrite subsequent
-edits. Use the Git checkpoint for the full upgrade, including source/configuration and
+**Recovery:** `metadata --restore` restores the migration's recorded original bytes.
+For a custom root, omit `--bundle` or pass the same value recorded by the migration;
+an explicitly different bundle is rejected before restoration begins. It refuses to
+overwrite subsequent edits. Use the Git checkpoint for the full upgrade, including source/configuration and
 instruction changes. See [migration recovery](context-guide.md#optional-okf-bundle).
 
 ---
@@ -630,4 +631,3 @@ After migration:
 ---
 
 **Last Updated:** 2026-09-16
-
