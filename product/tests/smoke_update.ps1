@@ -15,6 +15,8 @@
 #   4. user-authored root templates/ -> left in place.
 #   5. Notepad CRLF+BOM v0.3.0 AGENTS.md -> wrapped + normalized (no BOM, LF).
 #   6. repeated merge is a byte-identical no-op.
+#   7. missing registered submodule reports the command that restores it.
+#   8. missing unregistered installation retains generic install guidance.
 
 $ErrorActionPreference = "Stop"
 
@@ -147,6 +149,49 @@ try {
     if (-not ([System.Linq.Enumerable]::SequenceEqual($before, $after))) { Fail "scenario 6: re-merge changed the file (not idempotent)" }
     Write-Host "  ok scenario 6: repeated merge is a byte-identical no-op"
 
+    # --- Scenario 7: missing registered submodule recovery -----------------
+    $t7 = New-Tmp
+    $tmps += $t7
+    @'
+[submodule ".log-file-genius"]
+    path = .log-file-genius
+    url = https://github.com/clark-mackey/log-file-genius.git
+'@ | Set-Content (Join-Path $t7 ".gitmodules")
+    Push-Location $t7
+    try {
+        $hostExe = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+        $out7 = & $hostExe -NoProfile -File (Join-Path $REPO "product\scripts\update.ps1") 2>&1 | Out-String
+        $exit7 = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+    if ($out7 -notmatch 'git submodule update --init --recursive -- \.log-file-genius') {
+        Fail "scenario 7: missing submodule recovery command not shown: $out7"
+    }
+    if ($exit7 -eq 0) { Fail "scenario 7: update unexpectedly succeeded without the submodule" }
+    Write-Host "  ok scenario 7: missing registered submodule reports recovery command"
+
+    # --- Scenario 8: unregistered installation keeps generic guidance -------
+    $t8 = New-Tmp
+    $tmps += $t8
+    Push-Location $t8
+    try {
+        $out8 = & $hostExe -NoProfile -File (Join-Path $REPO "product\scripts\update.ps1") 2>&1 | Out-String
+        $exit8 = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+    if ($exit8 -eq 0) { Fail "scenario 8: update unexpectedly succeeded without an installation" }
+    if ($out8 -notmatch 'github.com/clark-mackey/log-file-genius#installation') {
+        Fail "scenario 8: generic installation guidance not shown: $out8"
+    }
+    if ($out8 -match 'git submodule update --init --recursive') {
+        Fail "scenario 8: submodule recovery shown without registration"
+    }
+    Write-Host "  ok scenario 8: unregistered installation reports generic guidance"
+
     Write-Host "PASS (powershell)"
 }
 finally {
@@ -154,3 +199,7 @@ finally {
         if ($t -and (Test-Path $t)) { Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue }
     }
 }
+
+# Scenarios 7 and 8 intentionally run a child process that exits 1. Do not leak
+# that expected status to callers after every assertion has passed.
+$global:LASTEXITCODE = 0
