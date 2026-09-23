@@ -160,8 +160,9 @@ conformance certificate. Basic representation conformance does not prove host di
 Writes validate before replacement, save exact-byte backups, recheck the target, then
 atomically replace each file. Collection writes are not a single transaction. An
 interruption leaves `.lfg/metadata-migration.json` plus backups: repeat `--write` to
-resume the frozen plan, or `--restore` to restore original bytes. Concurrent changes
-refuse restoration; inspect them first. Do not remove the journal until recovery is
+resume the frozen plan, or `--restore` to restore original bytes. Restore uses the
+bundle recorded in the journal; an explicit `--bundle` must match it. Concurrent
+changes refuse restoration; inspect them first. Do not remove the journal until recovery is
 complete. Root index publication comes last; partial migration is never reported complete.
 
 ## Native entry points and limits

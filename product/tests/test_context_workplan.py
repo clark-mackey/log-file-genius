@@ -201,6 +201,39 @@ def test_metadata_additive_idempotent_full_yaml_and_restore(tmp_path):
     assert not (root / 'logs/index.md').exists()
 
 
+def test_metadata_restore_rejects_explicit_mismatched_bundle_before_changes(tmp_path):
+    root = seed(tmp_path)
+    other = root / 'other'
+    other.mkdir()
+    original = (root / 'logs/STATE.md').read_bytes()
+    assert metadata.run(root, write=True)[0] == 0
+    migrated = (root / 'logs/STATE.md').read_bytes()
+    journal = root / '.lfg/metadata-migration.json'
+    journal_before = journal.read_bytes()
+
+    with pytest.raises(ValueError, match='does not match'):
+        metadata.run(root, bundle='other', restore=True)
+    assert (root / 'logs/STATE.md').read_bytes() == migrated
+    assert journal.read_bytes() == journal_before
+    assert metadata.run(root, restore=True)[0] == 0
+    assert (root / 'logs/STATE.md').read_bytes() == original
+
+
+def test_metadata_restore_legacy_journal_rejects_explicit_bundle(tmp_path):
+    root = seed(tmp_path)
+    assert metadata.run(root, write=True)[0] == 0
+    journal = root / '.lfg/metadata-migration.json'
+    record = json.loads(journal.read_text())
+    record.pop('bundle')
+    journal.write_text(json.dumps(record, indent=2) + '\n')
+    migrated = (root / 'logs/STATE.md').read_bytes()
+
+    with pytest.raises(ValueError, match='no valid bundle'):
+        metadata.run(root, bundle='logs', restore=True)
+    assert (root / 'logs/STATE.md').read_bytes() == migrated
+    assert metadata.run(root, restore=True)[0] == 0
+
+
 def test_metadata_unsupported_and_interfile_failure_resume(tmp_path, monkeypatch):
     root = seed(tmp_path)
     invalid = root / 'logs/bad.md'; invalid.write_text('---\ncustom: [a, b]\n---\nbody\n')
