@@ -199,3 +199,7 @@ finally {
         if ($t -and (Test-Path $t)) { Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue }
     }
 }
+
+# Scenarios 7 and 8 intentionally run a child process that exits 1. Do not leak
+# that expected status to callers after every assertion has passed.
+$global:LASTEXITCODE = 0
