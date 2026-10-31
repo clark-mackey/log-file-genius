@@ -112,8 +112,9 @@ def reserved(path, bundle):
 
 def run(root, bundle=None, write=False, index=False, restore=False):
     root = Path(root).resolve()
-    bundle = (root / bundle).resolve() if bundle else context_paths(root)['state'].parent
-    if not bundle.is_relative_to(root) or not bundle.is_dir():
+    requested_bundle = (root / bundle).resolve() if bundle else None
+    bundle = requested_bundle or context_paths(root)['state'].parent
+    if not restore and (not bundle.is_relative_to(root) or not bundle.is_dir()):
         raise ValueError('Bundle must be an existing directory inside the repository')
     journal = root / '.lfg/metadata-migration.json'
     if not journal.resolve().is_relative_to(root):
@@ -126,6 +127,19 @@ def run(root, bundle=None, write=False, index=False, restore=False):
                 raise ValueError('Recovery target escapes repository or is a symlink')
     if restore:
         record = json.loads(journal.read_text())
+        journal_bundle = record.get('bundle')
+        if requested_bundle is not None and not isinstance(journal_bundle, str):
+            raise ValueError('Recovery journal has no valid bundle; omit --bundle for legacy recovery')
+        recorded_bundle = (root / journal_bundle).resolve() if isinstance(journal_bundle, str) else None
+        if recorded_bundle is None:
+            recorded_bundle = bundle
+        if not recorded_bundle.is_relative_to(root):
+            raise ValueError('Recovery bundle escapes repository')
+        if requested_bundle is not None:
+            if not requested_bundle.is_relative_to(root):
+                raise ValueError('Bundle must be inside the repository')
+            if requested_bundle != recorded_bundle:
+                raise ValueError('Requested bundle does not match the recovery journal')
         for item in reversed(record['files']):
             path = root / item['path']
             before = base64.b64decode(item['before']) if item['before'] is not None else None
