@@ -85,6 +85,53 @@ def test_partition_manifest_stale_views_curated_prose_and_overflow(tmp_path):
     assert all(f'{n:03}.md' in text for n in range(1,8))
 
 
+def test_deleted_adr_retires_only_generated_orphan_partition(tmp_path):
+    root = seed(tmp_path)
+    for n in range(1, 4):
+        adr(root, n, f'component{n}/*')
+    assert routing.run(root, write=True, budget=30)[0] == 0
+    orphan = root / 'logs/adr/routes/adr-002.md'
+    owned = root / 'logs/adr/routes/adr-999.md'
+    owned.write_text('# Project-owned route\n')
+    orphan.write_bytes(orphan.read_bytes().replace(b'\n', b'\r\n'))
+    (root / 'logs/adr/002.md').unlink()
+
+    code, message = routing.run(root, check=True, budget=30)
+    assert code == 1 and str(orphan) in message
+    assert routing.run(root, write=True, budget=30)[0] == 0
+    assert not orphan.exists()
+    assert list(orphan.parent.glob(orphan.name + '.lfg-retired-*'))
+    assert owned.read_text() == '# Project-owned route\n'
+    assert routing.run(root, check=True, budget=30)[0] == 0
+
+
+def test_routes_preserve_annotated_generated_partition(tmp_path):
+    root = seed(tmp_path)
+    adr(root, 1, 'component/*')
+    assert routing.run(root, write=True, budget=1)[0] == 0
+    partition = root / 'logs/adr/routes/adr-001.md'
+    partition.write_text(partition.read_text().replace(
+        '<!-- LFG:ROUTES:END -->', 'KEEP USER NOTE\n<!-- LFG:ROUTES:END -->'))
+    (root / 'logs/adr/001.md').unlink()
+
+    assert routing.run(root, write=True, budget=1)[0] == 0
+    assert 'KEEP USER NOTE' in partition.read_text()
+
+
+def test_routes_refuse_project_owned_partition_collision(tmp_path):
+    root = seed(tmp_path)
+    adr(root, 1, 'component/*')
+    routes = root / 'logs/adr/routes'
+    routes.mkdir()
+    collision = routes / 'adr-001.md'
+    collision.write_text('KEEP PROJECT FILE\n')
+
+    code, message = routing.run(root, write=True, budget=1)
+    assert code == 2 and 'refusing to overwrite' in message
+    assert collision.read_text() == 'KEEP PROJECT FILE\n'
+    assert not (root / 'logs/adr/README.md').exists()
+
+
 def test_custom_paths_and_nested_start(tmp_path):
     root = seed(tmp_path)
     (root / '.logfile-config.yml').write_text('paths:\n  state: "knowledge space/STATE.md"\n  adr: "knowledge space/decisions"\n')
