@@ -38,6 +38,12 @@ print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
 
+has_lfg_submodule_registration() {
+    [ -f "$PROJECT_ROOT/.gitmodules" ] || return 1
+    git -C "$PROJECT_ROOT" config -f .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null |
+        awk '$2 == ".log-file-genius" { found=1 } END { exit !found }'
+}
+
 migrate_devlog_to_state() {
     local config=".logfile-config.yml"
     local devlog="logs/DEVLOG.md"
@@ -91,8 +97,13 @@ if [[ ! -d "$PROJECT_ROOT/.log-file-genius" ]]; then
     echo "Expected to find .log-file-genius/ in project root."
     echo "Current directory: $PROJECT_ROOT"
     echo ""
-    echo "Please run this script from your project root, or install Log File Genius first:"
-    echo "  ./.log-file-genius/product/scripts/install.sh"
+    if has_lfg_submodule_registration; then
+        echo "The registered Log File Genius submodule is missing. Restore it with:"
+        echo "  git submodule update --init --recursive -- .log-file-genius"
+    else
+        echo "Please run this script from your project root, or install Log File Genius first:"
+        echo "  https://github.com/clark-mackey/log-file-genius#installation"
+    fi
     exit 1
 fi
 

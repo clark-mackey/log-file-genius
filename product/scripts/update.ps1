@@ -35,6 +35,16 @@ function Print-Info {
     Write-Host "[INFO] $Message" -ForegroundColor Blue
 }
 
+function Test-LfgSubmoduleRegistration {
+    $gitmodules = Join-Path $ProjectRoot ".gitmodules"
+    if (-not (Test-Path $gitmodules -PathType Leaf)) { return $false }
+    $paths = @(& git -C $ProjectRoot config -f .gitmodules --get-regexp '^submodule\..*\.path$' 2>$null)
+    foreach ($line in $paths) {
+        if ($line -match '^\S+\s+\.log-file-genius\s*$') { return $true }
+    }
+    return $false
+}
+
 function Get-ConfigPath {
     param([string]$ConfigFile, [string]$Key)
     if (-not (Test-Path $ConfigFile)) { return $null }
@@ -96,8 +106,13 @@ if (-not (Test-Path $SourceRoot)) {
     Write-Host "Expected to find .log-file-genius\ in project root."
     Write-Host "Current directory: $ProjectRoot"
     Write-Host ""
-    Write-Host "Please run this script from your project root, or install Log File Genius first:"
-    Write-Host "  .\.log-file-genius\product\scripts\install.ps1"
+    if (Test-LfgSubmoduleRegistration) {
+        Write-Host "The registered Log File Genius submodule is missing. Restore it with:"
+        Write-Host "  git submodule update --init --recursive -- .log-file-genius"
+    } else {
+        Write-Host "Please run this script from your project root, or install Log File Genius first:"
+        Write-Host "  https://github.com/clark-mackey/log-file-genius#installation"
+    }
     exit 1
 }
 
